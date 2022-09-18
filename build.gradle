@@ -1,0 +1,53 @@
+plugins {
+    id('java')
+    id("maven-publish")
+}
+
+group 'disorg.soliloquy'
+version '0.0.0'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/felix-t-morgenstern/soliloquy.specs")
+        credentials {
+            username = 'felix-t-morgenstern'
+            password = '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'
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.google.inject:guice:5.1.0'
+    implementation "disorg.soliloquy:soliloquy.specs:0.0.354"
+    implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.93"
+    implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.16"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.9.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.9.0"
+    implementation "org.junit.jupiter:junit-jupiter-api:5.4.2"
+    testImplementation 'junit:junit:4.13.2'
+    implementation "org.mockito:mockito-core:4.8.0"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "inaugural.soliloquy.ruleset"
+            url = uri("https://maven.pkg.github.com/felix-t-morgenstern/inaugural.soliloquy.ruleset")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("SOLILOQUY_GITHUB_PUBLISH_USERNAME")
+                password = project.findProperty("gpr.user") ?: System.getenv("SOLILOQUY_GITHUB_PUBLISH_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
+}

@@ -1,0 +1,15 @@
+
+*.class
+.gradle/*
+.idea/inaugural.soliloquy.gamestate.iml
+.idea/libraries
+.idea/tasks.xml
+.idea/uiDesigner.xml
+.idea/usage.statistics.xml
+.idea/workspace.xml
+.idea/shelf
+build/*
+gradle/*
+target/*
+.DS_Store
+.idea/.DS_Store
