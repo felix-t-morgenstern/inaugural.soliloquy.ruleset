@@ -26,7 +26,7 @@ public class ElementFactoryImpl implements ElementFactory {
             throw new IllegalArgumentException("ElementFactoryImpl.make: definition" +
                     ".imageAssetSetId does not correspond to a valid ImageAssetSet");
         }
-        
+
         return new Element() {
             private String name = definition.name;
 
