@@ -3,12 +3,12 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
 import soliloquy.specs.ruleset.definitions.WallSegmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.WallSegmentType;
-import soliloquy.specs.ruleset.entities.factories.WallSegmentTypeFactory;
 
 import java.util.HashMap;
 
@@ -34,7 +34,7 @@ class WallSegmentTypeFactoryImplTests {
     @Mock
     private GlobalLoopingAnimation mockGlobalLoopingAnimation;
 
-    private WallSegmentTypeFactory wallSegmentTypeFactory;
+    private Factory<WallSegmentTypeDefinition, WallSegmentType> wallSegmentTypeFactory;
 
     @BeforeEach
     void setUp() {
@@ -43,16 +43,16 @@ class WallSegmentTypeFactoryImplTests {
         mockGlobalLoopingAnimation = mock(GlobalLoopingAnimation.class);
         GLOBAL_LOOPING_ANIMATIONS.put(GLOBAL_LOOPING_ANIMATION_ID, mockGlobalLoopingAnimation);
 
-        wallSegmentTypeFactory = new WallSegmentTypeFactoryImpl(SPRITES::get,
+        wallSegmentTypeFactory = new WallSegmentTypeFactory(SPRITES::get,
                 GLOBAL_LOOPING_ANIMATIONS::get);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
-        assertThrows(IllegalArgumentException.class, () -> new WallSegmentTypeFactoryImpl(null,
+        assertThrows(IllegalArgumentException.class, () -> new WallSegmentTypeFactory(null,
                 GLOBAL_LOOPING_ANIMATIONS::get));
         assertThrows(IllegalArgumentException.class,
-                () -> new WallSegmentTypeFactoryImpl(SPRITES::get, null));
+                () -> new WallSegmentTypeFactory(SPRITES::get, null));
     }
 
     @Test
@@ -165,7 +165,9 @@ class WallSegmentTypeFactoryImplTests {
 
     @Test
     void testGetInterfaceName() {
-        assertEquals(WallSegmentTypeFactory.class.getCanonicalName(),
+        assertEquals(Factory.class.getCanonicalName() + "<" +
+                        WallSegmentTypeDefinition.class.getCanonicalName() + "," +
+                        WallSegmentType.class.getCanonicalName() + ">",
                 wallSegmentTypeFactory.getInterfaceName());
     }
 }

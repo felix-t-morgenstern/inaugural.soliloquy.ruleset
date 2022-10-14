@@ -3,10 +3,10 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.ruleset.definitions.ElementDefinition;
 import soliloquy.specs.ruleset.entities.Element;
-import soliloquy.specs.ruleset.entities.factories.ElementFactory;
 
 import java.util.HashMap;
 
@@ -14,7 +14,7 @@ import static inaugural.soliloquy.tools.random.Random.randomString;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-class ElementFactoryImplTests {
+class ElementFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String IMAGE_ASSET_SET_ID = randomString();
@@ -23,19 +23,19 @@ class ElementFactoryImplTests {
     @Mock
     private ImageAssetSet mockImageAssetSet;
 
-    private ElementFactory elementFactory;
+    private Factory<ElementDefinition, Element> elementFactory;
 
     @BeforeEach
     void setUp() {
         mockImageAssetSet = mock(ImageAssetSet.class);
         IMAGE_ASSET_SETS.put(IMAGE_ASSET_SET_ID, mockImageAssetSet);
 
-        elementFactory = new ElementFactoryImpl(IMAGE_ASSET_SETS::get);
+        elementFactory = new ElementFactory(IMAGE_ASSET_SETS::get);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
-        assertThrows(IllegalArgumentException.class, () -> new ElementFactoryImpl(null));
+        assertThrows(IllegalArgumentException.class, () -> new ElementFactory(null));
     }
 
     @Test
@@ -89,6 +89,8 @@ class ElementFactoryImplTests {
 
     @Test
     void testGetInterfaceName() {
-        assertEquals(ElementFactory.class.getCanonicalName(), elementFactory.getInterfaceName());
+        assertEquals(Factory.class.getCanonicalName() + "<" +
+                ElementDefinition.class.getCanonicalName() + "," +
+                Element.class.getCanonicalName() + ">", elementFactory.getInterfaceName());
     }
 }
