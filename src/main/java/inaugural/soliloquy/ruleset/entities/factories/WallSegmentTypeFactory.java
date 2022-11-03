@@ -12,14 +12,11 @@ import java.util.function.Function;
 
 public class WallSegmentTypeFactory implements
         Factory<WallSegmentTypeDefinition, WallSegmentType> {
-    private final Function<String, Sprite> GET_SPRITE;
-    private final Function<String, GlobalLoopingAnimation> GET_GLOBAL_LOOPING_ANIMATION;
+    private final ImageAssetRetrieval IMAGE_ASSET_SET_RETRIEVAL;
 
-    public WallSegmentTypeFactory(Function<String, Sprite> getSprite, Function<String,
-            GlobalLoopingAnimation> getGlobalLoopingAnimation) {
-        GET_SPRITE = Check.ifNull(getSprite, "getSprite");
-        GET_GLOBAL_LOOPING_ANIMATION = Check.ifNull(getGlobalLoopingAnimation,
-                "getGlobalLoopingAnimation");
+    public WallSegmentTypeFactory(Function<String, Sprite> getSprite,
+                                  Function<String, GlobalLoopingAnimation> getGlobalLoopingAnimation) {
+        IMAGE_ASSET_SET_RETRIEVAL = new ImageAssetRetrieval(getSprite, getGlobalLoopingAnimation);
     }
 
     @Override
@@ -31,32 +28,8 @@ public class WallSegmentTypeFactory implements
         Check.ifNull(definition.imageAssetType, "definition.imageAssetType");
         Check.ifNullOrEmpty(definition.imageAssetId, "definition.imageAssetId");
 
-        ImageAsset imageAsset;
-
-        switch (definition.imageAssetType) {
-            case SPRITE -> {
-                imageAsset = GET_SPRITE.apply(definition.imageAssetId);
-                if (imageAsset == null) {
-                    throw new IllegalArgumentException("WallSegmentTypeFactory.make: " +
-                            "imageAssetId (" + definition.imageAssetId + ") does not correspond " +
-                            "to valid Sprite");
-                }
-            }
-            case GLOBAL_LOOPING_ANIMATION -> {
-                imageAsset = GET_GLOBAL_LOOPING_ANIMATION.apply(definition.imageAssetId);
-                if (imageAsset == null) {
-                    throw new IllegalArgumentException("WallSegmentTypeFactory.make: " +
-                            "imageAssetId (" + definition.imageAssetId + ") does not correspond " +
-                            "to valid GlobalLoopingAnimation");
-                }
-            }
-            case ANIMATION -> throw new IllegalArgumentException("WallSegmentTypeFactory.make: " +
-                    "WallSegmentTypes cannot have an ImageAssetType of ANIMATION");
-            case UNKNOWN -> throw new IllegalArgumentException("WallSegmentTypeFactory.make: " +
-                    "WallSegmentTypes cannot have an ImageAssetType of UNKNOWN");
-            default -> throw new IllegalArgumentException("WallSegmentTypeFactory.make: " +
-                    "unexpected ImageAssetType");
-        }
+        ImageAsset imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
+                definition.imageAssetType, "WallSegmentTypeFactory");
 
         return new WallSegmentType() {
             private String name = definition.name;
