@@ -66,10 +66,10 @@ class FixtureTypeFactoryTests {
         GLOBAL_LOOPING_ANIMATIONS.put(GLOBAL_LOOPING_ANIMATION_ID, mockLoopingAnimation);
         //noinspection unchecked
         mockOnStepFunction = mock(Function.class);
-        when(mockOnStepFunction.run(any())).thenReturn(true);
+        when(mockOnStepFunction.apply(any())).thenReturn(true);
         //noinspection unchecked
         mockCanStepFunction = mock(Function.class);
-        when(mockCanStepFunction.run(any())).thenReturn(true);
+        when(mockCanStepFunction.apply(any())).thenReturn(true);
         FUNCTIONS.put(ON_STEP_FUNCTION_ID, mockOnStepFunction);
         FUNCTIONS.put(CAN_STEP_FUNCTION_ID, mockCanStepFunction);
 
@@ -121,8 +121,8 @@ class FixtureTypeFactoryTests {
         assertEquals(DEFAULT_X_TILE_WIDTH_OFFSET, fixtureType.defaultXTileWidthOffset(), 0.001f);
         assertEquals(DEFAULT_Y_TILE_HEIGHT_OFFSET, fixtureType.defaultYTileHeightOffset(), 0.001f);
         verify(COLOR_SHIFT_HANDLER, times(1)).read(COLOR_SHIFT_WRITTEN_VALUE);
-        verify(mockOnStepFunction, times(1)).run(mockCharacter1);
-        verify(mockCanStepFunction, times(1)).run(mockCharacter2);
+        verify(mockOnStepFunction, times(1)).apply(mockCharacter1);
+        verify(mockCanStepFunction, times(1)).apply(mockCharacter2);
     }
 
     @Test
@@ -150,8 +150,8 @@ class FixtureTypeFactoryTests {
         assertEquals(DEFAULT_X_TILE_WIDTH_OFFSET, fixtureType.defaultXTileWidthOffset(), 0.001f);
         assertEquals(DEFAULT_Y_TILE_HEIGHT_OFFSET, fixtureType.defaultYTileHeightOffset(), 0.001f);
         verify(COLOR_SHIFT_HANDLER, times(1)).read(COLOR_SHIFT_WRITTEN_VALUE);
-        verify(mockOnStepFunction, times(1)).run(mockCharacter1);
-        verify(mockCanStepFunction, times(1)).run(mockCharacter2);
+        verify(mockOnStepFunction, times(1)).apply(mockCharacter1);
+        verify(mockCanStepFunction, times(1)).apply(mockCharacter2);
     }
 
     @Test

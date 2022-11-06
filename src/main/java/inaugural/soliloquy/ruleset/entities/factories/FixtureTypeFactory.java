@@ -110,12 +110,12 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
 
             @Override
             public boolean onStep(Character character) {
-                return ON_STEP_FUNCTION.run(Check.ifNull(character, "character"));
+                return ON_STEP_FUNCTION.apply(Check.ifNull(character, "character"));
             }
 
             @Override
             public boolean canStep(Character character) {
-                return CAN_STEP_FUNCTION.run(Check.ifNull(character, "character"));
+                return CAN_STEP_FUNCTION.apply(Check.ifNull(character, "character"));
             }
         };
     }
