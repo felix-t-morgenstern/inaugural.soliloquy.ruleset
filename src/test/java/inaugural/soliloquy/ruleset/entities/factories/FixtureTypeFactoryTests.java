@@ -155,6 +155,97 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
+    void testMakeWithInvalidParams() {
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(null));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(null, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition("", NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, null, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, "", SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, null, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, "", ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, "invalidId", ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, "invalidId",
+                        ImageAsset.ImageAssetType.GLOBAL_LOOPING_ANIMATION,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, null,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.UNKNOWN,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.ANIMATION,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, null, CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, "", CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, "invalidId", CAN_STEP_FUNCTION_ID,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, null,
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, "",
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+                new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
+                        IS_CONTAINER, ON_STEP_FUNCTION_ID, "invalidId",
+                        new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
+                        DEFAULT_Y_TILE_HEIGHT_OFFSET)));
+    }
+
+    @Test
     void testSetName() {
         FixtureTypeDefinition definition =
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,

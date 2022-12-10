@@ -10,31 +10,31 @@ import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.logger.Logger;
-import soliloquy.specs.ruleset.definitions.FixtureTypeDefinition;
-import soliloquy.specs.ruleset.entities.FixtureType;
+import soliloquy.specs.ruleset.definitions.GroundTypeDefinition;
+import soliloquy.specs.ruleset.entities.GroundType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, FixtureType> {
+public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundType> {
     private final TypeHandler<ColorShift> COLOR_SHIFT_HANDLER;
     @SuppressWarnings("rawtypes")
     private final Function<String, soliloquy.specs.common.entities.Function> GET_FUNCTION;
     private final ImageAssetRetrieval IMAGE_ASSET_SET_RETRIEVAL;
 
-    public FixtureTypeFactory(TypeHandler<ColorShift> colorShiftHandler,
-                              @SuppressWarnings("rawtypes")
-                              Function<String, soliloquy.specs.common.entities.Function> getFunction,
-                              Function<String, Sprite> getSprite,
-                              Function<String, GlobalLoopingAnimation> getGlobalLoopingAnimation) {
+    public GroundTypeFactory(TypeHandler<ColorShift> colorShiftHandler,
+                             @SuppressWarnings("rawtypes")
+                             Function<String, soliloquy.specs.common.entities.Function> getFunction,
+                             Function<String, Sprite> getSprite,
+                             Function<String, GlobalLoopingAnimation> getGlobalLoopingAnimation) {
         COLOR_SHIFT_HANDLER = Check.ifNull(colorShiftHandler, "colorShiftHandler");
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
         IMAGE_ASSET_SET_RETRIEVAL = new ImageAssetRetrieval(getSprite, getGlobalLoopingAnimation);
     }
 
     @Override
-    public FixtureType make(FixtureTypeDefinition definition)
+    public GroundType make(GroundTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -47,9 +47,9 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             }
         }
 
-        Check.ifNull(definition.imageAssetType, "definition.imageAssetType");
-        ImageAsset imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetSetId,
-                definition.imageAssetType, "FixtureTypeFactory");
+        ImageAsset imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
+                ImageAsset.ImageAssetType.getFromValue(definition.imageAssetType),
+                "GroundTypeFactory");
 
         //noinspection unchecked
         soliloquy.specs.common.entities.Function<Character, Boolean>
@@ -68,23 +68,9 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
                             ") does not correspond to a valid function");
         }
 
-        return new FixtureType() {
+        return new GroundType() {
+
             private String name = definition.name;
-
-            @Override
-            public boolean isContainer() {
-                return definition.isContainer;
-            }
-
-            @Override
-            public Game game() {
-                return null;
-            }
-
-            @Override
-            public Logger logger() {
-                return null;
-            }
 
             @Override
             public String id() throws IllegalStateException {
@@ -102,26 +88,6 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             }
 
             @Override
-            public String getInterfaceName() {
-                return FixtureType.class.getCanonicalName();
-            }
-
-            @Override
-            public List<ColorShift> defaultColorShifts() {
-                return defaultColorShifts;
-            }
-
-            @Override
-            public float defaultXTileWidthOffset() {
-                return definition.defaultXTileWidthOffset;
-            }
-
-            @Override
-            public float defaultYTileHeightOffset() {
-                return definition.defaultYTileHeightOffset;
-            }
-
-            @Override
             public ImageAsset imageAsset() {
                 return imageAsset;
             }
@@ -135,13 +101,33 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             public boolean canStep(Character character) {
                 return canStepFunction.apply(Check.ifNull(character, "character"));
             }
+
+            @Override
+            public Game game() {
+                return null;
+            }
+
+            @Override
+            public Logger logger() {
+                return null;
+            }
+
+            @Override
+            public String getInterfaceName() {
+                return GroundType.class.getCanonicalName();
+            }
+
+            @Override
+            public List<ColorShift> defaultColorShifts() {
+                return defaultColorShifts;
+            }
         };
     }
 
     @Override
     public String getInterfaceName() {
         return Factory.class.getCanonicalName() + "<" +
-                FixtureTypeDefinition.class.getCanonicalName() + "," +
-                FixtureType.class.getCanonicalName() + ">";
+                GroundTypeDefinition.class.getCanonicalName() + "," +
+                GroundType.class.getCanonicalName() + ">";
     }
 }
