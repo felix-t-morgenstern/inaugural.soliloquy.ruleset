@@ -27,11 +27,22 @@ public class CharacterStaticStatisticTypeFactory implements
     }
 
     @Override
-    public CharacterStaticStatisticType make( CharacterStaticStatisticTypeDefinition definition)
+    public CharacterStaticStatisticType make(CharacterStaticStatisticTypeDefinition definition)
             throws IllegalArgumentException {
+        Check.ifNull(definition, "definition");
+        Check.ifNullOrEmpty(definition.id, "definition.id");
+        Check.ifNullOrEmpty(definition.name, "definition.name");
+        Check.ifNullOrEmpty(definition.imageAssetSetId, "definition.imageAssetSetId");
+
         ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
+        if (imageAssetSet == null) {
+            throw new IllegalArgumentException(
+                    "CharacterStaticStatisticTypeFactory.make: definition.imageAssetSetId does " +
+                            "not correspond to a valid ImageAssetSet");
+        }
+
         ArrayList<ProviderAtTime<ColorShift>> colorShiftProviders = new ArrayList<>();
-        for(String colorShiftProvider : definition.defaultColorShifts) {
+        for (String colorShiftProvider : definition.defaultColorShifts) {
             colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
         }
 
@@ -45,8 +56,8 @@ public class CharacterStaticStatisticTypeFactory implements
             }
 
             @Override
-            public void setDescription(String s) {
-
+            public void setDescription(String description) {
+                this.description = description;
             }
 
             @Override
@@ -60,8 +71,8 @@ public class CharacterStaticStatisticTypeFactory implements
             }
 
             @Override
-            public void setName(String s) {
-
+            public void setName(String name) {
+                this.name = Check.ifNullOrEmpty(name, "name");
             }
 
             @Override

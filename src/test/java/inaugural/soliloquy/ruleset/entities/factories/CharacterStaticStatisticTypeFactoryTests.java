@@ -25,6 +25,9 @@ public class CharacterStaticStatisticTypeFactoryTests {
     private final String DESCRIPTION = randomString();
     private final String IMAGE_ASSET_SET_ID = randomString();
     private final String WRITTEN_COLOR_SHIFT_PROVIDER = randomString();
+    private final CharacterStaticStatisticTypeDefinition DEFINITION =
+            new CharacterStaticStatisticTypeDefinition(ID, NAME, DESCRIPTION,
+                    IMAGE_ASSET_SET_ID, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER});
 
     @Mock private ImageAssetSet mockImageAssetSet;
     @Mock private Function<String, ImageAssetSet> mockGetImageAssetSet;
@@ -63,11 +66,7 @@ public class CharacterStaticStatisticTypeFactoryTests {
 
     @Test
     void testMake() {
-        CharacterStaticStatisticTypeDefinition definition =
-                new CharacterStaticStatisticTypeDefinition(ID, NAME, DESCRIPTION,
-                        IMAGE_ASSET_SET_ID, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER});
-
-        CharacterStaticStatisticType output = factory.make(definition);
+        CharacterStaticStatisticType output = factory.make(DEFINITION);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -81,6 +80,63 @@ public class CharacterStaticStatisticTypeFactoryTests {
                 output.getInterfaceName());
         verify(mockGetImageAssetSet, times(1)).apply(IMAGE_ASSET_SET_ID);
         verify(mockColorShiftProviderHandler, times(1)).read(WRITTEN_COLOR_SHIFT_PROVIDER);
+    }
+
+    @Test
+    void testMakeWithInvalidParams() {
+        String invalidImageAssetSetId = randomString();
+        when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () -> factory.make(null));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition(null, NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition("", NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition(ID, null, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition(ID, "", DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition(ID, NAME, DESCRIPTION, null,
+                        new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition(ID, NAME, DESCRIPTION, "",
+                        new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new CharacterStaticStatisticTypeDefinition(ID, NAME, DESCRIPTION,
+                        invalidImageAssetSetId, new String[]{WRITTEN_COLOR_SHIFT_PROVIDER})));
+    }
+
+    @Test
+    void testSetName() {
+        CharacterStaticStatisticType output = factory.make(DEFINITION);
+        String newName = randomString();
+
+        output.setName(newName);
+
+        assertEquals(newName, output.getName());
+    }
+
+    @Test
+    void testSetNameWithInvalidParams() {
+        CharacterStaticStatisticType output = factory.make(DEFINITION);
+
+        assertThrows(IllegalArgumentException.class, () -> output.setName(null));
+        assertThrows(IllegalArgumentException.class, () -> output.setName(""));
+    }
+
+    @Test
+    void testSetDescription() {
+        CharacterStaticStatisticType output = factory.make(DEFINITION);
+        String newDescription = randomString();
+
+        output.setDescription(newDescription);
+
+        assertEquals(newDescription, output.getDescription());
     }
 
     @Test
