@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class CharacterStaticStatisticTypeFactoryTests {
+class CharacterStaticStatisticTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String DESCRIPTION = randomString();
