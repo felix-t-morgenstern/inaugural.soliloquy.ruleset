@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import soliloquy.specs.common.entities.Function;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
+import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
@@ -118,8 +119,8 @@ class FixtureTypeFactoryTests {
         assertEquals(new ArrayList<ColorShift>() {{
             add(COLOR_SHIFT);
         }}, fixtureType.defaultColorShifts());
-        assertEquals(DEFAULT_X_TILE_WIDTH_OFFSET, fixtureType.defaultXTileWidthOffset(), 0.001f);
-        assertEquals(DEFAULT_Y_TILE_HEIGHT_OFFSET, fixtureType.defaultYTileHeightOffset(), 0.001f);
+        assertEquals(Vertex.of(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
+                fixtureType.defaultTileOffset());
         verify(COLOR_SHIFT_HANDLER, times(1)).read(COLOR_SHIFT_WRITTEN_VALUE);
         verify(mockOnStepFunction, times(1)).apply(mockCharacter1);
         verify(mockCanStepFunction, times(1)).apply(mockCharacter2);
@@ -147,8 +148,8 @@ class FixtureTypeFactoryTests {
         assertEquals(new ArrayList<ColorShift>() {{
             add(COLOR_SHIFT);
         }}, fixtureType.defaultColorShifts());
-        assertEquals(DEFAULT_X_TILE_WIDTH_OFFSET, fixtureType.defaultXTileWidthOffset(), 0.001f);
-        assertEquals(DEFAULT_Y_TILE_HEIGHT_OFFSET, fixtureType.defaultYTileHeightOffset(), 0.001f);
+        assertEquals(Vertex.of(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
+                fixtureType.defaultTileOffset());
         verify(COLOR_SHIFT_HANDLER, times(1)).read(COLOR_SHIFT_WRITTEN_VALUE);
         verify(mockOnStepFunction, times(1)).apply(mockCharacter1);
         verify(mockCanStepFunction, times(1)).apply(mockCharacter2);

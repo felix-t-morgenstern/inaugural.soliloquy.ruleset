@@ -3,6 +3,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
+import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.game.Game;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
@@ -25,7 +26,7 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
 
     public FixtureTypeFactory(TypeHandler<ColorShift> colorShiftHandler,
                               @SuppressWarnings("rawtypes")
-                              Function<String, soliloquy.specs.common.entities.Function> getFunction,
+                                      Function<String, soliloquy.specs.common.entities.Function> getFunction,
                               Function<String, Sprite> getSprite,
                               Function<String, GlobalLoopingAnimation> getGlobalLoopingAnimation) {
         COLOR_SHIFT_HANDLER = Check.ifNull(colorShiftHandler, "colorShiftHandler");
@@ -112,13 +113,9 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             }
 
             @Override
-            public float defaultXTileWidthOffset() {
-                return definition.defaultXTileWidthOffset;
-            }
-
-            @Override
-            public float defaultYTileHeightOffset() {
-                return definition.defaultYTileHeightOffset;
+            public Vertex defaultTileOffset() {
+                return Vertex.of(definition.defaultXTileWidthOffset,
+                        definition.defaultYTileHeightOffset);
             }
 
             @Override
