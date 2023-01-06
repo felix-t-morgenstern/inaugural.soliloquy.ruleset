@@ -1,11 +1,11 @@
-package inaugural.soliloquy.ruleset.entities.actonturnandroundend.factories;
+package inaugural.soliloquy.ruleset.entities.actonturnendandcharacterround.factories;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.ruleset.definitions.StatisticChangeMagnitudeDefinition;
-import soliloquy.specs.ruleset.entities.actonturnandroundend.StatisticChangeMagnitude;
+import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.StatisticChangeMagnitude;
 
 import static inaugural.soliloquy.tools.random.Random.randomFloat;
 import static inaugural.soliloquy.tools.random.Random.randomInt;

@@ -5,8 +5,10 @@ import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAsset;
+import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
 import soliloquy.specs.ruleset.definitions.StatusEffectTypeDefinition;
 import soliloquy.specs.ruleset.entities.StatusEffectType;
+import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -14,10 +16,16 @@ import java.util.function.Function;
 public class StatusEffectTypeFactory implements
         Factory<StatusEffectTypeDefinition, StatusEffectType> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
+    private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+            EFFECTS_ON_CHARACTER_FACTORY;
 
     @SuppressWarnings("rawtypes")
-    public StatusEffectTypeFactory(Function<String, Function> getFunction) {
+    public StatusEffectTypeFactory(Function<String, Function> getFunction,
+                                   Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+                                           effectsOnCharacterFactory) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
+        EFFECTS_ON_CHARACTER_FACTORY =
+                Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
     }
 
     @Override
@@ -27,6 +35,10 @@ public class StatusEffectTypeFactory implements
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
         Check.ifNullOrEmpty(definition.nameAtValueFunctionId, "definition.nameAtValueFunctionId");
+        Check.ifNull(definition.effectsOnRoundEnd, "definition.effectsOnRoundEnd");
+        Check.ifNull(definition.effectsOnTurnStart, "definition.effectsOnTurnStart");
+        Check.ifNull(definition.effectsOnTurnEnd, "definition.effectsOnTurnEnd");
+
         //noinspection unchecked
         Function<Integer, String> nameAtValueFunction =
                 (Function<Integer, String>) GET_FUNCTION.apply(definition.nameAtValueFunctionId);
@@ -65,6 +77,13 @@ public class StatusEffectTypeFactory implements
             iconTypeFunctions.put(iconForCharacterFunction.iconType, iconTypeFunction);
         }
 
+        EffectsOnCharacter onRoundEnd =
+                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
+        EffectsOnCharacter onTurnStart =
+                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
+        EffectsOnCharacter onTurnEnd =
+                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+
         return new StatusEffectType() {
             private final String ID = definition.id;
             private final boolean STOPS_AT_ZERO = definition.stopsAtZero;
@@ -100,11 +119,6 @@ public class StatusEffectTypeFactory implements
             }
 
             @Override
-            public String getInterfaceName() {
-                return StatusEffectType.class.getCanonicalName();
-            }
-
-            @Override
             public Pair<ImageAsset, Integer> getIcon(String iconType, Character character)
                     throws IllegalArgumentException {
                 Check.ifNullOrEmpty(iconType, "iconType");
@@ -116,6 +130,26 @@ public class StatusEffectTypeFactory implements
                 }
 
                 return ICON_TYPE_FUNCTIONS.get(iconType).apply(character);
+            }
+
+            @Override
+            public EffectsOnCharacter onRoundEnd() {
+                return onRoundEnd;
+            }
+
+            @Override
+            public EffectsOnCharacter onTurnStart() {
+                return onTurnStart;
+            }
+
+            @Override
+            public EffectsOnCharacter onTurnEnd() {
+                return onTurnEnd;
+            }
+
+            @Override
+            public String getInterfaceName() {
+                return StatusEffectType.class.getCanonicalName();
             }
         };
     }

@@ -1,12 +1,12 @@
-package inaugural.soliloquy.ruleset.entities.actonturnandroundend.factories;
+package inaugural.soliloquy.ruleset.entities.actonturnendandcharacterround.factories;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.ruleset.definitions.StatisticChangeMagnitudeDefinition;
-import soliloquy.specs.ruleset.entities.actonturnandroundend.StatisticChangeMagnitude;
-import soliloquy.specs.ruleset.entities.actonturnandroundend.StatisticChangeMagnitude.AmountType;
-import soliloquy.specs.ruleset.entities.actonturnandroundend.StatisticChangeMagnitude.EffectType;
+import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.StatisticChangeMagnitude;
+import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.StatisticChangeMagnitude.AmountType;
+import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.StatisticChangeMagnitude.EffectType;
 
 @SuppressWarnings("rawtypes")
 public class StatisticChangeMagnitudeFactory
