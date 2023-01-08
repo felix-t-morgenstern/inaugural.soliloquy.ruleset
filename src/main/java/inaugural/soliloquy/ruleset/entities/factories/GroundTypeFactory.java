@@ -3,8 +3,10 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
+import soliloquy.specs.common.shared.Direction;
 import soliloquy.specs.game.Game;
 import soliloquy.specs.gamestate.entities.Character;
+import soliloquy.specs.gamestate.entities.Tile;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
@@ -40,31 +42,44 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
 
-        ArrayList<ColorShift> defaultColorShifts = new ArrayList<>();
+        var defaultColorShifts = new ArrayList<ColorShift>();
         if (definition.defaultColorShifts != null) {
-            for (String colorShift : definition.defaultColorShifts) {
+            for (var colorShift : definition.defaultColorShifts) {
                 defaultColorShifts.add(COLOR_SHIFT_HANDLER.read(colorShift));
             }
         }
 
-        ImageAsset imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
+        var imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
                 ImageAsset.ImageAssetType.getFromValue(definition.imageAssetType),
                 "GroundTypeFactory");
 
         //noinspection unchecked
-        soliloquy.specs.common.entities.Function<Character, Boolean>
-                onStepFunction = GET_FUNCTION.apply(definition.onStepFunctionId);
+        var onStepFunction =
+                (soliloquy.specs.common.entities.Function<Character, Boolean>) GET_FUNCTION.apply(
+                        definition.onStepFunctionId);
         if (onStepFunction == null) {
             throw new IllegalArgumentException(
                     "GroundTypeFactory.make: onStepFunctionId (" + definition.onStepFunctionId +
                             ") does not correspond to a valid function");
         }
         //noinspection unchecked
-        soliloquy.specs.common.entities.Function<Character, Boolean>
-                canStepFunction = GET_FUNCTION.apply(definition.canStepFunctionId);
+        var canStepFunction =
+                (soliloquy.specs.common.entities.Function<Character, Boolean>) GET_FUNCTION.apply(
+                        definition.canStepFunctionId);
         if (canStepFunction == null) {
             throw new IllegalArgumentException(
                     "GroundTypeFactory.make: canStepFunctionId (" + definition.canStepFunctionId +
+                            ") does not correspond to a valid function");
+        }
+
+        //noinspection unchecked
+        var heightMovementPenaltyMitigationFunction =
+                (soliloquy.specs.common.entities.Function<Object[], Integer>) GET_FUNCTION.apply(
+                        definition.heightMovementPenaltyMitigationFunctionId);
+        if (heightMovementPenaltyMitigationFunction == null) {
+            throw new IllegalArgumentException(
+                    "GroundTypeFactory.make: heightMovementPenaltyMitigationFunctionId (" +
+                            definition.heightMovementPenaltyMitigationFunctionId +
                             ") does not correspond to a valid function");
         }
 
@@ -100,6 +115,18 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
             @Override
             public boolean canStep(Character character) {
                 return canStepFunction.apply(Check.ifNull(character, "character"));
+            }
+
+            @Override
+            public int additionalMovementCost() {
+                return definition.additionalMovementCost;
+            }
+
+            @Override
+            public int heightMovementPenaltyMitigation(Tile tile, Character character,
+                                                       Direction direction) {
+                return heightMovementPenaltyMitigationFunction.apply(
+                        new Object[]{tile, character, direction});
             }
 
             @Override

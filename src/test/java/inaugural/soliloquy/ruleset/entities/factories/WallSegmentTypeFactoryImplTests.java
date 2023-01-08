@@ -115,10 +115,6 @@ class WallSegmentTypeFactoryImplTests {
                         SPRITE_ID, BLOCKS_WEST, BLOCKS_NORTHWEST, BLOCKS_NORTH)));
         assertThrows(IllegalArgumentException.class,
                 () -> wallSegmentTypeFactory.make(new WallSegmentTypeDefinition(ID, NAME,
-                        ImageAsset.ImageAssetType.UNKNOWN, SPRITE_ID, BLOCKS_WEST,
-                        BLOCKS_NORTHWEST, BLOCKS_NORTH)));
-        assertThrows(IllegalArgumentException.class,
-                () -> wallSegmentTypeFactory.make(new WallSegmentTypeDefinition(ID, NAME,
                         ImageAsset.ImageAssetType.ANIMATION, SPRITE_ID, BLOCKS_WEST,
                         BLOCKS_NORTHWEST, BLOCKS_NORTH)));
         assertThrows(IllegalArgumentException.class,
