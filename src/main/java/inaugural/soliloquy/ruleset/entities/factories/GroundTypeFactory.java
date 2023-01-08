@@ -130,16 +130,6 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
             }
 
             @Override
-            public Game game() {
-                return null;
-            }
-
-            @Override
-            public Logger logger() {
-                return null;
-            }
-
-            @Override
             public String getInterfaceName() {
                 return GroundType.class.getCanonicalName();
             }

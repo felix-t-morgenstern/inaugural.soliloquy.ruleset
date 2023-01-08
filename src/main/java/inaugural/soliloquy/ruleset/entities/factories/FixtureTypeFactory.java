@@ -93,16 +93,6 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             }
 
             @Override
-            public Game game() {
-                return null;
-            }
-
-            @Override
-            public Logger logger() {
-                return null;
-            }
-
-            @Override
             public String id() throws IllegalStateException {
                 return definition.id;
             }
