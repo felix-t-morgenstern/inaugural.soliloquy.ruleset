@@ -12,14 +12,14 @@ repositories {
         url = uri("https://maven.pkg.github.com/felix-t-morgenstern/soliloquy.specs")
         credentials {
             username = 'felix-t-morgenstern'
-            password = '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'
+            password = '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'
         }
     }
 }
 
 dependencies {
     implementation 'com.google.inject:guice:5.1.0'
-    implementation "disorg.soliloquy:soliloquy.specs:0.0.441"
+    implementation "disorg.soliloquy:soliloquy.specs:0.0.442"
     implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.116"
     implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.19"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.9.0"
