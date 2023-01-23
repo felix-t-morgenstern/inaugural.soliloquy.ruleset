@@ -11,8 +11,8 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.CharacterVariableStatisticType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class CharacterVariableStatisticTypeFactory implements
         Check.ifNull(definition.effectsOnTurnStart, "definition.effectsOnTurnStart");
         Check.ifNull(definition.effectsOnTurnEnd, "definition.effectsOnTurnEnd");
 
-        ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
+        var imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
                     "CharacterVariableStatisticTypeFactory.make: definition.imageAssetSetId does " +
@@ -70,17 +70,14 @@ public class CharacterVariableStatisticTypeFactory implements
                             ".iconForCharacterFunctionId does not correspond to a valid Function");
         }
 
-        ArrayList<ProviderAtTime<ColorShift>> colorShiftProviders = new ArrayList<>();
-        for (String colorShiftProvider : definition.defaultColorShifts) {
+        var colorShiftProviders = new ArrayList<ProviderAtTime<ColorShift>>();
+        for (var colorShiftProvider : definition.defaultColorShifts) {
             colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
         }
 
-        EffectsOnCharacter onRoundEnd =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
-        EffectsOnCharacter onTurnStart =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
-        EffectsOnCharacter onTurnEnd =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+        var onRoundEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
+        var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
+        var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
 
         return new CharacterVariableStatisticType() {
             private String name = definition.name;

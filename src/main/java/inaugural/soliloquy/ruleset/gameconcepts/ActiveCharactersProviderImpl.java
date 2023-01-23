@@ -7,7 +7,7 @@ import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.GameZone;
-import soliloquy.specs.ruleset.entities.CharacterStatisticType;
+import soliloquy.specs.ruleset.entities.character.CharacterStatisticType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
 import soliloquy.specs.ruleset.gameconcepts.CharacterStatisticCalculation;
 

@@ -1,5 +1,6 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.factories.character;
 
+import inaugural.soliloquy.ruleset.entities.factories.character.StatusEffectTypeFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -9,8 +10,8 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
 import soliloquy.specs.ruleset.definitions.StatusEffectTypeDefinition;
-import soliloquy.specs.ruleset.entities.StatusEffectType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -105,9 +106,9 @@ class StatusEffectTypeFactoryTests {
 
     @Test
     void testMake() {
-        int value = randomInt();
+        var value = randomInt();
 
-        StatusEffectType output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.make(definition);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -265,8 +266,8 @@ class StatusEffectTypeFactoryTests {
 
     @Test
     void testSetName() {
-        StatusEffectType output = statusEffectTypeFactory.make(definition);
-        String newName = randomString();
+        var output = statusEffectTypeFactory.make(definition);
+        var newName = randomString();
 
         output.setName(newName);
 
@@ -275,7 +276,7 @@ class StatusEffectTypeFactoryTests {
 
     @Test
     void testSetNameWithInvalidParams() {
-        StatusEffectType output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -283,7 +284,7 @@ class StatusEffectTypeFactoryTests {
 
     @Test
     void testGetIconWithInvalidParams() {
-        StatusEffectType output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.getIcon(null, mockCharacter));
         assertThrows(IllegalArgumentException.class, () -> output.getIcon("", mockCharacter));

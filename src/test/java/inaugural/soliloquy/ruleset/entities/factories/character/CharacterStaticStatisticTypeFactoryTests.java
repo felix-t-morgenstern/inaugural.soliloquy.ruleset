@@ -1,5 +1,6 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.factories.character;
 
+import inaugural.soliloquy.ruleset.entities.factories.character.CharacterStaticStatisticTypeFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -10,8 +11,8 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.definitions.CharacterStaticStatisticTypeDefinition;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.CharacterStaticStatisticType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -103,7 +104,7 @@ class CharacterStaticStatisticTypeFactoryTests {
 
     @Test
     void testMake() {
-        CharacterStaticStatisticType output = factory.make(definition);
+        var output = factory.make(definition);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -130,7 +131,7 @@ class CharacterStaticStatisticTypeFactoryTests {
 
     @Test
     void testMakeWithInvalidParams() {
-        String invalidImageAssetSetId = randomString();
+        var invalidImageAssetSetId = randomString();
         when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> factory.make(null));
@@ -188,8 +189,8 @@ class CharacterStaticStatisticTypeFactoryTests {
 
     @Test
     void testSetName() {
-        CharacterStaticStatisticType output = factory.make(definition);
-        String newName = randomString();
+        var output = factory.make(definition);
+        var newName = randomString();
 
         output.setName(newName);
 
@@ -198,7 +199,7 @@ class CharacterStaticStatisticTypeFactoryTests {
 
     @Test
     void testSetNameWithInvalidParams() {
-        CharacterStaticStatisticType output = factory.make(definition);
+        var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -206,8 +207,8 @@ class CharacterStaticStatisticTypeFactoryTests {
 
     @Test
     void testSetDescription() {
-        CharacterStaticStatisticType output = factory.make(definition);
-        String newDescription = randomString();
+        var output = factory.make(definition);
+        var newDescription = randomString();
 
         output.setDescription(newDescription);
 

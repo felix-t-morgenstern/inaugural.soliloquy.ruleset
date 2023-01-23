@@ -10,8 +10,8 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterStatistic;
 import soliloquy.specs.gamestate.entities.EntityMembersOfType;
 import soliloquy.specs.gamestate.entities.GameZone;
-import soliloquy.specs.ruleset.entities.CharacterStaticStatisticType;
-import soliloquy.specs.ruleset.entities.CharacterStatisticType;
+import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
+import soliloquy.specs.ruleset.entities.character.CharacterStatisticType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
 import soliloquy.specs.ruleset.gameconcepts.CharacterStatisticCalculation;
 

@@ -1,6 +1,5 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.actonroundendandcharacterturn.factories;
 
-import inaugural.soliloquy.ruleset.entities.actonturnendandcharacterround.factories.EffectsOnCharacterFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -12,17 +11,13 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition;
 import soliloquy.specs.ruleset.definitions.StatisticChangeMagnitudeDefinition;
-import soliloquy.specs.ruleset.entities.CharacterVariableStatisticType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.StatisticChangeMagnitude;
-
-import java.util.Map;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class EffectsOnCharacterFactoryTests {
@@ -30,8 +25,6 @@ class EffectsOnCharacterFactoryTests {
     private final String ACCOMPANY_EFFECT_ACTION_ID = randomString();
     private final String OTHER_EFFECTS_ACTION_ID = randomString();
 
-    @Mock private CharacterVariableStatisticType mockVariableStatType;
-    @Mock private Function<String, CharacterVariableStatisticType> mockGetVariableStatType;
     @Mock private StatisticChangeMagnitudeDefinition mockMagnitudeDefinition;
     @SuppressWarnings("rawtypes")
     @Mock private StatisticChangeMagnitude mockMagnitude;
@@ -39,8 +32,8 @@ class EffectsOnCharacterFactoryTests {
     @Mock private Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude>
             mockMagnitudeFactory;
 
-    @Mock private Action<Pair<Integer, Character>> mockAccompanyEffectAction;
-    @Mock private Action<Pair<Integer, Character>> mockOtherEffectsAction;
+    @Mock private Action<Pair<int[], Character>> mockAccompanyEffectAction;
+    @Mock private Action<Pair<int[], Character>> mockOtherEffectsAction;
     @SuppressWarnings("rawtypes")
     @Mock private Function<String, Action> mockGetAction;
 
@@ -52,13 +45,6 @@ class EffectsOnCharacterFactoryTests {
 
     @BeforeEach
     void setUp() {
-        mockVariableStatType = mock(CharacterVariableStatisticType.class);
-
-        //noinspection unchecked
-        mockGetVariableStatType =
-                (Function<String, CharacterVariableStatisticType>) mock(Function.class);
-        when(mockGetVariableStatType.apply(anyString())).thenReturn(mockVariableStatType);
-
         mockMagnitudeDefinition = mock(StatisticChangeMagnitudeDefinition.class);
 
         mockMagnitude = mock(StatisticChangeMagnitude.class);
@@ -70,9 +56,9 @@ class EffectsOnCharacterFactoryTests {
         when(mockMagnitudeFactory.make(any())).thenReturn(mockMagnitude);
 
         //noinspection unchecked
-        mockAccompanyEffectAction = (Action<Pair<Integer, Character>>) mock(Action.class);
+        mockAccompanyEffectAction = (Action<Pair<int[], Character>>) mock(Action.class);
         //noinspection unchecked
-        mockOtherEffectsAction = (Action<Pair<Integer, Character>>) mock(Action.class);
+        mockOtherEffectsAction = (Action<Pair<int[], Character>>) mock(Action.class);
 
         //noinspection unchecked,rawtypes
         mockGetAction = (Function<String, Action>) mock(Function.class);
@@ -82,39 +68,33 @@ class EffectsOnCharacterFactoryTests {
         mockCharacter = mock(Character.class);
 
         definition = new EffectsOnCharacterDefinition(new MagnitudeForStatisticDefinition[]{
-                new MagnitudeForStatisticDefinition(VARIABLE_STAT_TYPE_ID, mockMagnitudeDefinition)
+                new MagnitudeForStatisticDefinition(VARIABLE_STAT_TYPE_ID,
+                        mockMagnitudeDefinition)
         }, ACCOMPANY_EFFECT_ACTION_ID, OTHER_EFFECTS_ACTION_ID);
 
-        factory = new EffectsOnCharacterFactory(mockGetVariableStatType, mockGetAction,
-                mockMagnitudeFactory);
+        factory = new EffectsOnCharacterFactory(mockGetAction, mockMagnitudeFactory);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> new EffectsOnCharacterFactory(null, mockGetAction, mockMagnitudeFactory));
+                () -> new EffectsOnCharacterFactory(null, mockMagnitudeFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new EffectsOnCharacterFactory(mockGetVariableStatType, null,
-                        mockMagnitudeFactory));
-        assertThrows(IllegalArgumentException.class,
-                () -> new EffectsOnCharacterFactory(mockGetVariableStatType, mockGetAction, null));
+                () -> new EffectsOnCharacterFactory(mockGetAction, null));
     }
 
     @Test
     void testMake() {
-        int magnitude = randomInt();
+        var magnitude = new int[]{randomInt()};
 
-        EffectsOnCharacter output = factory.make(definition);
+        var output = factory.make(definition);
         output.accompanyEffect(magnitude, mockCharacter);
         output.otherEffects(magnitude, mockCharacter);
 
         assertNotNull(output);
-        //noinspection rawtypes
-        Map<CharacterVariableStatisticType, StatisticChangeMagnitude> magnitudes =
-                output.magnitudes();
+        var magnitudes = output.magnitudes();
         assertNotNull(magnitudes);
         assertNotSame(output.magnitudes(), magnitudes);
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
         verify(mockGetAction, times(1)).apply(ACCOMPANY_EFFECT_ACTION_ID);
         verify(mockGetAction, times(1)).apply(OTHER_EFFECTS_ACTION_ID);
         verify(mockAccompanyEffectAction, times(1)).run(eq(Pair.of(magnitude, mockCharacter)));
@@ -123,22 +103,26 @@ class EffectsOnCharacterFactoryTests {
 
     @Test
     void testAccompanyEffectWithInvalidParams() {
-        EffectsOnCharacter output = factory.make(definition);
+        var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class,
-                () -> output.accompanyEffect(randomInt(), null));
+                () -> output.accompanyEffect(null, mockCharacter));
+        assertThrows(IllegalArgumentException.class,
+                () -> output.accompanyEffect(new int[]{}, null));
     }
 
     @Test
     void testOtherEffectsWithInvalidParams() {
-        EffectsOnCharacter output = factory.make(definition);
+        var output = factory.make(definition);
 
-        assertThrows(IllegalArgumentException.class, () -> output.otherEffects(randomInt(), null));
+        assertThrows(IllegalArgumentException.class,
+                () -> output.otherEffects(null, mockCharacter));
+        assertThrows(IllegalArgumentException.class, () -> output.otherEffects(new int[]{}, null));
     }
 
     @Test
     void testMakeWithInvalidParams() {
-        String invalidActionId = randomString();
+        var invalidActionId = randomString();
         when(mockGetAction.apply(invalidActionId)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> factory.make(null));

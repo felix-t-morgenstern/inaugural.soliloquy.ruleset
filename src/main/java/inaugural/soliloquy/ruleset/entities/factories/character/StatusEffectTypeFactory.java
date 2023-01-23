@@ -1,4 +1,4 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.factories.character;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
@@ -7,8 +7,8 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
 import soliloquy.specs.ruleset.definitions.StatusEffectTypeDefinition;
-import soliloquy.specs.ruleset.entities.StatusEffectType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.StatusEffectType;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -40,7 +40,7 @@ public class StatusEffectTypeFactory implements
         Check.ifNull(definition.effectsOnTurnEnd, "definition.effectsOnTurnEnd");
 
         //noinspection unchecked
-        Function<Integer, String> nameAtValueFunction =
+        var nameAtValueFunction =
                 (Function<Integer, String>) GET_FUNCTION.apply(definition.nameAtValueFunctionId);
         if (nameAtValueFunction == null) {
             throw new IllegalArgumentException(
@@ -48,11 +48,10 @@ public class StatusEffectTypeFactory implements
                             "correspond to valid function Id");
         }
         Check.ifNull(definition.iconForCharacterFunctions, "definition.iconForCharacterFunctions");
-        HashMap<String, Function<Character, Pair<ImageAsset, Integer>>> iconTypeFunctions =
-                new HashMap<>();
+        var iconTypeFunctions =
+                new HashMap<String, Function<Character, Pair<ImageAsset, Integer>>>();
 
-        for (StatusEffectTypeDefinition.IconForCharacterFunction iconForCharacterFunction :
-                definition.iconForCharacterFunctions) {
+        for (var iconForCharacterFunction : definition.iconForCharacterFunctions) {
             Check.ifNull(iconForCharacterFunction,
                     "iconForCharacterFunction within definition.iconForCharacterFunctions");
             Check.ifNullOrEmpty(iconForCharacterFunction.iconType,
@@ -61,7 +60,7 @@ public class StatusEffectTypeFactory implements
                     "functionId within iconForCharacterFunction within definition");
 
             //noinspection unchecked
-            Function<Character, Pair<ImageAsset, Integer>> iconTypeFunction =
+            var iconTypeFunction =
                     (Function<Character, Pair<ImageAsset, Integer>>) GET_FUNCTION.apply(
                             iconForCharacterFunction.functionId);
 
@@ -77,12 +76,9 @@ public class StatusEffectTypeFactory implements
             iconTypeFunctions.put(iconForCharacterFunction.iconType, iconTypeFunction);
         }
 
-        EffectsOnCharacter onRoundEnd =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
-        EffectsOnCharacter onTurnStart =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
-        EffectsOnCharacter onTurnEnd =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+        var onRoundEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
+        var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
+        var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
 
         return new StatusEffectType() {
             private final String ID = definition.id;

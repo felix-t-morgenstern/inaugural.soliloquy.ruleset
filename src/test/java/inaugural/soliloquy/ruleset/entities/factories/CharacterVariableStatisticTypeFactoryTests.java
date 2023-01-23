@@ -13,8 +13,8 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.CharacterVariableStatisticType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -134,7 +134,7 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testMake() {
-        CharacterVariableStatisticType output = factory.make(definition);
+        var output = factory.make(definition);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -163,9 +163,9 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testMakeWithInvalidParams() {
-        String invalidImageAssetSetId = randomString();
+        var invalidImageAssetSetId = randomString();
         when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
-        String invalidIconForCharacterFunctionId = randomString();
+        var invalidIconForCharacterFunctionId = randomString();
         when(mockGetFunction.apply(invalidIconForCharacterFunctionId))
                 .thenReturn(null);
 
@@ -250,8 +250,8 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testSetName() {
-        CharacterVariableStatisticType output = factory.make(definition);
-        String newName = randomString();
+        var output = factory.make(definition);
+        var newName = randomString();
 
         output.setName(newName);
 
@@ -260,7 +260,7 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testSetNameWithInvalidParams() {
-        CharacterVariableStatisticType output = factory.make(definition);
+        var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -268,8 +268,8 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testSetPluralName() {
-        CharacterVariableStatisticType output = factory.make(definition);
-        String newPluralName = randomString();
+        var output = factory.make(definition);
+        var newPluralName = randomString();
 
         output.setPluralName(newPluralName);
 
@@ -278,7 +278,7 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testSetPluralNameWithInvalidParams() {
-        CharacterVariableStatisticType output = factory.make(definition);
+        var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(""));
@@ -286,8 +286,8 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testSetDescription() {
-        CharacterVariableStatisticType output = factory.make(definition);
-        String newDescription = randomString();
+        var output = factory.make(definition);
+        var newDescription = randomString();
 
         output.setDescription(newDescription);
 
@@ -296,9 +296,9 @@ class CharacterVariableStatisticTypeFactoryTests {
 
     @Test
     void testGetIcon() {
-        String iconType = randomString();
-        Character character = mock(Character.class);
-        CharacterVariableStatisticType output = factory.make(definition);
+        var iconType = randomString();
+        var character = mock(Character.class);
+        var output = factory.make(definition);
 
         Pair<ImageAsset, Integer> iconForCharacter = output.getIcon(iconType, character);
 

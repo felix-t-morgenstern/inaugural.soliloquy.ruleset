@@ -1,4 +1,4 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.factories.character;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
@@ -8,8 +8,8 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.definitions.CharacterStaticStatisticTypeDefinition;
 import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.CharacterStaticStatisticType;
-import soliloquy.specs.ruleset.entities.actonturnendandcharacterround.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 
 import java.util.ArrayList;
 import java.util.List;
