@@ -21,12 +21,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static inaugural.soliloquy.ruleset.api.CharacterData.CHARACTER_BASE_AP;
-import static inaugural.soliloquy.ruleset.api.CharacterData.CHARACTER_IS_INACTIVE;
-import static inaugural.soliloquy.ruleset.api.CharacterRoundData.ROUND_DATA_AP;
-import static inaugural.soliloquy.ruleset.api.CharacterRoundData.ROUND_DATA_IMPULSE;
-import static inaugural.soliloquy.ruleset.api.CharacterStaticStatistics.ALACRITY;
-import static inaugural.soliloquy.ruleset.api.CharacterStaticStatistics.IMPULSE;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static org.junit.Assert.*;
@@ -34,6 +28,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ActiveCharactersProviderImplTests {
+    private final String STATISTIC_COMBAT_ORDER = randomString();
+    private final String STATISTIC_BONUS_AP = randomString();
+    private final String CHARACTER_DATA_IS_INACTIVE = randomString();
+    private final String CHARACTER_DATA_BASE_AP = randomString();
+    private final String ROUND_DATA_COMBAT_PRIORITY = randomString();
+    private final String ROUND_DATA_AP = randomString();
+
     private final int CHARACTER_1_IMPULSE = randomInt();
     private final int CHARACTER_2_IMPULSE = randomIntWithInclusiveCeiling(CHARACTER_1_IMPULSE - 1);
     private final int CHARACTER_3_IMPULSE = randomIntWithInclusiveCeiling(CHARACTER_2_IMPULSE - 1);
@@ -44,8 +45,8 @@ class ActiveCharactersProviderImplTests {
     private final int CHARACTER_3_BASE_AP = randomInt();
     private final int CHARACTER_4_BASE_AP = randomInt();
 
-    @Mock private CharacterStaticStatisticType mockImpulse;
-    @Mock private CharacterStaticStatisticType mockAlacrity;
+    @Mock private CharacterStaticStatisticType mockCombatOrder;
+    @Mock private CharacterStaticStatisticType mockBonusAp;
 
     @Mock private Function<String, CharacterStatisticType> mockGetStatType;
 
@@ -90,13 +91,13 @@ class ActiveCharactersProviderImplTests {
 
     @BeforeEach
     void setUp() {
-        mockImpulse = mock(CharacterStaticStatisticType.class);
-        mockAlacrity = mock(CharacterStaticStatisticType.class);
+        mockCombatOrder = mock(CharacterStaticStatisticType.class);
+        mockBonusAp = mock(CharacterStaticStatisticType.class);
 
         //noinspection unchecked
         mockGetStatType = (Function<String, CharacterStatisticType>) mock(Function.class);
-        when(mockGetStatType.apply(IMPULSE)).thenReturn(mockImpulse);
-        when(mockGetStatType.apply(ALACRITY)).thenReturn(mockAlacrity);
+        when(mockGetStatType.apply(STATISTIC_COMBAT_ORDER)).thenReturn(mockCombatOrder);
+        when(mockGetStatType.apply(STATISTIC_BONUS_AP)).thenReturn(mockBonusAp);
 
         //noinspection unchecked
         mockCharacter1StaticStats =
@@ -124,13 +125,17 @@ class ActiveCharactersProviderImplTests {
         when(mockCharacter4StaticStats.get(any())).thenReturn(mockCharacter4Impulse);
 
         mockCharacter1Data = mock(VariableCache.class);
-        when(mockCharacter1Data.getVariable(CHARACTER_BASE_AP)).thenReturn(CHARACTER_1_BASE_AP);
+        when(mockCharacter1Data.getVariable(CHARACTER_DATA_BASE_AP)).thenReturn(
+                CHARACTER_1_BASE_AP);
         mockCharacter2Data = mock(VariableCache.class);
-        when(mockCharacter2Data.getVariable(CHARACTER_BASE_AP)).thenReturn(CHARACTER_2_BASE_AP);
+        when(mockCharacter2Data.getVariable(CHARACTER_DATA_BASE_AP)).thenReturn(
+                CHARACTER_2_BASE_AP);
         mockCharacter3Data = mock(VariableCache.class);
-        when(mockCharacter3Data.getVariable(CHARACTER_BASE_AP)).thenReturn(CHARACTER_3_BASE_AP);
+        when(mockCharacter3Data.getVariable(CHARACTER_DATA_BASE_AP)).thenReturn(
+                CHARACTER_3_BASE_AP);
         mockCharacter4Data = mock(VariableCache.class);
-        when(mockCharacter4Data.getVariable(CHARACTER_BASE_AP)).thenReturn(CHARACTER_4_BASE_AP);
+        when(mockCharacter4Data.getVariable(CHARACTER_DATA_BASE_AP)).thenReturn(
+                CHARACTER_4_BASE_AP);
 
         mockCharacter1 = mock(Character.class);
         when(mockCharacter1.staticStatistics()).thenReturn(mockCharacter1StaticStats);
@@ -160,15 +165,15 @@ class ActiveCharactersProviderImplTests {
                 .thenReturn(mockCharacter4RoundData);
 
         mockCharacterStatisticCalculation = mock(CharacterStatisticCalculation.class);
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockCombatOrder))
                 .thenReturn(Pair.of(CHARACTER_1_IMPULSE, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockCombatOrder))
                 .thenReturn(Pair.of(CHARACTER_2_IMPULSE, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter3, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter3, mockCombatOrder))
                 .thenReturn(Pair.of(CHARACTER_3_IMPULSE, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter4, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter4, mockCombatOrder))
                 .thenReturn(Pair.of(CHARACTER_4_IMPULSE, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(any(), same(mockAlacrity)))
+        when(mockCharacterStatisticCalculation.calculate(any(), same(mockBonusAp)))
                 .thenReturn(Pair.of(0, new HashMap<>()));
 
         //noinspection unchecked
@@ -177,23 +182,99 @@ class ActiveCharactersProviderImplTests {
 
         activeCharactersProvider =
                 new ActiveCharactersProviderImpl(mockGetStatType, mockCharacterStatisticCalculation,
-                        mockGetRandomFloat, mockCharacterRoundDataFactory);
+                        mockGetRandomFloat, mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER,
+                        STATISTIC_BONUS_AP, CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ActiveCharactersProviderImpl(null, mockCharacterStatisticCalculation,
-                        mockGetRandomFloat, mockCharacterRoundDataFactory));
+                        mockGetRandomFloat, mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER,
+                        STATISTIC_BONUS_AP, CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
         assertThrows(IllegalArgumentException.class,
                 () -> new ActiveCharactersProviderImpl(mockGetStatType, null, mockGetRandomFloat,
-                        mockCharacterRoundDataFactory));
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
         assertThrows(IllegalArgumentException.class,
                 () -> new ActiveCharactersProviderImpl(mockGetStatType,
-                        mockCharacterStatisticCalculation, null, mockCharacterRoundDataFactory));
+                        mockCharacterStatisticCalculation, null, mockCharacterRoundDataFactory,
+                        STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP, CHARACTER_DATA_IS_INACTIVE,
+                        CHARACTER_DATA_BASE_AP, ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
         assertThrows(IllegalArgumentException.class,
                 () -> new ActiveCharactersProviderImpl(mockGetStatType,
-                        mockCharacterStatisticCalculation, mockGetRandomFloat, null));
+                        mockCharacterStatisticCalculation, mockGetRandomFloat, null,
+                        STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP, CHARACTER_DATA_IS_INACTIVE,
+                        CHARACTER_DATA_BASE_AP, ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, null, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, "", STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, null,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, "",
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        null, CHARACTER_DATA_BASE_AP, ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        "", CHARACTER_DATA_BASE_AP, ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, null, ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, "", ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP, null, ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP, "", ROUND_DATA_AP));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> new ActiveCharactersProviderImpl(mockGetStatType,
+                        mockCharacterStatisticCalculation, mockGetRandomFloat,
+                        mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
+                        CHARACTER_DATA_IS_INACTIVE, CHARACTER_DATA_BASE_AP,
+                        ROUND_DATA_COMBAT_PRIORITY, ""));
     }
 
     @Test
@@ -217,23 +298,27 @@ class ActiveCharactersProviderImplTests {
         assertSame(mockCharacter3RoundData, activeCharacters.get(2).getItem2());
         assertSame(mockCharacter4RoundData, activeCharacters.get(3).getItem2());
         verify(mockGameZone, times(1)).charactersRepresentation();
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter1, mockImpulse);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter1, mockAlacrity);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter2, mockImpulse);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter2, mockAlacrity);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter3, mockImpulse);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter3, mockAlacrity);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter4, mockImpulse);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter4, mockAlacrity);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter1,
+                mockCombatOrder);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter1, mockBonusAp);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter2,
+                mockCombatOrder);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter2, mockBonusAp);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter3,
+                mockCombatOrder);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter3, mockBonusAp);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter4,
+                mockCombatOrder);
+        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter4, mockBonusAp);
         verify(mockCharacterRoundDataFactory, times(4)).make();
         verify(mockCharacter1RoundData, times(1))
-                .setVariable(ROUND_DATA_IMPULSE, CHARACTER_1_IMPULSE);
+                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_1_IMPULSE);
         verify(mockCharacter2RoundData, times(1))
-                .setVariable(ROUND_DATA_IMPULSE, CHARACTER_2_IMPULSE);
+                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_2_IMPULSE);
         verify(mockCharacter3RoundData, times(1))
-                .setVariable(ROUND_DATA_IMPULSE, CHARACTER_3_IMPULSE);
+                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_3_IMPULSE);
         verify(mockCharacter4RoundData, times(1))
-                .setVariable(ROUND_DATA_IMPULSE, CHARACTER_4_IMPULSE);
+                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_4_IMPULSE);
         verify(mockCharacter1RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_1_BASE_AP);
         verify(mockCharacter2RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP);
         verify(mockCharacter3RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_3_BASE_AP);
@@ -243,11 +328,11 @@ class ActiveCharactersProviderImplTests {
     @Test
     void testImpulseTiesResolvedRandomly() {
         var tiedImpulse = randomInt();
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockCombatOrder))
                 .thenReturn(Pair.of(tiedImpulse, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockCombatOrder))
                 .thenReturn(Pair.of(tiedImpulse, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter3, mockImpulse))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter3, mockCombatOrder))
                 .thenReturn(Pair.of(tiedImpulse, new HashMap<>()));
         var character1TieBreaker = randomFloat();
         var character2TieBreaker = character1TieBreaker + 1f;
@@ -281,9 +366,9 @@ class ActiveCharactersProviderImplTests {
         var character2Alacrity = 3;
         var belowCharacter1Alacrity = 0.25f;
         var aboveCharacter2Alacrity = 0.5f;
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockAlacrity))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockBonusAp))
                 .thenReturn(Pair.of(character1Alacrity, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockAlacrity))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockBonusAp))
                 .thenReturn(Pair.of(character2Alacrity, new HashMap<>()));
         when(mockGetRandomFloat.get())
                 .thenReturn(belowCharacter1Alacrity)
@@ -309,9 +394,9 @@ class ActiveCharactersProviderImplTests {
         var belowCharacter1AlacrityTier2 = 0.125f;
         var aboveCharacter2AlacrityTier1 = 0.5f;
         var aboveCharacter2AlacrityTier2 = 0.25f;
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockAlacrity))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockBonusAp))
                 .thenReturn(Pair.of(character1Alacrity, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockAlacrity))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockBonusAp))
                 .thenReturn(Pair.of(character2Alacrity, new HashMap<>()));
         when(mockGetRandomFloat.get())
                 .thenReturn(belowCharacter1AlacrityTier1)
@@ -340,9 +425,9 @@ class ActiveCharactersProviderImplTests {
         var rangeWidth = expectedRangeMaximum - expectedRangeMinimum;
         var alacrityWithinRange = characters1And2Alacrity - expectedRangeMinimum;
         var threshold = alacrityWithinRange / (float) rangeWidth;
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockAlacrity))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockBonusAp))
                 .thenReturn(Pair.of(characters1And2Alacrity, new HashMap<>()));
-        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockAlacrity))
+        when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockBonusAp))
                 .thenReturn(Pair.of(characters1And2Alacrity, new HashMap<>()));
         // The initial thresholds of 0f are for +8 bonus AP, so the threshold can be tested at
         // level 9 for both characters
@@ -366,9 +451,9 @@ class ActiveCharactersProviderImplTests {
 
     @Test
     void testExcludeInactiveCharacters() {
-        when(mockCharacter1Data.getVariable(CHARACTER_IS_INACTIVE)).thenReturn(true);
-        when(mockCharacter2Data.getVariable(CHARACTER_IS_INACTIVE)).thenReturn(null);
-        when(mockCharacter3Data.getVariable(CHARACTER_IS_INACTIVE)).thenReturn(false);
+        when(mockCharacter1Data.getVariable(CHARACTER_DATA_IS_INACTIVE)).thenReturn(true);
+        when(mockCharacter2Data.getVariable(CHARACTER_DATA_IS_INACTIVE)).thenReturn(null);
+        when(mockCharacter3Data.getVariable(CHARACTER_DATA_IS_INACTIVE)).thenReturn(false);
         when(mockCharacterRoundDataFactory.make())
                 .thenReturn(mockCharacter2RoundData)
                 .thenReturn(mockCharacter3RoundData);
