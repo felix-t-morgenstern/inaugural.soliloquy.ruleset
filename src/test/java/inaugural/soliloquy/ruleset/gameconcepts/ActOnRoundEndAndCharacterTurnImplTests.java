@@ -89,20 +89,17 @@ public class ActOnRoundEndAndCharacterTurnImplTests {
         mockEffectCalculation = mock(StatisticMagnitudeEffectCalculation.class);
         //noinspection unchecked
         when(mockEffectCalculation.getEffect(same(mockSourceVariableStatType),
-                same(mockVariableStatStatisticChangeMagnitude1), anyInt(), anyInt(), anyInt(),
-                any()))
+                same(mockVariableStatStatisticChangeMagnitude1), anyInt(), any()))
                 .thenReturn(MAGNITUDE_1_EFFECT);
         //noinspection unchecked
         when(mockEffectCalculation.getEffect(same(mockStatusEffectType),
-                same(mockVariableStatStatisticChangeMagnitude2), anyInt(), anyInt(), anyInt(),
-                any()))
+                same(mockVariableStatStatisticChangeMagnitude2), anyInt(), any()))
                 .thenReturn(MAGNITUDE_2_EFFECT);
 
         mockEffectCalculation = mock(StatisticMagnitudeEffectCalculation.class);
         //noinspection unchecked
         when(mockEffectCalculation.getEffect(same(mockSourceVariableStatType),
-                same(mockStatusEffectChangeMagnitude), anyInt(), anyInt(), anyInt(),
-                any()))
+                same(mockStatusEffectChangeMagnitude), anyInt(), any()))
                 .thenReturn(MAGNITUDE_3_EFFECT);
 
         var variableStatMagnitudes =
@@ -199,14 +196,12 @@ public class ActOnRoundEndAndCharacterTurnImplTests {
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation, times(1))
                 .getEffect(mockSourceVariableStatType, mockVariableStatStatisticChangeMagnitude1,
-                        SOURCE_VARIABLE_STAT_CURRENT_VALUE, EFFECTED_VARIABLE_STAT_MAX_VALUE,
-                        EFFECTED_VARIABLE_STAT_CURRENT_VALUE, mockCharacter);
+                        SOURCE_VARIABLE_STAT_CURRENT_VALUE, mockCharacter);
         inOrder.verify(mockSourceVariableStat, times(1)).alterCurrentValue(MAGNITUDE_1_EFFECT);
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation, times(1))
                 .getEffect(mockSourceVariableStatType, mockVariableStatStatisticChangeMagnitude2,
-                        SOURCE_VARIABLE_STAT_CURRENT_VALUE, EFFECTED_VARIABLE_STAT_MAX_VALUE,
-                        EFFECTED_VARIABLE_STAT_CURRENT_VALUE, mockCharacter);
+                        SOURCE_VARIABLE_STAT_CURRENT_VALUE, mockCharacter);
         inOrder.verify(mockSourceVariableStat, times(1)).alterCurrentValue(MAGNITUDE_2_EFFECT);
         inOrder.verify(mockSourceVariableStatOnRoundEnd, times(1))
                 .accompanyEffect(eq(new int[]{MAGNITUDE_1_EFFECT, MAGNITUDE_2_EFFECT}),
@@ -217,8 +212,7 @@ public class ActOnRoundEndAndCharacterTurnImplTests {
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation, times(1))
                 .getEffect(mockStatusEffectType, mockVariableStatStatisticChangeMagnitude2,
-                        STATUS_EFFECT_LEVEL, EFFECTED_VARIABLE_STAT_MAX_VALUE,
-                        EFFECTED_VARIABLE_STAT_CURRENT_VALUE, mockCharacter);
+                        STATUS_EFFECT_LEVEL, mockCharacter);
         inOrder.verify(mockSourceVariableStat, times(1)).alterCurrentValue(MAGNITUDE_3_EFFECT);
         inOrder.verify(mockSourceVariableStatOnRoundEnd, times(1))
                 .accompanyEffect(eq(new int[]{MAGNITUDE_3_EFFECT}),
