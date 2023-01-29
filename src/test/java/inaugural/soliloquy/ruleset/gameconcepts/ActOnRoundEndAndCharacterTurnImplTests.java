@@ -83,24 +83,24 @@ public class ActOnRoundEndAndCharacterTurnImplTests {
         mockVariableStatStatisticChangeMagnitude2 = mock(StatisticChangeMagnitude.class);
 
         mockStatisticCalculation = mock(CharacterStatisticCalculation.class);
-        when(mockStatisticCalculation.calculate(any(), mockEffectedVariableStatType))
+        when(mockStatisticCalculation.calculate(any(), same(mockEffectedVariableStatType)))
                 .thenReturn(Pair.of(EFFECTED_VARIABLE_STAT_MAX_VALUE, mapOf()));
 
         mockEffectCalculation = mock(StatisticMagnitudeEffectCalculation.class);
         //noinspection unchecked
-        when(mockEffectCalculation.getEffect(mockSourceVariableStatType,
+        when(mockEffectCalculation.getEffect(same(mockSourceVariableStatType),
                 same(mockVariableStatStatisticChangeMagnitude1), anyInt(), anyInt(), anyInt(),
                 any()))
                 .thenReturn(MAGNITUDE_1_EFFECT);
         //noinspection unchecked
-        when(mockEffectCalculation.getEffect(mockStatusEffectType,
+        when(mockEffectCalculation.getEffect(same(mockStatusEffectType),
                 same(mockVariableStatStatisticChangeMagnitude2), anyInt(), anyInt(), anyInt(),
                 any()))
                 .thenReturn(MAGNITUDE_2_EFFECT);
 
         mockEffectCalculation = mock(StatisticMagnitudeEffectCalculation.class);
         //noinspection unchecked
-        when(mockEffectCalculation.getEffect(mockSourceVariableStatType,
+        when(mockEffectCalculation.getEffect(same(mockSourceVariableStatType),
                 same(mockStatusEffectChangeMagnitude), anyInt(), anyInt(), anyInt(),
                 any()))
                 .thenReturn(MAGNITUDE_3_EFFECT);

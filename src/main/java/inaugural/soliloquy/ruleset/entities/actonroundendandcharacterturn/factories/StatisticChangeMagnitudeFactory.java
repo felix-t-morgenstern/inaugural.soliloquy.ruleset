@@ -3,7 +3,7 @@ package inaugural.soliloquy.ruleset.entities.actonroundendandcharacterturn.facto
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
-import soliloquy.specs.ruleset.definitions.StatisticChangeMagnitudeDefinition;
+import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.AmountType;
@@ -53,11 +53,11 @@ public class StatisticChangeMagnitudeFactory
         var variableStatType = GET_VARIABLE_STAT_TYPE.apply(definition.variableStatType);
 
         if (amountType == AmountType.VALUE) {
-            return makeValueMagnitude(variableStatType, definition.priority, element, amountType,
+            return makeValueMagnitude(variableStatType, element, amountType,
                     effectType, definition.perLevelValueRange, definition.absoluteValueRange);
         }
         else {
-            return makePercentMagnitude(variableStatType, definition.priority, element, amountType,
+            return makePercentMagnitude(variableStatType, element, amountType,
                     effectType, definition.perLevelPercentRange, definition.absolutePercentRange);
         }
     }
@@ -73,7 +73,6 @@ public class StatisticChangeMagnitudeFactory
 
     private static StatisticChangeMagnitude makeValueMagnitude(CharacterVariableStatisticType
                                                                        variableStatType,
-                                                               int priority,
                                                                Element element,
                                                                AmountType amountType,
                                                                EffectType effectType,
@@ -103,13 +102,8 @@ public class StatisticChangeMagnitudeFactory
             }
 
             @Override
-            public CharacterVariableStatisticType statisticType() {
+            public CharacterVariableStatisticType effectedStatisticType() {
                 return variableStatType;
-            }
-
-            @Override
-            public int priority() {
-                return priority;
             }
 
             @Override
@@ -141,7 +135,6 @@ public class StatisticChangeMagnitudeFactory
 
     private static StatisticChangeMagnitude makePercentMagnitude(CharacterVariableStatisticType
                                                                          variableStatType,
-                                                                 int priority,
                                                                  Element element,
                                                                  AmountType amountType,
                                                                  EffectType effectType,
@@ -171,13 +164,8 @@ public class StatisticChangeMagnitudeFactory
             }
 
             @Override
-            public CharacterVariableStatisticType statisticType() {
+            public CharacterVariableStatisticType effectedStatisticType() {
                 return variableStatType;
-            }
-
-            @Override
-            public int priority() {
-                return priority;
             }
 
             @Override

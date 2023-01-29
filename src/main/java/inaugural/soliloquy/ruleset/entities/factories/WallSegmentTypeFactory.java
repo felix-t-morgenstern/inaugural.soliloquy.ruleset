@@ -5,7 +5,7 @@ import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
-import soliloquy.specs.ruleset.definitions.WallSegmentTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.WallSegmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.WallSegmentType;
 
 import java.util.function.Function;

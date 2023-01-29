@@ -11,8 +11,8 @@ import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
-import soliloquy.specs.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
-import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
 

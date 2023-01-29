@@ -12,7 +12,7 @@ import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.logger.Logger;
-import soliloquy.specs.ruleset.definitions.GroundTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.GroundTypeDefinition;
 import soliloquy.specs.ruleset.entities.GroundType;
 
 import java.util.ArrayList;

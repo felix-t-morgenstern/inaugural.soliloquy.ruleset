@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
-import soliloquy.specs.ruleset.definitions.ElementDefinition;
+import inaugural.soliloquy.ruleset.definitions.ElementDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 
 import java.util.HashMap;
@@ -40,7 +40,7 @@ class ElementFactoryTests {
 
     @Test
     void testMake() {
-        Element element = elementFactory.make(new ElementDefinition(ID, NAME, IMAGE_ASSET_SET_ID));
+        var element = elementFactory.make(new ElementDefinition(ID, NAME, IMAGE_ASSET_SET_ID));
 
         assertNotNull(element);
         assertEquals(ID, element.id());
@@ -71,8 +71,8 @@ class ElementFactoryTests {
 
     @Test
     void testSetNameOnCreatedElement() {
-        Element element = elementFactory.make(new ElementDefinition(ID, NAME, IMAGE_ASSET_SET_ID));
-        String newName = randomString();
+        var element = elementFactory.make(new ElementDefinition(ID, NAME, IMAGE_ASSET_SET_ID));
+        var newName = randomString();
 
         element.setName(newName);
 
@@ -81,7 +81,7 @@ class ElementFactoryTests {
 
     @Test
     void testSetNameOnCreatedElementWithInvalidParams() {
-        Element element = elementFactory.make(new ElementDefinition(ID, NAME, IMAGE_ASSET_SET_ID));
+        var element = elementFactory.make(new ElementDefinition(ID, NAME, IMAGE_ASSET_SET_ID));
 
         assertThrows(IllegalArgumentException.class, () -> element.setName(null));
         assertThrows(IllegalArgumentException.class, () -> element.setName(""));

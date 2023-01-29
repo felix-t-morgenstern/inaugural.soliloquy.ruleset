@@ -3,7 +3,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.ruleset.definitions.EquipmentTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.EquipmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 
 import static inaugural.soliloquy.tools.random.Random.randomString;
@@ -30,13 +30,13 @@ class EquipmentTypeFactoryTests {
 
     @Test
     void testMake() {
-        EquipmentType equipmentType = equipmentTypeFactory.make(DEFINITION);
+        var equipmentType = equipmentTypeFactory.make(DEFINITION);
 
         assertNotNull(equipmentType);
         assertEquals(ID, equipmentType.id());
         assertEquals(NAME, equipmentType.getName());
         assertEquals(PLURAL_NAME, equipmentType.getPluralName());
-        for (String equipableSlotType : EQUIPABLE_SLOT_TYPES) {
+        for (var equipableSlotType : EQUIPABLE_SLOT_TYPES) {
             assertTrue(equipmentType.canEquipToSlotType(equipableSlotType));
         }
         assertEquals(EquipmentType.class.getCanonicalName(), equipmentType.getInterfaceName());
@@ -63,9 +63,9 @@ class EquipmentTypeFactoryTests {
 
     @Test
     void testMutatePropertiesOnCreatedEquipmentType() {
-        String newName = randomString();
-        String newPluralName = randomString();
-        EquipmentType equipmentType = equipmentTypeFactory.make(DEFINITION);
+        var newName = randomString();
+        var newPluralName = randomString();
+        var equipmentType = equipmentTypeFactory.make(DEFINITION);
 
         equipmentType.setName(newName);
         equipmentType.setPluralName(newPluralName);
@@ -76,7 +76,7 @@ class EquipmentTypeFactoryTests {
 
     @Test
     void testMutatePropertiesOnCreatedEquipmentTypeWithInvalidParams() {
-        EquipmentType equipmentType = equipmentTypeFactory.make(DEFINITION);
+        var equipmentType = equipmentTypeFactory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> equipmentType.setName(null));
         assertThrows(IllegalArgumentException.class, () -> equipmentType.setName(""));
@@ -86,7 +86,7 @@ class EquipmentTypeFactoryTests {
 
     @Test
     void testCanEquipToSlotTypeWithInvalidParams() {
-        EquipmentType equipmentType = equipmentTypeFactory.make(DEFINITION);
+        var equipmentType = equipmentTypeFactory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> equipmentType.canEquipToSlotType(null));
         assertThrows(IllegalArgumentException.class, () -> equipmentType.canEquipToSlotType(""));

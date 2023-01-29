@@ -5,9 +5,9 @@ import soliloquy.specs.common.entities.Action;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
-import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.definitions.EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition;
-import soliloquy.specs.ruleset.definitions.StatisticChangeMagnitudeDefinition;
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition;
+import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 
@@ -69,6 +69,11 @@ public class EffectsOnCharacterFactory
             private final MagnitudeForStatisticDefinition[] MAGNITUDE_DEFINITIONS =
                     definition.magnitudeForStatisticDefinitions;
             private List<StatisticChangeMagnitude> magnitudes = null;
+
+            @Override
+            public int priority() {
+                return definition.priority;
+            }
 
             @Override
             public List<StatisticChangeMagnitude> magnitudes() {

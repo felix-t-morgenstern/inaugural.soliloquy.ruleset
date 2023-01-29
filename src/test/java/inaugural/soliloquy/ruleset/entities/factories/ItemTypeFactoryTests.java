@@ -10,7 +10,7 @@ import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
-import soliloquy.specs.ruleset.definitions.ItemTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.ItemTypeDefinition;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 import soliloquy.specs.ruleset.entities.ItemType;
 import soliloquy.specs.ruleset.entities.abilities.ActiveAbility;
@@ -156,7 +156,7 @@ class ItemTypeFactoryTests {
 
     @Test
     void testMake() {
-        ItemType output = factory.make(DEFINITION);
+        var output = factory.make(DEFINITION);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -193,14 +193,14 @@ class ItemTypeFactoryTests {
 
     @Test
     void testMakeStackable() {
-        ItemTypeDefinition stackableDefinition =
+        var stackableDefinition =
                 new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, true, DEFAULT_NUMBER_IN_STACK, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID});
 
-        ItemType output = factory.make(stackableDefinition);
+        var output = factory.make(stackableDefinition);
 
         assertTrue(output.isStackable());
         assertEquals(DEFAULT_NUMBER_IN_STACK, output.defaultNumberInStack());
@@ -210,14 +210,14 @@ class ItemTypeFactoryTests {
 
     @Test
     void testMakeWithCharges() {
-        ItemTypeDefinition definitionWithCharges =
+        var definitionWithCharges =
                 new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, true, DEFAULT_CHARGES,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID});
 
-        ItemType output = factory.make(definitionWithCharges);
+        var output = factory.make(definitionWithCharges);
 
         assertTrue(output.hasCharges());
         assertEquals(DEFAULT_CHARGES, output.defaultCharges());
@@ -227,8 +227,8 @@ class ItemTypeFactoryTests {
 
     @Test
     void testSetAndGetName() {
-        String newName = randomString();
-        ItemType output = factory.make(DEFINITION);
+        var newName = randomString();
+        var output = factory.make(DEFINITION);
 
         output.setName(newName);
 
@@ -237,7 +237,7 @@ class ItemTypeFactoryTests {
 
     @Test
     void testSetNameWithInvalidParams() {
-        ItemType output = factory.make(DEFINITION);
+        var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -245,8 +245,8 @@ class ItemTypeFactoryTests {
 
     @Test
     void testSetAndGetPluralName() {
-        String newPluralName = randomString();
-        ItemType output = factory.make(DEFINITION);
+        var newPluralName = randomString();
+        var output = factory.make(DEFINITION);
 
         output.setPluralName(newPluralName);
 
@@ -255,7 +255,7 @@ class ItemTypeFactoryTests {
 
     @Test
     void testSetPluralNameWithInvalidParams() {
-        ItemType output = factory.make(DEFINITION);
+        var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(""));
@@ -263,17 +263,17 @@ class ItemTypeFactoryTests {
 
     @Test
     void testMakeWithInvalidParams() {
-        String invalidEquipmentTypeId = randomString();
+        var invalidEquipmentTypeId = randomString();
         when(mockGetEquipmentType.apply(invalidEquipmentTypeId)).thenReturn(null);
-        String invalidImageAssetSetId = randomString();
+        var invalidImageAssetSetId = randomString();
         when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
-        String invalidDescriptionFunctionId = randomString();
+        var invalidDescriptionFunctionId = randomString();
         when(mockGetDescriptionFunction.apply(invalidDescriptionFunctionId)).thenReturn(null);
-        String invalidActiveAbilityId = randomString();
+        var invalidActiveAbilityId = randomString();
         when(mockGetActiveAbility.apply(invalidActiveAbilityId)).thenReturn(null);
-        String invalidReactiveAbilityId = randomString();
+        var invalidReactiveAbilityId = randomString();
         when(mockGetReactiveAbility.apply(invalidReactiveAbilityId)).thenReturn(null);
-        String invalidPassiveAbilityId = randomString();
+        var invalidPassiveAbilityId = randomString();
         when(mockGetPassiveAbility.apply(invalidPassiveAbilityId)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> factory.make(null));

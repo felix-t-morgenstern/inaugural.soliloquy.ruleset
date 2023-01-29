@@ -2,7 +2,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.ruleset.definitions.EquipmentTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.EquipmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 
 import java.util.Arrays;

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
-import soliloquy.specs.ruleset.definitions.StatisticChangeMagnitudeDefinition;
+import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
@@ -24,7 +24,6 @@ import static soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.Sta
 class StatisticChangeMagnitudeFactoryTests {
     private final String VARIABLE_STAT_TYPE_ID = randomString();
     private final String ELEMENT_ID = randomString();
-    private final int PRIORITY = randomInt();
     private final int PER_LEVEL_VALUE_MINIMUM = randomInt();
     private final int PER_LEVEL_VALUE_MAXIMUM = randomInt();
     private final float PER_LEVEL_PERCENT_MINIMUM = randomFloat();
@@ -70,17 +69,16 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @Test
     void testMakeWithValue() {
-        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                ELEMENT_ID, DAMAGE.name(), VALUE.name(),
+        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, ELEMENT_ID,
+                DAMAGE.name(), VALUE.name(),
                 new Integer[]{PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM}, null,
                 new Integer[]{ABSOLUTE_VALUE_MINIMUM, ABSOLUTE_VALUE_MAXIMUM}, null);
 
         var output = factory.make(definition);
 
         assertNotNull(output);
-        assertSame(mockVariableStatType, output.statisticType());
+        assertSame(mockVariableStatType, output.effectedStatisticType());
         verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
-        assertEquals(PRIORITY, output.priority());
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertEquals(Pair.of(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
@@ -93,16 +91,15 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @Test
     void testMakeWithValueAndOnlyPerLevel() {
-        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                ELEMENT_ID, DAMAGE.name(), VALUE.name(),
+        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, ELEMENT_ID,
+                DAMAGE.name(), VALUE.name(),
                 new Integer[]{PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM}, null, null, null);
 
         var output = factory.make(definition);
 
         assertNotNull(output);
-        assertSame(mockVariableStatType, output.statisticType());
+        assertSame(mockVariableStatType, output.effectedStatisticType());
         verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
-        assertEquals(PRIORITY, output.priority());
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertEquals(Pair.of(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
@@ -114,16 +111,15 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @Test
     void testMakeWithValueAndOnlyAbsolute() {
-        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                ELEMENT_ID, DAMAGE.name(), VALUE.name(), null, null,
+        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, ELEMENT_ID,
+                DAMAGE.name(), VALUE.name(), null, null,
                 new Integer[]{ABSOLUTE_VALUE_MINIMUM, ABSOLUTE_VALUE_MAXIMUM}, null);
 
         var output = factory.make(definition);
 
         assertNotNull(output);
-        assertSame(mockVariableStatType, output.statisticType());
+        assertSame(mockVariableStatType, output.effectedStatisticType());
         verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
-        assertEquals(PRIORITY, output.priority());
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertNull(output.perLevelRange());
@@ -135,17 +131,16 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @Test
     void testMakeWithPercent() {
-        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                ELEMENT_ID, DAMAGE.name(), PERCENT_OF_MAXIMUM.name(), null,
+        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, ELEMENT_ID,
+                DAMAGE.name(), PERCENT_OF_MAXIMUM.name(), null,
                 new Float[]{PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM}, null,
                 new Float[]{ABSOLUTE_PERCENT_MINIMUM, ABSOLUTE_PERCENT_MAXIMUM});
 
         var output = factory.make(definition);
 
         assertNotNull(output);
-        assertSame(mockVariableStatType, output.statisticType());
+        assertSame(mockVariableStatType, output.effectedStatisticType());
         verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
-        assertEquals(PRIORITY, output.priority());
         assertSame(mockElement, output.element());
         verify(mockGetElement, times(1)).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
@@ -160,16 +155,15 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @Test
     void testMakeWithPercentAndOnlyPerLevel() {
-        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                ELEMENT_ID, DAMAGE.name(), PERCENT_OF_MAXIMUM.name(), null,
+        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, ELEMENT_ID,
+                DAMAGE.name(), PERCENT_OF_MAXIMUM.name(), null,
                 new Float[]{PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM}, null, null);
 
         var output = factory.make(definition);
 
         assertNotNull(output);
-        assertSame(mockVariableStatType, output.statisticType());
+        assertSame(mockVariableStatType, output.effectedStatisticType());
         verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
-        assertEquals(PRIORITY, output.priority());
         assertSame(mockElement, output.element());
         verify(mockGetElement, times(1)).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
@@ -183,16 +177,15 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @Test
     void testMakeWithPercentAndOnlyAbsolute() {
-        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                ELEMENT_ID, DAMAGE.name(), PERCENT_OF_MAXIMUM.name(), null, null, null,
+        var definition = new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, ELEMENT_ID,
+                DAMAGE.name(), PERCENT_OF_MAXIMUM.name(), null, null, null,
                 new Float[]{ABSOLUTE_PERCENT_MINIMUM, ABSOLUTE_PERCENT_MAXIMUM});
 
         var output = factory.make(definition);
 
         assertNotNull(output);
-        assertSame(mockVariableStatType, output.statisticType());
+        assertSame(mockVariableStatType, output.effectedStatisticType());
         verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
-        assertEquals(PRIORITY, output.priority());
         assertSame(mockElement, output.element());
         verify(mockGetElement, times(1)).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
@@ -217,50 +210,50 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertThrows(IllegalArgumentException.class, () -> factory.make(null));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null, null,
                         VALUE.name(), null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY,
-                        invalidElementId, ALTERATION.name(), VALUE.name(), null, null, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, invalidElementId,
+                        ALTERATION.name(), VALUE.name(), null, null, null,
                         null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null, "",
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null, "",
                         VALUE.name(), null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         invalidEffectType, VALUE.name(), null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), null, null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), "", null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), invalidAmountType, null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), oneIntArray, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), threeIntArray, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), null, oneFloatArray, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), null, threeFloatArray, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), null, null, oneIntArray, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), null, null, threeIntArray, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), null, null, null, oneFloatArray)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, PRIORITY, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
                         ALTERATION.name(), VALUE.name(), null, null, null, threeFloatArray)));
     }
 

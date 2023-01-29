@@ -3,7 +3,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
-import soliloquy.specs.ruleset.definitions.ElementDefinition;
+import inaugural.soliloquy.ruleset.definitions.ElementDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 
 import java.util.function.Function;

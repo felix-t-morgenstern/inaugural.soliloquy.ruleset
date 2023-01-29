@@ -7,7 +7,7 @@ import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
-import soliloquy.specs.ruleset.definitions.WallSegmentTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.WallSegmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.WallSegmentType;
 
 import java.util.HashMap;
@@ -57,38 +57,38 @@ class WallSegmentTypeFactoryImplTests {
 
     @Test
     void testMakeWithSprite() {
-        WallSegmentTypeDefinition definition = new WallSegmentTypeDefinition(ID, NAME,
-                ImageAsset.ImageAssetType.SPRITE, SPRITE_ID, BLOCKS_WEST, BLOCKS_NORTHWEST,
-                BLOCKS_NORTH);
+        var definition =
+                new WallSegmentTypeDefinition(ID, NAME, ImageAsset.ImageAssetType.SPRITE, SPRITE_ID,
+                        BLOCKS_WEST, BLOCKS_NORTHWEST, BLOCKS_NORTH);
 
-        WallSegmentType wallSegmentType = wallSegmentTypeFactory.make(definition);
+        var output = wallSegmentTypeFactory.make(definition);
 
-        assertNotNull(wallSegmentType);
-        assertEquals(ID, wallSegmentType.id());
-        assertEquals(NAME, wallSegmentType.getName());
-        assertSame(mockSprite, wallSegmentType.imageAsset());
-        assertEquals(BLOCKS_WEST, wallSegmentType.blocksWest());
-        assertEquals(BLOCKS_NORTHWEST, wallSegmentType.blocksNorthwest());
-        assertEquals(BLOCKS_NORTH, wallSegmentType.blocksNorth());
-        assertEquals(WallSegmentType.class.getCanonicalName(), wallSegmentType.getInterfaceName());
+        assertNotNull(output);
+        assertEquals(ID, output.id());
+        assertEquals(NAME, output.getName());
+        assertSame(mockSprite, output.imageAsset());
+        assertEquals(BLOCKS_WEST, output.blocksWest());
+        assertEquals(BLOCKS_NORTHWEST, output.blocksNorthwest());
+        assertEquals(BLOCKS_NORTH, output.blocksNorth());
+        assertEquals(WallSegmentType.class.getCanonicalName(), output.getInterfaceName());
     }
 
     @Test
     void testMakeWithGlobalLoopingAnimation() {
-        WallSegmentTypeDefinition definition = new WallSegmentTypeDefinition(ID, NAME,
+        var definition = new WallSegmentTypeDefinition(ID, NAME,
                 ImageAsset.ImageAssetType.GLOBAL_LOOPING_ANIMATION, GLOBAL_LOOPING_ANIMATION_ID,
                 BLOCKS_WEST, BLOCKS_NORTHWEST, BLOCKS_NORTH);
 
-        WallSegmentType wallSegmentType = wallSegmentTypeFactory.make(definition);
+        var output = wallSegmentTypeFactory.make(definition);
 
-        assertNotNull(wallSegmentType);
-        assertEquals(ID, wallSegmentType.id());
-        assertEquals(NAME, wallSegmentType.getName());
-        assertSame(mockGlobalLoopingAnimation, wallSegmentType.imageAsset());
-        assertEquals(BLOCKS_WEST, wallSegmentType.blocksWest());
-        assertEquals(BLOCKS_NORTHWEST, wallSegmentType.blocksNorthwest());
-        assertEquals(BLOCKS_NORTH, wallSegmentType.blocksNorth());
-        assertEquals(WallSegmentType.class.getCanonicalName(), wallSegmentType.getInterfaceName());
+        assertNotNull(output);
+        assertEquals(ID, output.id());
+        assertEquals(NAME, output.getName());
+        assertSame(mockGlobalLoopingAnimation, output.imageAsset());
+        assertEquals(BLOCKS_WEST, output.blocksWest());
+        assertEquals(BLOCKS_NORTHWEST, output.blocksNorthwest());
+        assertEquals(BLOCKS_NORTH, output.blocksNorth());
+        assertEquals(WallSegmentType.class.getCanonicalName(), output.getInterfaceName());
     }
 
     @Test
@@ -137,23 +137,23 @@ class WallSegmentTypeFactoryImplTests {
 
     @Test
     void testSetNameOnCreatedElement() {
-        WallSegmentTypeDefinition definition = new WallSegmentTypeDefinition(ID, NAME,
-                ImageAsset.ImageAssetType.SPRITE, SPRITE_ID, BLOCKS_WEST, BLOCKS_NORTHWEST,
-                BLOCKS_NORTH);
-        WallSegmentType wallSegmentType = wallSegmentTypeFactory.make(definition);
-        String newName = randomString();
+        var definition =
+                new WallSegmentTypeDefinition(ID, NAME, ImageAsset.ImageAssetType.SPRITE, SPRITE_ID,
+                        BLOCKS_WEST, BLOCKS_NORTHWEST, BLOCKS_NORTH);
+        var output = wallSegmentTypeFactory.make(definition);
+        var newName = randomString();
 
-        wallSegmentType.setName(newName);
+        output.setName(newName);
 
-        assertEquals(newName, wallSegmentType.getName());
+        assertEquals(newName, output.getName());
     }
 
     @Test
     void testSetNameOnCreatedElementWithInvalidParams() {
-        WallSegmentTypeDefinition definition = new WallSegmentTypeDefinition(ID, NAME,
-                ImageAsset.ImageAssetType.SPRITE, SPRITE_ID, BLOCKS_WEST, BLOCKS_NORTHWEST,
-                BLOCKS_NORTH);
-        WallSegmentType wallSegmentType = wallSegmentTypeFactory.make(definition);
+        var definition =
+                new WallSegmentTypeDefinition(ID, NAME, ImageAsset.ImageAssetType.SPRITE, SPRITE_ID,
+                        BLOCKS_WEST, BLOCKS_NORTHWEST, BLOCKS_NORTH);
+        var wallSegmentType = wallSegmentTypeFactory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> wallSegmentType.setName(null));
         assertThrows(IllegalArgumentException.class, () -> wallSegmentType.setName(""));
