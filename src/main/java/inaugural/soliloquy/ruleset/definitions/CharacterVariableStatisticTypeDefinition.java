@@ -8,6 +8,7 @@ public class CharacterVariableStatisticTypeDefinition {
     public String imageAssetSetId;
     public String[] defaultColorShifts;
     public String iconForCharacterFunctionId;
+    public String alterActionId;
     public EffectsOnCharacterDefinition effectsOnRoundEnd;
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
@@ -19,6 +20,7 @@ public class CharacterVariableStatisticTypeDefinition {
                                                     String imageAssetSetId,
                                                     String[] defaultColorShifts,
                                                     String iconForCharacterFunctionId,
+                                                    String alterActionId,
                                                     EffectsOnCharacterDefinition effectsOnRoundEnd,
                                                     EffectsOnCharacterDefinition effectsOnTurnStart,
                                                     EffectsOnCharacterDefinition effectsOnTurnEnd)
@@ -30,6 +32,7 @@ public class CharacterVariableStatisticTypeDefinition {
         this.imageAssetSetId = imageAssetSetId;
         this.defaultColorShifts = defaultColorShifts;
         this.iconForCharacterFunctionId = iconForCharacterFunctionId;
+        this.alterActionId = alterActionId;
         this.effectsOnRoundEnd = effectsOnRoundEnd;
         this.effectsOnTurnStart = effectsOnTurnStart;
         this.effectsOnTurnEnd = effectsOnTurnEnd;

@@ -7,8 +7,6 @@ import soliloquy.specs.common.factories.VariableCacheFactory;
 import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
-import soliloquy.specs.gamestate.entities.CharacterStatistic;
-import soliloquy.specs.gamestate.entities.EntityMembersOfType;
 import soliloquy.specs.gamestate.entities.GameZone;
 import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
 import soliloquy.specs.ruleset.entities.character.CharacterStatisticType;
@@ -50,20 +48,6 @@ class ActiveCharactersProviderImplTests {
 
     @Mock private Function<String, CharacterStatisticType> mockGetStatType;
 
-    @Mock private CharacterStatistic<CharacterStaticStatisticType> mockCharacter1Impulse;
-    @Mock private CharacterStatistic<CharacterStaticStatisticType> mockCharacter2Impulse;
-    @Mock private CharacterStatistic<CharacterStaticStatisticType> mockCharacter3Impulse;
-    @Mock private CharacterStatistic<CharacterStaticStatisticType> mockCharacter4Impulse;
-
-    @Mock private EntityMembersOfType<CharacterStaticStatisticType,
-            CharacterStatistic<CharacterStaticStatisticType>, Character> mockCharacter1StaticStats;
-    @Mock private EntityMembersOfType<CharacterStaticStatisticType,
-            CharacterStatistic<CharacterStaticStatisticType>, Character> mockCharacter2StaticStats;
-    @Mock private EntityMembersOfType<CharacterStaticStatisticType,
-            CharacterStatistic<CharacterStaticStatisticType>, Character> mockCharacter3StaticStats;
-    @Mock private EntityMembersOfType<CharacterStaticStatisticType,
-            CharacterStatistic<CharacterStaticStatisticType>, Character> mockCharacter4StaticStats;
-
     @Mock private VariableCache mockCharacter1Data;
     @Mock private VariableCache mockCharacter2Data;
     @Mock private VariableCache mockCharacter3Data;
@@ -99,31 +83,6 @@ class ActiveCharactersProviderImplTests {
         when(mockGetStatType.apply(STATISTIC_COMBAT_ORDER)).thenReturn(mockCombatOrder);
         when(mockGetStatType.apply(STATISTIC_BONUS_AP)).thenReturn(mockBonusAp);
 
-        //noinspection unchecked
-        mockCharacter1StaticStats =
-                (EntityMembersOfType<CharacterStaticStatisticType,
-                        CharacterStatistic<CharacterStaticStatisticType>, Character>) mock(
-                        EntityMembersOfType.class);
-        when(mockCharacter1StaticStats.get(any())).thenReturn(mockCharacter1Impulse);
-        //noinspection unchecked
-        mockCharacter2StaticStats =
-                (EntityMembersOfType<CharacterStaticStatisticType,
-                        CharacterStatistic<CharacterStaticStatisticType>, Character>) mock(
-                        EntityMembersOfType.class);
-        when(mockCharacter2StaticStats.get(any())).thenReturn(mockCharacter2Impulse);
-        //noinspection unchecked
-        mockCharacter3StaticStats =
-                (EntityMembersOfType<CharacterStaticStatisticType,
-                        CharacterStatistic<CharacterStaticStatisticType>, Character>) mock(
-                        EntityMembersOfType.class);
-        when(mockCharacter3StaticStats.get(any())).thenReturn(mockCharacter3Impulse);
-        //noinspection unchecked
-        mockCharacter4StaticStats =
-                (EntityMembersOfType<CharacterStaticStatisticType,
-                        CharacterStatistic<CharacterStaticStatisticType>, Character>) mock(
-                        EntityMembersOfType.class);
-        when(mockCharacter4StaticStats.get(any())).thenReturn(mockCharacter4Impulse);
-
         mockCharacter1Data = mock(VariableCache.class);
         when(mockCharacter1Data.getVariable(CHARACTER_DATA_BASE_AP)).thenReturn(
                 CHARACTER_1_BASE_AP);
@@ -136,19 +95,6 @@ class ActiveCharactersProviderImplTests {
         mockCharacter4Data = mock(VariableCache.class);
         when(mockCharacter4Data.getVariable(CHARACTER_DATA_BASE_AP)).thenReturn(
                 CHARACTER_4_BASE_AP);
-
-        mockCharacter1 = mock(Character.class);
-        when(mockCharacter1.staticStatistics()).thenReturn(mockCharacter1StaticStats);
-        when(mockCharacter1.data()).thenReturn(mockCharacter1Data);
-        mockCharacter2 = mock(Character.class);
-        when(mockCharacter2.staticStatistics()).thenReturn(mockCharacter2StaticStats);
-        when(mockCharacter2.data()).thenReturn(mockCharacter2Data);
-        mockCharacter3 = mock(Character.class);
-        when(mockCharacter3.staticStatistics()).thenReturn(mockCharacter3StaticStats);
-        when(mockCharacter3.data()).thenReturn(mockCharacter3Data);
-        mockCharacter4 = mock(Character.class);
-        when(mockCharacter4.staticStatistics()).thenReturn(mockCharacter4StaticStats);
-        when(mockCharacter4.data()).thenReturn(mockCharacter4Data);
 
         mockGameZone = mock(GameZone.class);
 
@@ -163,6 +109,15 @@ class ActiveCharactersProviderImplTests {
                 .thenReturn(mockCharacter2RoundData)
                 .thenReturn(mockCharacter3RoundData)
                 .thenReturn(mockCharacter4RoundData);
+
+        mockCharacter1 = mock(Character.class);
+        when(mockCharacter1.data()).thenReturn(mockCharacter1Data);
+        mockCharacter2 = mock(Character.class);
+        when(mockCharacter2.data()).thenReturn(mockCharacter2Data);
+        mockCharacter3 = mock(Character.class);
+        when(mockCharacter3.data()).thenReturn(mockCharacter3Data);
+        mockCharacter4 = mock(Character.class);
+        when(mockCharacter4.data()).thenReturn(mockCharacter4Data);
 
         mockCharacterStatisticCalculation = mock(CharacterStatisticCalculation.class);
         when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockCombatOrder))
@@ -247,7 +202,8 @@ class ActiveCharactersProviderImplTests {
                 () -> new ActiveCharactersProviderImpl(mockGetStatType,
                         mockCharacterStatisticCalculation, mockGetRandomFloat,
                         mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER, STATISTIC_BONUS_AP,
-                        CHARACTER_DATA_IS_INACTIVE, null, ROUND_DATA_COMBAT_PRIORITY, ROUND_DATA_AP));
+                        CHARACTER_DATA_IS_INACTIVE, null, ROUND_DATA_COMBAT_PRIORITY,
+                        ROUND_DATA_AP));
         assertThrows(IllegalArgumentException.class,
                 () -> new ActiveCharactersProviderImpl(mockGetStatType,
                         mockCharacterStatisticCalculation, mockGetRandomFloat,
@@ -279,10 +235,8 @@ class ActiveCharactersProviderImplTests {
 
     @Test
     void testGenerateInTurnOrder() {
-        //noinspection unchecked
-        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
-        when(mockRepresentation.values()).thenReturn(
-                listOf(mockCharacter1, mockCharacter2, mockCharacter3, mockCharacter4));
+        var mockRepresentation =
+                mockRepresentation(mockCharacter1, mockCharacter2, mockCharacter3, mockCharacter4);
         when(mockGameZone.charactersRepresentation()).thenReturn(mockRepresentation);
 
         var activeCharacters = activeCharactersProvider.generateInTurnOrder(mockGameZone);
@@ -341,10 +295,7 @@ class ActiveCharactersProviderImplTests {
                 .thenReturn(character1TieBreaker)
                 .thenReturn(character2TieBreaker)
                 .thenReturn(character3TieBreaker);
-        //noinspection unchecked
-        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
-        when(mockRepresentation.values()).thenReturn(
-                listOf(mockCharacter1, mockCharacter2, mockCharacter3));
+        var mockRepresentation = mockRepresentation(mockCharacter1, mockCharacter2, mockCharacter3);
         when(mockGameZone.charactersRepresentation()).thenReturn(mockRepresentation);
 
         var activeCharacters = activeCharactersProvider.generateInTurnOrder(mockGameZone);
@@ -373,9 +324,7 @@ class ActiveCharactersProviderImplTests {
         when(mockGetRandomFloat.get())
                 .thenReturn(belowCharacter1Alacrity)
                 .thenReturn(aboveCharacter2Alacrity);
-        //noinspection unchecked
-        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
-        when(mockRepresentation.values()).thenReturn(listOf(mockCharacter1, mockCharacter2));
+        var mockRepresentation = mockRepresentation(mockCharacter1, mockCharacter2);
         when(mockGameZone.charactersRepresentation()).thenReturn(mockRepresentation);
 
         activeCharactersProvider.generateInTurnOrder(mockGameZone);
@@ -403,9 +352,7 @@ class ActiveCharactersProviderImplTests {
                 .thenReturn(belowCharacter1AlacrityTier2)
                 .thenReturn(aboveCharacter2AlacrityTier1)
                 .thenReturn(aboveCharacter2AlacrityTier2);
-        //noinspection unchecked
-        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
-        when(mockRepresentation.values()).thenReturn(listOf(mockCharacter1, mockCharacter2));
+        var mockRepresentation = mockRepresentation(mockCharacter1, mockCharacter2);
         when(mockGameZone.charactersRepresentation()).thenReturn(mockRepresentation);
 
         activeCharactersProvider.generateInTurnOrder(mockGameZone);
@@ -436,9 +383,7 @@ class ActiveCharactersProviderImplTests {
                 .thenReturn(threshold)
                 .thenReturn(0f)
                 .thenReturn(threshold + 0.001f);
-        //noinspection unchecked
-        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
-        when(mockRepresentation.values()).thenReturn(listOf(mockCharacter1, mockCharacter2));
+        var mockRepresentation = mockRepresentation(mockCharacter1, mockCharacter2);
         when(mockGameZone.charactersRepresentation()).thenReturn(mockRepresentation);
 
         activeCharactersProvider.generateInTurnOrder(mockGameZone);
@@ -457,10 +402,7 @@ class ActiveCharactersProviderImplTests {
         when(mockCharacterRoundDataFactory.make())
                 .thenReturn(mockCharacter2RoundData)
                 .thenReturn(mockCharacter3RoundData);
-        //noinspection unchecked
-        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
-        when(mockRepresentation.values()).thenReturn(
-                listOf(mockCharacter1, mockCharacter2, mockCharacter3));
+        var mockRepresentation = mockRepresentation(mockCharacter1, mockCharacter2, mockCharacter3);
         when(mockGameZone.charactersRepresentation()).thenReturn(mockRepresentation);
 
         var activeCharacters = activeCharactersProvider.generateInTurnOrder(mockGameZone);
@@ -477,5 +419,13 @@ class ActiveCharactersProviderImplTests {
     void testGenerateInTurnOrderWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
                 () -> activeCharactersProvider.generateInTurnOrder(null));
+    }
+
+    private Map<UUID, Character> mockRepresentation(Character... characters) {
+        //noinspection unchecked
+        var mockRepresentation = (Map<UUID, Character>) mock(Map.class);
+        var list = listOf(characters);
+        when(mockRepresentation.values()).thenReturn(list);
+        return mockRepresentation;
     }
 }

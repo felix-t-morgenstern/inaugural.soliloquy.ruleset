@@ -7,8 +7,6 @@ import org.mockito.Mockito;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
-import soliloquy.specs.gamestate.entities.CharacterVariableStatistic;
-import soliloquy.specs.gamestate.entities.CharacterVariableStatistics;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 import soliloquy.specs.ruleset.entities.character.CharacterAIType;
@@ -17,10 +15,10 @@ import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TurnHandling;
 
+import java.util.List;
 import java.util.function.Consumer;
 
-import static inaugural.soliloquy.tools.collections.Collections.listOf;
-import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.collections.Collections.*;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomIntWithInclusiveCeiling;
 import static org.junit.Assert.assertThrows;
@@ -55,9 +53,8 @@ class TurnHandlingImplTests {
 
     @Mock private StatusEffectType mockStatusEffectType;
     @Mock private CharacterVariableStatisticType mockVariableStatType;
+    @Mock private List<CharacterVariableStatisticType> mockVariableStatTypes;
 
-    @Mock private CharacterVariableStatistics mockVariableStats;
-    @Mock private CharacterVariableStatistic mockVariableStat;
     @Mock private CharacterStatusEffects mockStatusEffects;
     @Mock private CharacterAIType mockAIType;
     @Mock private Character mockCharacter;
@@ -100,17 +97,15 @@ class TurnHandlingImplTests {
         when(mockVariableStatType.onTurnStart()).thenReturn(mockVariableStatTypeTurnStart);
         when(mockVariableStatType.onTurnEnd()).thenReturn(null);
 
-        mockVariableStat = mock(CharacterVariableStatistic.class);
-        when(mockVariableStat.type()).thenReturn(mockVariableStatType);
-        when(mockVariableStat.getCurrentValue()).thenReturn(VARIABLE_STAT_CURRENT_VALUE);
+        var variableStatTypes = listOf(mockVariableStatType);
+        var variableStatTypes2 = listOf(mockVariableStatType);
+        //noinspection unchecked
+        mockVariableStatTypes = (List<CharacterVariableStatisticType>) mock(List.class);
+        when(mockVariableStatTypes.iterator())
+                .thenReturn(variableStatTypes.iterator())
+                .thenReturn(variableStatTypes2.iterator());
+        doCallRealMethod().when(mockVariableStatTypes).forEach(any());
 
-        mockVariableStats = mock(CharacterVariableStatistics.class);
-        var variableStats = listOf(mockVariableStat);
-        var variableStats2 = listOf(mockVariableStat);
-        when(mockVariableStats.iterator())
-                .thenReturn(variableStats.iterator())
-                .thenReturn(variableStats2.iterator());
-        doCallRealMethod().when(mockVariableStats).forEach(any());
 
         mockEffectCalculation = mock(StatisticMagnitudeEffectCalculation.class);
         //noinspection unchecked
@@ -130,18 +125,20 @@ class TurnHandlingImplTests {
 
         mockCharacter = mock(Character.class);
         when(mockCharacter.statusEffects()).thenReturn(mockStatusEffects);
-        when(mockCharacter.variableStatistics()).thenReturn(mockVariableStats);
         when(mockCharacter.getAIType()).thenReturn(mockAIType);
+        when(mockCharacter.getVariableStatisticCurrentValue(any())).thenReturn(VARIABLE_STAT_CURRENT_VALUE);
 
-        turnHandling = new TurnHandlingImpl(mockEffectCalculation, mockPassControlToPlayer);
+        turnHandling = new TurnHandlingImpl(mockEffectCalculation, mockPassControlToPlayer, mockVariableStatTypes);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> new TurnHandlingImpl(null, mockPassControlToPlayer));
+                () -> new TurnHandlingImpl(null, mockPassControlToPlayer, mockVariableStatTypes));
         assertThrows(IllegalArgumentException.class,
-                () -> new TurnHandlingImpl(mockEffectCalculation, null));
+                () -> new TurnHandlingImpl(mockEffectCalculation, null, mockVariableStatTypes));
+        assertThrows(IllegalArgumentException.class,
+                () -> new TurnHandlingImpl(mockEffectCalculation, mockPassControlToPlayer, null));
     }
 
     @Test
@@ -153,23 +150,19 @@ class TurnHandlingImplTests {
         turnHandling.runTurn(mockCharacter);
 
         var inOrder = Mockito.inOrder(mockCharacter, mockStatusEffects, mockStatusEffectType,
-                mockVariableStats, mockVariableStat, mockVariableStatType, mockEffectCalculation,
+                mockVariableStatType, mockEffectCalculation, mockVariableStatTypes,
                 mockStatusEffectTypeTurnStart, mockVariableStatTypeTurnStart,
                 mockStatusEffectTypeTurnEnd, mockAIType);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnStart();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnStart();
         inOrder.verify(mockCharacter).getPlayerControlled();
         inOrder.verify(mockCharacter).getAIType();
         inOrder.verify(mockAIType).act(mockCharacter);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnEnd();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnEnd();
         verify(mockStatusEffectTypeTurnStart, never()).magnitudes();
         verify(mockStatusEffectTypeTurnStart, never()).accompanyEffect(any(), any());
@@ -194,22 +187,18 @@ class TurnHandlingImplTests {
         turnHandling.runTurn(mockCharacter);
 
         var inOrder = Mockito.inOrder(mockCharacter, mockStatusEffects, mockStatusEffectType,
-                mockVariableStats, mockVariableStat, mockVariableStatType, mockEffectCalculation,
+                mockVariableStatType, mockEffectCalculation, mockVariableStatTypes,
                 mockStatusEffectTypeTurnStart, mockVariableStatTypeTurnStart,
                 mockStatusEffectTypeTurnEnd, mockPassControlToPlayer);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnStart();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnStart();
         inOrder.verify(mockCharacter).getPlayerControlled();
         inOrder.verify(mockPassControlToPlayer).accept(mockCharacter);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnEnd();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnEnd();
         verify(mockStatusEffectTypeTurnStart, never()).magnitudes();
         verify(mockStatusEffectTypeTurnStart, never()).accompanyEffect(any(), any());
@@ -229,15 +218,14 @@ class TurnHandlingImplTests {
         turnHandling.runTurn(mockCharacter);
 
         var inOrder = Mockito.inOrder(mockCharacter, mockStatusEffects, mockStatusEffectType,
-                mockVariableStats, mockVariableStat, mockVariableStatType, mockEffectCalculation,
+                mockVariableStatType, mockEffectCalculation, mockVariableStatTypes,
                 mockStatusEffectTypeTurnStart, mockVariableStatTypeTurnStart,
                 mockStatusEffectTypeTurnEnd, mockAIType);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnStart();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnStart();
+        inOrder.verify(mockCharacter).getVariableStatisticCurrentValue(mockVariableStatType);
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation)
                 .getEffect(mockStatusEffectType, mockStatusEffectTypeTurnStartMagnitude,
@@ -259,9 +247,7 @@ class TurnHandlingImplTests {
         inOrder.verify(mockAIType).act(mockCharacter);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnEnd();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnEnd();
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation)
@@ -280,15 +266,14 @@ class TurnHandlingImplTests {
         turnHandling.runTurn(mockCharacter);
 
         var inOrder = Mockito.inOrder(mockCharacter, mockStatusEffects, mockStatusEffectType,
-                mockVariableStats, mockVariableStat, mockVariableStatType, mockEffectCalculation,
+                mockVariableStatType, mockEffectCalculation, mockVariableStatTypes,
                 mockStatusEffectTypeTurnStart, mockVariableStatTypeTurnStart,
                 mockStatusEffectTypeTurnEnd, mockPassControlToPlayer);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnStart();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnStart();
+        inOrder.verify(mockCharacter).getVariableStatisticCurrentValue(mockVariableStatType);
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation)
                 .getEffect(mockStatusEffectType, mockStatusEffectTypeTurnStartMagnitude,
@@ -309,9 +294,7 @@ class TurnHandlingImplTests {
         inOrder.verify(mockPassControlToPlayer).accept(mockCharacter);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnEnd();
-        inOrder.verify(mockCharacter).variableStatistics();
-        inOrder.verify(mockVariableStats).iterator();
-        inOrder.verify(mockVariableStat).type();
+        inOrder.verify(mockVariableStatTypes).iterator();
         inOrder.verify(mockVariableStatType).onTurnEnd();
         //noinspection unchecked
         inOrder.verify(mockEffectCalculation)

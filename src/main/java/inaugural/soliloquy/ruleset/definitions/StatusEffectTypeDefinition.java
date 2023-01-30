@@ -6,6 +6,7 @@ public class StatusEffectTypeDefinition {
     public boolean stopsAtZero;
     public String nameAtValueFunctionId;
     public IconForCharacterFunction[] iconForCharacterFunctions;
+    public String alterValueActionId;
     public EffectsOnCharacterDefinition effectsOnRoundEnd;
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
@@ -13,6 +14,7 @@ public class StatusEffectTypeDefinition {
     public StatusEffectTypeDefinition(String id, String name, boolean stopsAtZero,
                                       String nameAtValueFunctionId,
                                       IconForCharacterFunction[] iconForCharacterFunctions,
+                                      String alterValueActionId,
                                       EffectsOnCharacterDefinition effectsOnRoundEnd,
                                       EffectsOnCharacterDefinition effectsOnTurnStart,
                                       EffectsOnCharacterDefinition effectsOnTurnEnd) {
@@ -21,6 +23,7 @@ public class StatusEffectTypeDefinition {
         this.stopsAtZero = stopsAtZero;
         this.nameAtValueFunctionId = nameAtValueFunctionId;
         this.iconForCharacterFunctions = iconForCharacterFunctions;
+        this.alterValueActionId = alterValueActionId;
         this.effectsOnRoundEnd = effectsOnRoundEnd;
         this.effectsOnTurnStart = effectsOnTurnStart;
         this.effectsOnTurnEnd = effectsOnTurnEnd;

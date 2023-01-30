@@ -1,29 +1,36 @@
 package inaugural.soliloquy.ruleset.entities.factories.character;
 
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
 import inaugural.soliloquy.tools.Check;
+import soliloquy.specs.common.entities.Action;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
+import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.graphics.assets.ImageAsset;
-import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
-import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
-import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 
 import java.util.HashMap;
 import java.util.function.Function;
 
+import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
+
 public class StatusEffectTypeFactory implements
         Factory<StatusEffectTypeDefinition, StatusEffectType> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
+    @SuppressWarnings("rawtypes") private final Function<String, Action> GET_ACTION;
     private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
 
     @SuppressWarnings("rawtypes")
     public StatusEffectTypeFactory(Function<String, Function> getFunction,
+                                   Function<String, Action> getAction,
                                    Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
                                            effectsOnCharacterFactory) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
+        GET_ACTION = Check.ifNull(getAction, "getAction");
         EFFECTS_ON_CHARACTER_FACTORY =
                 Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
     }
@@ -35,6 +42,7 @@ public class StatusEffectTypeFactory implements
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
         Check.ifNullOrEmpty(definition.nameAtValueFunctionId, "definition.nameAtValueFunctionId");
+        Check.ifNullOrEmpty(definition.alterValueActionId, "definition.alterValueActionId");
         Check.ifNull(definition.effectsOnRoundEnd, "definition.effectsOnRoundEnd");
         Check.ifNull(definition.effectsOnTurnStart, "definition.effectsOnTurnStart");
         Check.ifNull(definition.effectsOnTurnEnd, "definition.effectsOnTurnEnd");
@@ -63,7 +71,6 @@ public class StatusEffectTypeFactory implements
             var iconTypeFunction =
                     (Function<Character, Pair<ImageAsset, Integer>>) GET_FUNCTION.apply(
                             iconForCharacterFunction.functionId);
-
             if (iconTypeFunction == null) {
                 throw new IllegalArgumentException(
                         "StatusEffectTypeFactory.make: functionId within iconForCharacterFunction" +
@@ -74,6 +81,15 @@ public class StatusEffectTypeFactory implements
             }
 
             iconTypeFunctions.put(iconForCharacterFunction.iconType, iconTypeFunction);
+        }
+
+        //noinspection unchecked
+        Action<Object[]> alterAction = GET_ACTION.apply(definition.alterValueActionId);
+        if (alterAction == null) {
+            throw new IllegalArgumentException(
+                    "StatusEffectTypeFactory.make: definition.alterValueActionId (" +
+                            definition.alterValueActionId +
+                            ") does not correspond to a valid Action");
         }
 
         var onRoundEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
@@ -97,6 +113,13 @@ public class StatusEffectTypeFactory implements
             @Override
             public String nameAtValue(int value) throws UnsupportedOperationException {
                 return NAME_AT_VALUE_FUNCTION.apply(value);
+            }
+
+            @Override
+            public void alterValue(Character character, int amount)
+                    throws IllegalArgumentException, EntityDeletedException {
+                Check.ifNull(character, "character");
+                alterAction.run(arrayOf(character, amount));
             }
 
             @Override

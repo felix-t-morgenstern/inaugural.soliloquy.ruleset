@@ -1,10 +1,12 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
+import soliloquy.specs.common.entities.Action;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
+import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
@@ -18,24 +20,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
+
 /** @noinspection rawtypes */
 public class CharacterVariableStatisticTypeFactory implements
         Factory<CharacterVariableStatisticTypeDefinition, CharacterVariableStatisticType> {
     private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
-    private final java.util.function.Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
-    private final java.util.function.Function<String, Function> GET_FUNCTION;
+    private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
+    private final Function<String, Function> GET_FUNCTION;
+    private final Function<String, Action> GET_ACTION;
     private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
 
     public CharacterVariableStatisticTypeFactory(
             TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
-            java.util.function.Function<String, ImageAssetSet> getImageAssetSet,
-            java.util.function.Function<String, Function> getFunction,
+            Function<String, ImageAssetSet> getImageAssetSet,
+            Function<String, Function> getFunction,
+            Function<String, Action> getAction,
             Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory) {
         COLOR_SHIFT_PROVIDER_HANDLER =
                 Check.ifNull(colorShiftProviderHandler, "colorShiftProviderHandler");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
+        GET_ACTION = Check.ifNull(getAction, "getAction");
         EFFECTS_ON_CHARACTER_FACTORY =
                 Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
     }
@@ -50,6 +57,7 @@ public class CharacterVariableStatisticTypeFactory implements
         Check.ifNullOrEmpty(definition.imageAssetSetId, "definition.imageAssetSetId");
         Check.ifNullOrEmpty(definition.iconForCharacterFunctionId,
                 "definition.iconForCharacterFunctionId");
+        Check.ifNullOrEmpty(definition.alterActionId, "definition.alterActionId");
         Check.ifNull(definition.effectsOnRoundEnd, "definition.effectsOnRoundEnd");
         Check.ifNull(definition.effectsOnTurnStart, "definition.effectsOnTurnStart");
         Check.ifNull(definition.effectsOnTurnEnd, "definition.effectsOnTurnEnd");
@@ -70,6 +78,14 @@ public class CharacterVariableStatisticTypeFactory implements
                             ".iconForCharacterFunctionId does not correspond to a valid Function");
         }
 
+        //noinspection unchecked
+        Action<Object[]> alterAction = GET_ACTION.apply(definition.alterActionId);
+        if (alterAction == null) {
+            throw new IllegalArgumentException(
+                    "CharacterVariableStatisticTypeFactory.make: definition.alterActionId does " +
+                            "not correspond to a valid Function");
+        }
+
         var colorShiftProviders = new ArrayList<ProviderAtTime<ColorShift>>();
         for (var colorShiftProvider : definition.defaultColorShifts) {
             colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
@@ -80,6 +96,13 @@ public class CharacterVariableStatisticTypeFactory implements
         var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
 
         return new CharacterVariableStatisticType() {
+            @Override
+            public void alter(Character character, int amount)
+                    throws IllegalArgumentException, EntityDeletedException {
+                Check.ifNull(character, "character");
+                alterAction.run(arrayOf(character, amount));
+            }
+
             private String name = definition.name;
             private String pluralName = definition.pluralName;
             private String description = definition.description;

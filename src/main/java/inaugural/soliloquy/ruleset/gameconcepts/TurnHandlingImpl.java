@@ -10,6 +10,7 @@ import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TurnHandling;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -20,11 +21,14 @@ import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 public class TurnHandlingImpl implements TurnHandling {
     private final StatisticMagnitudeEffectCalculation EFFECT_CALCULATION;
     private final Consumer<Character> PASS_CONTROL_TO_PLAYER;
+    private final List<CharacterVariableStatisticType> VARIABLE_STAT_TYPES;
 
     public TurnHandlingImpl(StatisticMagnitudeEffectCalculation effectCalculation,
-                            Consumer<Character> passControlToPlayer) {
+                            Consumer<Character> passControlToPlayer,
+                            List<CharacterVariableStatisticType> variableStatTypes) {
         EFFECT_CALCULATION = Check.ifNull(effectCalculation, "effectCalculation");
         PASS_CONTROL_TO_PLAYER = Check.ifNull(passControlToPlayer, "passControlToPlayer");
+        VARIABLE_STAT_TYPES = Check.ifNull(variableStatTypes, "variableStatTypes");
     }
 
     @Override
@@ -52,11 +56,10 @@ public class TurnHandlingImpl implements TurnHandling {
                 phaseEffects.put(phaseEffect, Pair.of(statusEffectType, level));
             }
         }));
-        character.variableStatistics().forEach(variableStat -> {
-            var phaseEffect = getPhaseEffect.apply(variableStat.type());
+        VARIABLE_STAT_TYPES.forEach(variableStatType -> {
+            var phaseEffect = getPhaseEffect.apply(variableStatType);
             if (phaseEffect != null) {
-                phaseEffects.put(phaseEffect,
-                        Pair.of(variableStat.type(), variableStat.getCurrentValue()));
+                phaseEffects.put(phaseEffect, Pair.of(variableStatType, character.getVariableStatisticCurrentValue(variableStatType)));
             }
         });
         var orderedEffects = orderByPriority(phaseEffects.keySet());
