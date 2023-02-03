@@ -3,25 +3,22 @@ package inaugural.soliloquy.ruleset.definitions.abilities;
 public class ReactiveAbilityDefinition {
     public String characterSourceDescriptionFunctionId;
     public String itemSourceDescriptionFunctionId;
-    public Integer priority;
-    public String[] fireEvents;
+    public String firesAgainstEventFunctionId;
     public String firesAgainstAbilityFunctionId;
-    public String reactToAbilityFunctionId;
     public String reactToEventFunctionId;
+    public String reactToAbilityFunctionId;
 
     public ReactiveAbilityDefinition(String characterSourceDescriptionFunctionId,
                                      String itemSourceDescriptionFunctionId,
-                                     Integer priority,
-                                     String[] fireEvents,
+                                     String firesAgainstEventFunctionId,
                                      String firesAgainstAbilityFunctionId,
-                                     String reactToAbilityFunctionId,
-                                     String reactToEventFunctionId) {
+                                     String reactToEventFunctionId,
+                                     String reactToAbilityFunctionId) {
         this.characterSourceDescriptionFunctionId = characterSourceDescriptionFunctionId;
         this.itemSourceDescriptionFunctionId = itemSourceDescriptionFunctionId;
-        this.priority = priority;
-        this.fireEvents = fireEvents;
+        this.firesAgainstEventFunctionId = firesAgainstEventFunctionId;
         this.firesAgainstAbilityFunctionId = firesAgainstAbilityFunctionId;
-        this.reactToAbilityFunctionId = reactToAbilityFunctionId;
         this.reactToEventFunctionId = reactToEventFunctionId;
+        this.reactToAbilityFunctionId = reactToAbilityFunctionId;
     }
 }
