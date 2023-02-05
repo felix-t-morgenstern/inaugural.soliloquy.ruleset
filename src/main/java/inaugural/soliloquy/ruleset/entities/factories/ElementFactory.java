@@ -20,6 +20,7 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
+        Check.ifNullOrEmpty(definition.description, "definition.description");
         Check.ifNullOrEmpty(definition.imageAssetSetId, "definition.imageAssetSetId");
         ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
@@ -29,6 +30,7 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
 
         return new Element() {
             private String name = definition.name;
+            private String description = definition.description;
 
             @Override
             public String id() throws IllegalStateException {
@@ -43,6 +45,16 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
             @Override
             public void setName(String name) {
                 this.name = Check.ifNullOrEmpty(name, "name");
+            }
+
+            @Override
+            public String getDescription() {
+                return description;
+            }
+
+            @Override
+            public void setDescription(String description) throws IllegalArgumentException {
+                this.description = Check.ifNullOrEmpty(description, "description");
             }
 
             @Override
