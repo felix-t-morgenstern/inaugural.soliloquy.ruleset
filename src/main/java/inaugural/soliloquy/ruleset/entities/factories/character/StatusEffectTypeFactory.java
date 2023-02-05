@@ -1,6 +1,7 @@
 package inaugural.soliloquy.ruleset.entities.factories.character;
 
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.entities.Action;
@@ -10,12 +11,16 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
+import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableAction;
+import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 
 public class StatusEffectTypeFactory implements
         Factory<StatusEffectTypeDefinition, StatusEffectType> {
@@ -23,16 +28,22 @@ public class StatusEffectTypeFactory implements
     @SuppressWarnings("rawtypes") private final Function<String, Action> GET_ACTION;
     private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
+    private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+            ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     @SuppressWarnings("rawtypes")
     public StatusEffectTypeFactory(Function<String, Function> getFunction,
                                    Function<String, Action> getAction,
                                    Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
-                                           effectsOnCharacterFactory) {
+                                           effectsOnCharacterFactory,
+                                   Factory<RoundEndEffectsOnCharacterDefinition,
+                                           RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
         GET_ACTION = Check.ifNull(getAction, "getAction");
         EFFECTS_ON_CHARACTER_FACTORY =
                 Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
+        ROUND_END_EFFECTS_ON_CHARACTER_FACTORY = Check.ifNull(roundEndEffectsOnCharacterFactory,
+                "roundEndEffectsOnCharacterFactory");
     }
 
     @Override
@@ -41,23 +52,15 @@ public class StatusEffectTypeFactory implements
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
-        Check.ifNullOrEmpty(definition.nameAtValueFunctionId, "definition.nameAtValueFunctionId");
-        Check.ifNullOrEmpty(definition.alterValueActionId, "definition.alterValueActionId");
         Check.ifNull(definition.effectsOnRoundEnd, "definition.effectsOnRoundEnd");
         Check.ifNull(definition.effectsOnTurnStart, "definition.effectsOnTurnStart");
         Check.ifNull(definition.effectsOnTurnEnd, "definition.effectsOnTurnEnd");
 
-        //noinspection unchecked
-        var nameAtValueFunction =
-                (Function<Integer, String>) GET_FUNCTION.apply(definition.nameAtValueFunctionId);
-        if (nameAtValueFunction == null) {
-            throw new IllegalArgumentException(
-                    "StatusEffectTypeFactory.make: definition.nameAtValueFunctionId does not " +
-                            "correspond to valid function Id");
-        }
+        Function<Integer, String> nameAtValueFunction = getNonNullableFunction(GET_FUNCTION,
+                definition.nameAtValueFunctionId, "definition.nameAtValueFunctionId");
+
         Check.ifNull(definition.iconForCharacterFunctions, "definition.iconForCharacterFunctions");
-        var iconTypeFunctions =
-                new HashMap<String, Function<Character, Pair<ImageAsset, Integer>>>();
+        Map<String, Function<Character, Pair<ImageAsset, Integer>>> iconTypeFunctions = mapOf();
 
         for (var iconForCharacterFunction : definition.iconForCharacterFunctions) {
             Check.ifNull(iconForCharacterFunction,
@@ -67,32 +70,18 @@ public class StatusEffectTypeFactory implements
             Check.ifNullOrEmpty(iconForCharacterFunction.functionId,
                     "functionId within iconForCharacterFunction within definition");
 
-            //noinspection unchecked
-            var iconTypeFunction =
-                    (Function<Character, Pair<ImageAsset, Integer>>) GET_FUNCTION.apply(
-                            iconForCharacterFunction.functionId);
-            if (iconTypeFunction == null) {
-                throw new IllegalArgumentException(
-                        "StatusEffectTypeFactory.make: functionId within iconForCharacterFunction" +
-                                " with iconType = " +
-                                iconForCharacterFunction.iconType + " (functionId = " +
-                                iconForCharacterFunction.functionId +
-                                ") does not correspond to valid function Id");
-            }
+            Function<Character, Pair<ImageAsset, Integer>> iconTypeFunction =
+                    getNonNullableFunction(GET_FUNCTION, iconForCharacterFunction.functionId,
+                            "iconForCharacterFunction within definition.iconForCharacterFunctions");
 
             iconTypeFunctions.put(iconForCharacterFunction.iconType, iconTypeFunction);
         }
 
-        //noinspection unchecked
-        Action<Object[]> alterAction = GET_ACTION.apply(definition.alterValueActionId);
-        if (alterAction == null) {
-            throw new IllegalArgumentException(
-                    "StatusEffectTypeFactory.make: definition.alterValueActionId (" +
-                            definition.alterValueActionId +
-                            ") does not correspond to a valid Action");
-        }
+        Action<Object[]> alterAction =
+                getNonNullableAction(GET_ACTION, definition.alterValueActionId,
+                        "definition.alterValueActionId");
 
-        var onRoundEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
+        var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
         var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
         var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
 
@@ -100,7 +89,7 @@ public class StatusEffectTypeFactory implements
             private final String ID = definition.id;
             private final boolean STOPS_AT_ZERO = definition.stopsAtZero;
             private final Function<Integer, String> NAME_AT_VALUE_FUNCTION = nameAtValueFunction;
-            private final HashMap<String, Function<Character, Pair<ImageAsset, Integer>>>
+            private final Map<String, Function<Character, Pair<ImageAsset, Integer>>>
                     ICON_TYPE_FUNCTIONS = iconTypeFunctions;
 
             private String name = definition.name;
@@ -152,7 +141,7 @@ public class StatusEffectTypeFactory implements
             }
 
             @Override
-            public EffectsOnCharacter onRoundEnd() {
+            public RoundEndEffectsOnCharacter onRoundEnd() {
                 return onRoundEnd;
             }
 

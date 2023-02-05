@@ -3,7 +3,6 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import soliloquy.specs.common.entities.Function;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
@@ -17,9 +16,11 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import inaugural.soliloquy.ruleset.definitions.FixtureTypeDefinition;
 import soliloquy.specs.ruleset.entities.FixtureType;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.HandlerAndEntity;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockEntityAndHandler;
@@ -39,15 +40,14 @@ class FixtureTypeFactoryTests {
 
     private final String SPRITE_ID = randomString();
     private final String GLOBAL_LOOPING_ANIMATION_ID = randomString();
-    private final HashMap<String, Sprite> SPRITES = new HashMap<>();
-    private final HashMap<String, GlobalLoopingAnimation> GLOBAL_LOOPING_ANIMATIONS =
-            new HashMap<>();
+    private final Map<String, Sprite> SPRITES = mapOf();
+    private final Map<String, GlobalLoopingAnimation> GLOBAL_LOOPING_ANIMATIONS = mapOf();
     private final String ON_STEP_FUNCTION_ID = randomString();
     private final String CAN_STEP_FUNCTION_ID = randomString();
     private final String HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID = randomString();
     private final Direction DIRECTION = SOUTHWEST;
     @SuppressWarnings("rawtypes")
-    private final HashMap<String, Function> FUNCTIONS = new HashMap<>();
+    private final Map<String, Function> FUNCTIONS = mapOf();
 
     @Mock private Sprite mockSprite;
     @Mock private GlobalLoopingAnimation mockLoopingAnimation;
@@ -84,8 +84,7 @@ class FixtureTypeFactoryTests {
         mockCanStepFunction = (Function<Character, Boolean>) mock(Function.class);
         when(mockCanStepFunction.apply(any())).thenReturn(true);
         //noinspection unchecked
-        mockHeightMovementPenaltyMitigationFunction =
-                (Function<Object[], Integer>) mock(Function.class);
+        mockHeightMovementPenaltyMitigationFunction = (Function<Object[], Integer>) mock(Function.class);
         when(mockHeightMovementPenaltyMitigationFunction.apply(any()))
                 .thenReturn(HEIGHT_MOVEMENT_PENALTY_MITIGATION);
         FUNCTIONS.put(ON_STEP_FUNCTION_ID, mockOnStepFunction);
@@ -153,10 +152,10 @@ class FixtureTypeFactoryTests {
                 output.defaultTileOffset());
         assertEquals(ADDITIONAL_MOVEMENT_COST, additionalMovementCost);
         assertEquals(HEIGHT_MOVEMENT_PENALTY_MITIGATION, heightMovementPenaltyMitigation);
-        verify(COLOR_SHIFT_HANDLER, times(1)).read(COLOR_SHIFT_WRITTEN_VALUE);
-        verify(mockOnStepFunction, times(1)).apply(mockCharacter1);
-        verify(mockCanStepFunction, times(1)).apply(mockCharacter2);
-        verify(mockHeightMovementPenaltyMitigationFunction, times(1)).apply(
+        verify(COLOR_SHIFT_HANDLER).read(COLOR_SHIFT_WRITTEN_VALUE);
+        verify(mockOnStepFunction).apply(mockCharacter1);
+        verify(mockCanStepFunction).apply(mockCharacter2);
+        verify(mockHeightMovementPenaltyMitigationFunction).apply(
                 eq(new Object[]{mockTile, mockCharacter1, SOUTHWEST}));
     }
 
@@ -188,10 +187,10 @@ class FixtureTypeFactoryTests {
                 output.defaultTileOffset());
         assertEquals(ADDITIONAL_MOVEMENT_COST, additionalMovementCost);
         assertEquals(HEIGHT_MOVEMENT_PENALTY_MITIGATION, heightMovementPenaltyMitigation);
-        verify(COLOR_SHIFT_HANDLER, times(1)).read(COLOR_SHIFT_WRITTEN_VALUE);
-        verify(mockOnStepFunction, times(1)).apply(mockCharacter1);
-        verify(mockCanStepFunction, times(1)).apply(mockCharacter2);
-        verify(mockHeightMovementPenaltyMitigationFunction, times(1)).apply(
+        verify(COLOR_SHIFT_HANDLER).read(COLOR_SHIFT_WRITTEN_VALUE);
+        verify(mockOnStepFunction).apply(mockCharacter1);
+        verify(mockCanStepFunction).apply(mockCharacter2);
+        verify(mockHeightMovementPenaltyMitigationFunction).apply(
                 eq(new Object[]{mockTile, mockCharacter1, SOUTHWEST}));
     }
 

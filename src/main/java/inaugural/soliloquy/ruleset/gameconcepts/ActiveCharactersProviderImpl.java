@@ -10,16 +10,16 @@ import soliloquy.specs.ruleset.entities.character.CharacterStatisticType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
 import soliloquy.specs.ruleset.gameconcepts.CharacterStatisticCalculation;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.ruleset.constants.Constants.BONUS_AP_TIER_1_RANGE_MAXIMUM;
 import static inaugural.soliloquy.ruleset.constants.Constants.BONUS_AP_TIER_1_RANGE_MINIMUM;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 
 public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
     private final CharacterStatisticType IMPULSE;
@@ -64,9 +64,8 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
             throws IllegalArgumentException {
         Check.ifNull(gameZone, "gameZone");
 
-        var activeCharactersByImpulse =
-                new HashMap<Integer, List<Pair<Character, VariableCache>>>();
-        var impulses = new ArrayList<Integer>();
+        Map<Integer, List<Pair<Character, VariableCache>>> activeCharactersByImpulse = mapOf();
+        List<Integer> impulses = listOf();
 
         gameZone.charactersRepresentation().values().forEach(character -> {
             var isInactive = character.data().getVariable(CHARACTER_DATA_IS_INACTIVE);
@@ -97,7 +96,7 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
             }
         });
 
-        var activeCharacters = new ArrayList<Pair<Character, VariableCache>>();
+        List<Pair<Character, VariableCache>> activeCharacters = listOf();
 
         impulses.sort(Collections.reverseOrder());
 
@@ -116,8 +115,8 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
 
     private void resolveImpulseTies(List<Pair<Character, VariableCache>> activeCharacters,
                                     List<Pair<Character, VariableCache>> tiedCharacters) {
-        var tieBreakers = new ArrayList<Float>();
-        var charactersByTieBreakers = new HashMap<Float, Pair<Character, VariableCache>>();
+        List<Float> tieBreakers = listOf();
+        Map<Float, Pair<Character, VariableCache>> charactersByTieBreakers = mapOf();
 
         tiedCharacters.forEach(character -> {
             var tieBreaker = GET_RANDOM_FLOAT.get();

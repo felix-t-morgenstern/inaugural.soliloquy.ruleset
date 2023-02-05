@@ -7,7 +7,7 @@ public class StatusEffectTypeDefinition {
     public String nameAtValueFunctionId;
     public IconForCharacterFunction[] iconForCharacterFunctions;
     public String alterValueActionId;
-    public EffectsOnCharacterDefinition effectsOnRoundEnd;
+    public RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd;
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
 
@@ -15,7 +15,7 @@ public class StatusEffectTypeDefinition {
                                       String nameAtValueFunctionId,
                                       IconForCharacterFunction[] iconForCharacterFunctions,
                                       String alterValueActionId,
-                                      EffectsOnCharacterDefinition effectsOnRoundEnd,
+                                      RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
                                       EffectsOnCharacterDefinition effectsOnTurnStart,
                                       EffectsOnCharacterDefinition effectsOnTurnEnd) {
         this.id = id;

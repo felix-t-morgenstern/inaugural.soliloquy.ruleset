@@ -8,8 +8,9 @@ import soliloquy.specs.graphics.assets.ImageAssetSet;
 import inaugural.soliloquy.ruleset.definitions.ElementDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 
-import java.util.HashMap;
+import java.util.Map;
 
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -18,7 +19,7 @@ class ElementFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String IMAGE_ASSET_SET_ID = randomString();
-    private final HashMap<String, ImageAssetSet> IMAGE_ASSET_SETS = new HashMap<>();
+    private final Map<String, ImageAssetSet> IMAGE_ASSET_SETS = mapOf();
 
     @Mock
     private ImageAssetSet mockImageAssetSet;

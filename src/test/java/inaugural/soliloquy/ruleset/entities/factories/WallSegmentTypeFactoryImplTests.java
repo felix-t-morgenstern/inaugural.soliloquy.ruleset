@@ -10,8 +10,9 @@ import soliloquy.specs.graphics.assets.Sprite;
 import inaugural.soliloquy.ruleset.definitions.WallSegmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.WallSegmentType;
 
-import java.util.HashMap;
+import java.util.Map;
 
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.randomBoolean;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static org.junit.Assert.*;
@@ -25,9 +26,8 @@ class WallSegmentTypeFactoryImplTests {
     private final boolean BLOCKS_WEST = randomBoolean();
     private final boolean BLOCKS_NORTHWEST = randomBoolean();
     private final boolean BLOCKS_NORTH = randomBoolean();
-    private final HashMap<String, Sprite> SPRITES = new HashMap<>();
-    private final HashMap<String, GlobalLoopingAnimation> GLOBAL_LOOPING_ANIMATIONS =
-            new HashMap<>();
+    private final Map<String, Sprite> SPRITES = mapOf();
+    private final Map<String, GlobalLoopingAnimation> GLOBAL_LOOPING_ANIMATIONS = mapOf();
 
     @Mock
     private Sprite mockSprite;

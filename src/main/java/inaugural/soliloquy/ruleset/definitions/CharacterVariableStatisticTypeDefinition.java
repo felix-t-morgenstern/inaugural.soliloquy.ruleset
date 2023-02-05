@@ -9,7 +9,7 @@ public class CharacterVariableStatisticTypeDefinition {
     public String[] defaultColorShifts;
     public String iconForCharacterFunctionId;
     public String alterActionId;
-    public EffectsOnCharacterDefinition effectsOnRoundEnd;
+    public RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd;
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
 
@@ -21,10 +21,9 @@ public class CharacterVariableStatisticTypeDefinition {
                                                     String[] defaultColorShifts,
                                                     String iconForCharacterFunctionId,
                                                     String alterActionId,
-                                                    EffectsOnCharacterDefinition effectsOnRoundEnd,
+                                                    RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
                                                     EffectsOnCharacterDefinition effectsOnTurnStart,
-                                                    EffectsOnCharacterDefinition effectsOnTurnEnd)
-    {
+                                                    EffectsOnCharacterDefinition effectsOnTurnEnd) {
         this.id = id;
         this.name = name;
         this.pluralName = pluralName;

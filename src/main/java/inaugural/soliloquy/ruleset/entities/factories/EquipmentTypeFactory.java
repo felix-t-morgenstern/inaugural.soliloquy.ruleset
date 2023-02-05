@@ -1,12 +1,11 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
+import inaugural.soliloquy.ruleset.definitions.EquipmentTypeDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
-import inaugural.soliloquy.ruleset.definitions.EquipmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class EquipmentTypeFactory implements Factory<EquipmentTypeDefinition, EquipmentType> {
@@ -16,11 +15,16 @@ public class EquipmentTypeFactory implements Factory<EquipmentTypeDefinition, Eq
         Check.ifNull(equipmentTypeDefinition, "equipmentTypeDefinition");
 
         return new EquipmentType() {
-            private final String ID = Check.ifNullOrEmpty(equipmentTypeDefinition.id, "equipmentTypeDefinition.id");
-            private final HashSet<String> EQUIPABLE_SLOT_TYPES = new HashSet<>(Arrays.asList(Check.ifNull(equipmentTypeDefinition.equipableSlotTypes, "equipmentTypeDefinition.equipableSlotTypes")));
+            private final String ID =
+                    Check.ifNullOrEmpty(equipmentTypeDefinition.id, "equipmentTypeDefinition.id");
+            private final HashSet<String> EQUIPABLE_SLOT_TYPES = new HashSet<>(Arrays.asList(
+                    Check.ifNull(equipmentTypeDefinition.equipableSlotTypes,
+                            "equipmentTypeDefinition.equipableSlotTypes")));
 
-            private String name = Check.ifNullOrEmpty(equipmentTypeDefinition.name, "equipmentTypeDefinition.name");
-            private String pluralName = Check.ifNullOrEmpty(equipmentTypeDefinition.pluralName, "equipmentTypeDefinition.pluralName");
+            private String name = Check.ifNullOrEmpty(equipmentTypeDefinition.name,
+                    "equipmentTypeDefinition.name");
+            private String pluralName = Check.ifNullOrEmpty(equipmentTypeDefinition.pluralName,
+                    "equipmentTypeDefinition.pluralName");
 
             @Override
             public boolean canEquipToSlotType(String equipmentSlotType)

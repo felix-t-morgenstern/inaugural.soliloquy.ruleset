@@ -132,10 +132,10 @@ class ActiveAbilityFactoryTests {
         output.use(mockAbilitySource, targets);
 
         assertNotNull(output);
-        verify(mockGetFunction, times(1)).apply(CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID);
-        verify(mockGetFunction, times(1)).apply(ITEM_SOURCE_DESCRIPTION_FUNCTION_ID);
-        verify(mockGetConsumer, times(1)).apply(USE_FUNCTION_ID);
-        verify(MOCK_DATA_HANDLER, times(1)).read(WRITTEN_DATA);
+        verify(mockGetFunction).apply(CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID);
+        verify(mockGetFunction).apply(ITEM_SOURCE_DESCRIPTION_FUNCTION_ID);
+        verify(mockGetConsumer).apply(USE_FUNCTION_ID);
+        verify(MOCK_DATA_HANDLER).read(WRITTEN_DATA);
 
         assertEquals(ActiveAbility.class.getCanonicalName(), output.getInterfaceName());
 
@@ -144,13 +144,13 @@ class ActiveAbilityFactoryTests {
         assertNotSame(TARGET_TYPES, targetTypes);
         assertArrayEquals(TARGET_TYPES, targetTypes);
 
-        verify(mockCharacterSourceDescriptionFunction, times(1)).apply(mockCharacter);
+        verify(mockCharacterSourceDescriptionFunction).apply(mockCharacter);
         assertEquals(CHARACTER_SOURCE_DESCRIPTION_OUTPUT, characterSourceDescription);
 
-        verify(mockItemSourceDescriptionFunction, times(1)).apply(mockItem);
+        verify(mockItemSourceDescriptionFunction).apply(mockItem);
         assertEquals(ITEM_SOURCE_DESCRIPTION_OUTPUT, itemSourceDescription);
 
-        verify(mockUseConsumer, times(1)).accept(
+        verify(mockUseConsumer).accept(
                 eq(arrayOf(mockCharacterEventFiring, mockAbilitySource, mockCharacter, mockItem)));
     }
 

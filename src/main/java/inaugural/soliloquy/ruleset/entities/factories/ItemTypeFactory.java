@@ -1,7 +1,6 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.entities.Function;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
@@ -15,27 +14,28 @@ import soliloquy.specs.ruleset.entities.abilities.ActiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.PassiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.ReactiveAbility;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+
+import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
     private final TypeHandler<VariableCache> VARIABLE_CACHE_HANDLER;
-    private final java.util.function.Function<String, EquipmentType> GET_EQUIPMENT_TYPE;
-    private final java.util.function.Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
-    private final java.util.function.Function<String, Function<Character, String>>
-            GET_DESCRIPTION_FUNCTION;
-    private final java.util.function.Function<String, ActiveAbility> GET_ACTIVE_ABILITY;
-    private final java.util.function.Function<String, ReactiveAbility> GET_REACTIVE_ABILITY;
-    private final java.util.function.Function<String, PassiveAbility> GET_PASSIVE_ABILITY;
+    private final Function<String, EquipmentType> GET_EQUIPMENT_TYPE;
+    private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
+    private final Function<String, Function<Character, String>> GET_DESCRIPTION_FUNCTION;
+    private final Function<String, ActiveAbility> GET_ACTIVE_ABILITY;
+    private final Function<String, ReactiveAbility> GET_REACTIVE_ABILITY;
+    private final Function<String, PassiveAbility> GET_PASSIVE_ABILITY;
 
     public ItemTypeFactory(
             TypeHandler<VariableCache> variableCacheHandler,
-            java.util.function.Function<String, EquipmentType> getEquipmentType,
-            java.util.function.Function<String, ImageAssetSet> getImageAssetSet,
-            java.util.function.Function<String, Function<Character, String>> getDescriptionFunction,
-            java.util.function.Function<String, ActiveAbility> getActiveAbility,
-            java.util.function.Function<String, ReactiveAbility> getReactiveAbility,
-            java.util.function.Function<String, PassiveAbility> getPassiveAbility) {
+            Function<String, EquipmentType> getEquipmentType,
+            Function<String, ImageAssetSet> getImageAssetSet,
+            Function<String, Function<Character, String>> getDescriptionFunction,
+            Function<String, ActiveAbility> getActiveAbility,
+            Function<String, ReactiveAbility> getReactiveAbility,
+            Function<String, PassiveAbility> getPassiveAbility) {
         VARIABLE_CACHE_HANDLER = Check.ifNull(variableCacheHandler, "variableCacheHandler");
         GET_EQUIPMENT_TYPE = Check.ifNull(getEquipmentType, "getEquipmentType");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
@@ -105,15 +105,15 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
         VariableCache traits = VARIABLE_CACHE_HANDLER
                 .read(Check.ifNullOrEmpty(definition.traits, "definition.traits"));
 
-        ArrayList<ActiveAbility> activeAbilities =
+        List<ActiveAbility> activeAbilities =
                 populateEntityList(definition.activeAbilityIds, GET_ACTIVE_ABILITY,
                         "definition.activeAbilityIds");
 
-        ArrayList<ReactiveAbility> reactiveAbilities =
+        List<ReactiveAbility> reactiveAbilities =
                 populateEntityList(definition.reactiveAbilityIds, GET_REACTIVE_ABILITY,
                         "definition.reactiveAbilityIds");
 
-        ArrayList<PassiveAbility> passiveAbilities =
+        List<PassiveAbility> passiveAbilities =
                 populateEntityList(definition.passiveAbilityIds, GET_PASSIVE_ABILITY,
                         "definition.passiveAbilityIds");
 
@@ -231,12 +231,12 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
         };
     }
 
-    private <T> ArrayList<T> populateEntityList(String[] entityIds,
-                                                java.util.function.Function<String, T> getEntity,
-                                                String entityIdListName) {
-        ArrayList<T> entityList = new ArrayList<>();
+    private <T> List<T> populateEntityList(String[] entityIds,
+                                           Function<String, T> getEntity,
+                                           String entityIdListName) {
+        List<T> entityList = listOf();
 
-        for (String entityId : entityIds) {
+        for (var entityId : entityIds) {
             Check.ifNullOrEmpty(entityId, "Id within " + entityIdListName);
             T entity = getEntity.apply(entityId);
             if (entity == null) {

@@ -3,7 +3,6 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import soliloquy.specs.common.entities.Function;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
@@ -17,8 +16,9 @@ import soliloquy.specs.ruleset.entities.abilities.ActiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.PassiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.ReactiveAbility;
 
-import java.util.ArrayList;
+import java.util.function.Function;
 
+import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,18 +50,17 @@ class ItemTypeFactoryTests {
     @Mock private VariableCache mockVariableCache;
     @Mock private TypeHandler<VariableCache> mockVariableCacheHandler;
     @Mock private EquipmentType mockEquipmentType;
-    @Mock private java.util.function.Function<String, EquipmentType> mockGetEquipmentType;
+    @Mock private Function<String, EquipmentType> mockGetEquipmentType;
     @Mock private ImageAssetSet mockImageAssetSet;
-    @Mock private java.util.function.Function<String, ImageAssetSet> mockGetImageAssetSet;
+    @Mock private Function<String, ImageAssetSet> mockGetImageAssetSet;
     @Mock private Function<Character, String> mockDescriptionFunction;
-    @Mock private java.util.function.Function<String, Function<Character, String>>
-            mockGetDescriptionFunction;
+    @Mock private Function<String, Function<Character, String>> mockGetDescriptionFunction;
     @Mock private ActiveAbility mockActiveAbility;
-    @Mock private java.util.function.Function<String, ActiveAbility> mockGetActiveAbility;
+    @Mock private Function<String, ActiveAbility> mockGetActiveAbility;
     @Mock private ReactiveAbility mockReactiveAbility;
-    @Mock private java.util.function.Function<String, ReactiveAbility> mockGetReactiveAbility;
+    @Mock private Function<String, ReactiveAbility> mockGetReactiveAbility;
     @Mock private PassiveAbility mockPassiveAbility;
-    @Mock private java.util.function.Function<String, PassiveAbility> mockGetPassiveAbility;
+    @Mock private Function<String, PassiveAbility> mockGetPassiveAbility;
 
     private Factory<ItemTypeDefinition, ItemType> factory;
 
@@ -76,15 +75,13 @@ class ItemTypeFactoryTests {
         mockEquipmentType = mock(EquipmentType.class);
 
         //noinspection unchecked
-        mockGetEquipmentType = (java.util.function.Function<String, EquipmentType>) mock(
-                java.util.function.Function.class);
+        mockGetEquipmentType = (Function<String, EquipmentType>) mock( Function.class);
         when(mockGetEquipmentType.apply(anyString())).thenReturn(mockEquipmentType);
 
         mockImageAssetSet = mock(ImageAssetSet.class);
 
         //noinspection unchecked
-        mockGetImageAssetSet = (java.util.function.Function<String, ImageAssetSet>) mock(
-                java.util.function.Function.class);
+        mockGetImageAssetSet = (Function<String, ImageAssetSet>) mock(Function.class);
         when(mockGetImageAssetSet.apply(anyString())).thenReturn(mockImageAssetSet);
 
         //noinspection unchecked
@@ -92,29 +89,26 @@ class ItemTypeFactoryTests {
 
         //noinspection unchecked
         mockGetDescriptionFunction =
-                (java.util.function.Function<String, Function<Character, String>>) mock(
-                        java.util.function.Function.class);
+                (Function<String, Function<Character, String>>) mock(
+                        Function.class);
         when(mockGetDescriptionFunction.apply(anyString())).thenReturn(mockDescriptionFunction);
 
         mockActiveAbility = mock(ActiveAbility.class);
 
         //noinspection unchecked
-        mockGetActiveAbility = (java.util.function.Function<String, ActiveAbility>) mock(
-                java.util.function.Function.class);
+        mockGetActiveAbility = (Function<String, ActiveAbility>) mock(Function.class);
         when(mockGetActiveAbility.apply(anyString())).thenReturn(mockActiveAbility);
 
         mockReactiveAbility = mock(ReactiveAbility.class);
 
         //noinspection unchecked
-        mockGetReactiveAbility = (java.util.function.Function<String, ReactiveAbility>) mock(
-                java.util.function.Function.class);
+        mockGetReactiveAbility = (Function<String, ReactiveAbility>) mock(Function.class);
         when(mockGetReactiveAbility.apply(anyString())).thenReturn(mockReactiveAbility);
 
         mockPassiveAbility = mock(PassiveAbility.class);
 
         //noinspection unchecked
-        mockGetPassiveAbility = (java.util.function.Function<String, PassiveAbility>) mock(
-                java.util.function.Function.class);
+        mockGetPassiveAbility = (Function<String, PassiveAbility>) mock(Function.class);
         when(mockGetPassiveAbility.apply(anyString())).thenReturn(mockPassiveAbility);
 
         factory = new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType,
@@ -172,23 +166,17 @@ class ItemTypeFactoryTests {
         assertThrows(UnsupportedOperationException.class, output::defaultNumberInStack);
         assertFalse(output.hasCharges());
         assertThrows(UnsupportedOperationException.class, output::defaultCharges);
-        assertEquals(new ArrayList<>() {{
-            add(mockActiveAbility);
-        }}, output.defaultActiveAbilities());
-        assertEquals(new ArrayList<>() {{
-            add(mockReactiveAbility);
-        }}, output.defaultReactiveAbilities());
-        assertEquals(new ArrayList<>() {{
-            add(mockPassiveAbility);
-        }}, output.defaultPassiveAbilities());
+        assertEquals(listOf(mockActiveAbility), output.defaultActiveAbilities());
+        assertEquals(listOf(mockReactiveAbility), output.defaultReactiveAbilities());
+        assertEquals(listOf(mockPassiveAbility), output.defaultPassiveAbilities());
         assertEquals(ItemType.class.getCanonicalName(), output.getInterfaceName());
-        verify(mockGetEquipmentType, times(1)).apply(EQUIPMENT_TYPE_ID);
-        verify(mockGetImageAssetSet, times(1)).apply(IMAGE_ASSET_SET_ID);
-        verify(mockGetDescriptionFunction, times(1)).apply(DESCRIPTION_FUNCTION_ID);
-        verify(mockVariableCacheHandler, times(1)).read(TRAITS);
-        verify(mockGetActiveAbility, times(1)).apply(ACTIVE_ABILITY_ID);
-        verify(mockGetReactiveAbility, times(1)).apply(REACTIVE_ABILITY_ID);
-        verify(mockGetPassiveAbility, times(1)).apply(PASSIVE_ABILITY_ID);
+        verify(mockGetEquipmentType).apply(EQUIPMENT_TYPE_ID);
+        verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
+        verify(mockGetDescriptionFunction).apply(DESCRIPTION_FUNCTION_ID);
+        verify(mockVariableCacheHandler).read(TRAITS);
+        verify(mockGetActiveAbility).apply(ACTIVE_ABILITY_ID);
+        verify(mockGetReactiveAbility).apply(REACTIVE_ABILITY_ID);
+        verify(mockGetPassiveAbility).apply(PASSIVE_ABILITY_ID);
     }
 
     @Test

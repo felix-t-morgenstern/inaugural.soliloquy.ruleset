@@ -6,7 +6,7 @@ public class CharacterStaticStatisticTypeDefinition {
     public String description;
     public String imageAssetSetId;
     public String[] defaultColorShifts;
-    public EffectsOnCharacterDefinition effectsOnRoundEnd;
+    public RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd;
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
 
@@ -15,7 +15,7 @@ public class CharacterStaticStatisticTypeDefinition {
                                                   String description,
                                                   String imageAssetSetId,
                                                   String[] defaultColorShifts,
-                                                  EffectsOnCharacterDefinition effectsOnRoundEnd,
+                                                  RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
                                                   EffectsOnCharacterDefinition effectsOnTurnStart,
                                                   EffectsOnCharacterDefinition effectsOnTurnEnd) {
         this.id = id;

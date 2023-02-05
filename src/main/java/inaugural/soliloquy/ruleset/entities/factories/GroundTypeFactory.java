@@ -1,33 +1,33 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
+import inaugural.soliloquy.ruleset.definitions.GroundTypeDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
-import soliloquy.specs.game.Game;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Tile;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
-import soliloquy.specs.logger.Logger;
-import inaugural.soliloquy.ruleset.definitions.GroundTypeDefinition;
 import soliloquy.specs.ruleset.entities.GroundType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+
+import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
+import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundType> {
     private final TypeHandler<ColorShift> COLOR_SHIFT_HANDLER;
     @SuppressWarnings("rawtypes")
-    private final Function<String, soliloquy.specs.common.entities.Function> GET_FUNCTION;
+    private final Function<String, Function> GET_FUNCTION;
     private final ImageAssetRetrieval IMAGE_ASSET_SET_RETRIEVAL;
 
     public GroundTypeFactory(TypeHandler<ColorShift> colorShiftHandler,
                              @SuppressWarnings("rawtypes")
-                             Function<String, soliloquy.specs.common.entities.Function> getFunction,
+                             Function<String, Function> getFunction,
                              Function<String, Sprite> getSprite,
                              Function<String, GlobalLoopingAnimation> getGlobalLoopingAnimation) {
         COLOR_SHIFT_HANDLER = Check.ifNull(colorShiftHandler, "colorShiftHandler");
@@ -42,7 +42,7 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
 
-        var defaultColorShifts = new ArrayList<ColorShift>();
+        List<ColorShift> defaultColorShifts = listOf();
         if (definition.defaultColorShifts != null) {
             for (var colorShift : definition.defaultColorShifts) {
                 defaultColorShifts.add(COLOR_SHIFT_HANDLER.read(colorShift));
@@ -53,35 +53,16 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
                 ImageAsset.ImageAssetType.getFromValue(definition.imageAssetType),
                 "GroundTypeFactory");
 
-        //noinspection unchecked
-        var onStepFunction =
-                (soliloquy.specs.common.entities.Function<Character, Boolean>) GET_FUNCTION.apply(
-                        definition.onStepFunctionId);
-        if (onStepFunction == null) {
-            throw new IllegalArgumentException(
-                    "GroundTypeFactory.make: onStepFunctionId (" + definition.onStepFunctionId +
-                            ") does not correspond to a valid function");
-        }
-        //noinspection unchecked
-        var canStepFunction =
-                (soliloquy.specs.common.entities.Function<Character, Boolean>) GET_FUNCTION.apply(
-                        definition.canStepFunctionId);
-        if (canStepFunction == null) {
-            throw new IllegalArgumentException(
-                    "GroundTypeFactory.make: canStepFunctionId (" + definition.canStepFunctionId +
-                            ") does not correspond to a valid function");
-        }
-
-        //noinspection unchecked
-        var heightMovementPenaltyMitigationFunction =
-                (soliloquy.specs.common.entities.Function<Object[], Integer>) GET_FUNCTION.apply(
-                        definition.heightMovementPenaltyMitigationFunctionId);
-        if (heightMovementPenaltyMitigationFunction == null) {
-            throw new IllegalArgumentException(
-                    "GroundTypeFactory.make: heightMovementPenaltyMitigationFunctionId (" +
-                            definition.heightMovementPenaltyMitigationFunctionId +
-                            ") does not correspond to a valid function");
-        }
+        Function<Character, Boolean> onStepFunction =
+                getNonNullableFunction(GET_FUNCTION, definition.onStepFunctionId,
+                        "definition.onStepFunctionId");
+        Function<Character, Boolean> canStepFunction =
+                getNonNullableFunction(GET_FUNCTION, definition.canStepFunctionId,
+                        "definition.canStepFunctionId");
+        Function<Object[], Integer> heightMovementPenaltyMitigationFunction =
+                getNonNullableFunction(GET_FUNCTION,
+                        definition.heightMovementPenaltyMitigationFunctionId,
+                        "definition.heightMovementPenaltyMitigationFunctionId");
 
         return new GroundType() {
 

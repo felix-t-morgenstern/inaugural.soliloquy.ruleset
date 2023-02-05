@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
+
 public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, ActiveAbility> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
     @SuppressWarnings("rawtypes") private final Function<String, Consumer> GET_CONSUMER;
@@ -41,33 +43,32 @@ public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, Ac
 
         Check.ifNullOrEmpty(definition.name, "definition.name");
 
-        Check.ifNullOrEmpty(definition.characterSourceDescriptionFunctionId, "definition.characterSourceDescriptionFunctionId");
-        //noinspection unchecked
-        Function<Character, String> characterSourceDescriptionFunction = GET_FUNCTION.apply(definition.characterSourceDescriptionFunctionId);
-        if (characterSourceDescriptionFunction == null) {
-            throw new IllegalArgumentException("ActiveAbilityFactory.make: definition.characterSourceDescriptionFunctionId (" + definition.characterSourceDescriptionFunctionId + ") does not correspond to a valid function");
-        }
-
-        Check.ifNullOrEmpty(definition.itemSourceDescriptionFunctionId, "definition.itemSourceDescriptionFunctionId");
-        //noinspection unchecked
-        Function<Item, String> itemSourceDescriptionFunction = GET_FUNCTION.apply(definition.itemSourceDescriptionFunctionId);
-        if (itemSourceDescriptionFunction == null) {
-            throw new IllegalArgumentException("ActiveAbilityFactory.make: definition.itemSourceDescriptionFunctionId (" + definition.itemSourceDescriptionFunctionId + ") does not correspond to a valid function");
-        }
+        Function<Character, String> characterSourceDescriptionFunction =
+                getNonNullableFunction(GET_FUNCTION,
+                        definition.characterSourceDescriptionFunctionId,
+                        "definition.characterSourceDescriptionFunctionId");
+        Function<Item, String> itemSourceDescriptionFunction =
+                getNonNullableFunction(GET_FUNCTION, definition.itemSourceDescriptionFunctionId,
+                        "definition.itemSourceDescriptionFunctionId");
 
         Check.ifNullOrEmpty(definition.useFunctionId, "definition.useFunctionId");
         var useFunction = GET_CONSUMER.apply(definition.useFunctionId);
         if (useFunction == null) {
-            throw new IllegalArgumentException("ActiveAbilityFactory.make: definition.useFunctionId (" + definition.useFunctionId + ") does not correspond to a valid function");
+            throw new IllegalArgumentException(
+                    "ActiveAbilityFactory.make: definition.useFunctionId (" +
+                            definition.useFunctionId + ") does not correspond to a valid function");
         }
 
         Check.ifNull(definition.targetTypes, "definition.targetTypes");
         for (var targetType : definition.targetTypes) {
             if (targetType == null) {
-                throw new IllegalArgumentException("ActiveAbilityFactory.make: definition.targetTypes cannot contain any null entries");
+                throw new IllegalArgumentException(
+                        "ActiveAbilityFactory.make: definition.targetTypes cannot contain any " +
+                                "null entries");
             }
         }
-        var copiedTargetTypes = Arrays.copyOf(definition.targetTypes, definition.targetTypes.length);
+        var copiedTargetTypes =
+                Arrays.copyOf(definition.targetTypes, definition.targetTypes.length);
 
         var data = DATA_HANDLER.read(Check.ifNullOrEmpty(definition.data, "definition.data"));
 
@@ -97,7 +98,8 @@ public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, Ac
 
             @Override
             public String description(Character character) throws IllegalArgumentException {
-                return characterSourceDescriptionFunction.apply(Check.ifNull(character, "character"));
+                return characterSourceDescriptionFunction.apply(
+                        Check.ifNull(character, "character"));
             }
 
             @Override
@@ -134,6 +136,8 @@ public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, Ac
 
     @Override
     public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" + ActiveAbilityDefinition.class.getCanonicalName() + "," + ActiveAbility.class.getCanonicalName() + ">";
+        return Factory.class.getCanonicalName() + "<" +
+                ActiveAbilityDefinition.class.getCanonicalName() + "," +
+                ActiveAbility.class.getCanonicalName() + ">";
     }
 }

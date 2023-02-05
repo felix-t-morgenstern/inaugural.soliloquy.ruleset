@@ -13,13 +13,13 @@ import soliloquy.specs.ruleset.entities.character.CharacterStatisticType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
 import soliloquy.specs.ruleset.gameconcepts.CharacterStatisticCalculation;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -121,15 +121,15 @@ class ActiveCharactersProviderImplTests {
 
         mockCharacterStatisticCalculation = mock(CharacterStatisticCalculation.class);
         when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockCombatOrder))
-                .thenReturn(Pair.of(CHARACTER_1_IMPULSE, new HashMap<>()));
+                .thenReturn(Pair.of(CHARACTER_1_IMPULSE, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockCombatOrder))
-                .thenReturn(Pair.of(CHARACTER_2_IMPULSE, new HashMap<>()));
+                .thenReturn(Pair.of(CHARACTER_2_IMPULSE, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter3, mockCombatOrder))
-                .thenReturn(Pair.of(CHARACTER_3_IMPULSE, new HashMap<>()));
+                .thenReturn(Pair.of(CHARACTER_3_IMPULSE, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter4, mockCombatOrder))
-                .thenReturn(Pair.of(CHARACTER_4_IMPULSE, new HashMap<>()));
+                .thenReturn(Pair.of(CHARACTER_4_IMPULSE, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(any(), same(mockBonusAp)))
-                .thenReturn(Pair.of(0, new HashMap<>()));
+                .thenReturn(Pair.of(0, mapOf()));
 
         //noinspection unchecked
         mockGetRandomFloat = (Supplier<Float>) mock(Supplier.class);
@@ -251,43 +251,35 @@ class ActiveCharactersProviderImplTests {
         assertSame(mockCharacter2RoundData, activeCharacters.get(1).getItem2());
         assertSame(mockCharacter3RoundData, activeCharacters.get(2).getItem2());
         assertSame(mockCharacter4RoundData, activeCharacters.get(3).getItem2());
-        verify(mockGameZone, times(1)).charactersRepresentation();
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter1,
-                mockCombatOrder);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter1, mockBonusAp);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter2,
-                mockCombatOrder);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter2, mockBonusAp);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter3,
-                mockCombatOrder);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter3, mockBonusAp);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter4,
-                mockCombatOrder);
-        verify(mockCharacterStatisticCalculation, times(1)).calculate(mockCharacter4, mockBonusAp);
+        verify(mockGameZone).charactersRepresentation();
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter1, mockCombatOrder);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter1, mockBonusAp);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter2, mockCombatOrder);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter2, mockBonusAp);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter3, mockCombatOrder);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter3, mockBonusAp);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter4, mockCombatOrder);
+        verify(mockCharacterStatisticCalculation).calculate(mockCharacter4, mockBonusAp);
         verify(mockCharacterRoundDataFactory, times(4)).make();
-        verify(mockCharacter1RoundData, times(1))
-                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_1_IMPULSE);
-        verify(mockCharacter2RoundData, times(1))
-                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_2_IMPULSE);
-        verify(mockCharacter3RoundData, times(1))
-                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_3_IMPULSE);
-        verify(mockCharacter4RoundData, times(1))
-                .setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_4_IMPULSE);
-        verify(mockCharacter1RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_1_BASE_AP);
-        verify(mockCharacter2RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP);
-        verify(mockCharacter3RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_3_BASE_AP);
-        verify(mockCharacter4RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_4_BASE_AP);
+        verify(mockCharacter1RoundData).setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_1_IMPULSE);
+        verify(mockCharacter2RoundData).setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_2_IMPULSE);
+        verify(mockCharacter3RoundData).setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_3_IMPULSE);
+        verify(mockCharacter4RoundData).setVariable(ROUND_DATA_COMBAT_PRIORITY, CHARACTER_4_IMPULSE);
+        verify(mockCharacter1RoundData).setVariable(ROUND_DATA_AP, CHARACTER_1_BASE_AP);
+        verify(mockCharacter2RoundData).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP);
+        verify(mockCharacter3RoundData).setVariable(ROUND_DATA_AP, CHARACTER_3_BASE_AP);
+        verify(mockCharacter4RoundData).setVariable(ROUND_DATA_AP, CHARACTER_4_BASE_AP);
     }
 
     @Test
     void testImpulseTiesResolvedRandomly() {
         var tiedImpulse = randomInt();
         when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockCombatOrder))
-                .thenReturn(Pair.of(tiedImpulse, new HashMap<>()));
+                .thenReturn(Pair.of(tiedImpulse, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockCombatOrder))
-                .thenReturn(Pair.of(tiedImpulse, new HashMap<>()));
+                .thenReturn(Pair.of(tiedImpulse, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter3, mockCombatOrder))
-                .thenReturn(Pair.of(tiedImpulse, new HashMap<>()));
+                .thenReturn(Pair.of(tiedImpulse, mapOf()));
         var character1TieBreaker = randomFloat();
         var character2TieBreaker = character1TieBreaker + 1f;
         var character3TieBreaker = character2TieBreaker + 1f;
@@ -318,9 +310,9 @@ class ActiveCharactersProviderImplTests {
         var belowCharacter1Alacrity = 0.25f;
         var aboveCharacter2Alacrity = 0.5f;
         when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockBonusAp))
-                .thenReturn(Pair.of(character1Alacrity, new HashMap<>()));
+                .thenReturn(Pair.of(character1Alacrity, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockBonusAp))
-                .thenReturn(Pair.of(character2Alacrity, new HashMap<>()));
+                .thenReturn(Pair.of(character2Alacrity, mapOf()));
         when(mockGetRandomFloat.get())
                 .thenReturn(belowCharacter1Alacrity)
                 .thenReturn(aboveCharacter2Alacrity);
@@ -329,9 +321,8 @@ class ActiveCharactersProviderImplTests {
 
         activeCharactersProvider.generateInTurnOrder(mockGameZone);
 
-        verify(mockCharacter1RoundData, times(1)).setVariable(ROUND_DATA_AP,
-                CHARACTER_1_BASE_AP + 1);
-        verify(mockCharacter2RoundData, times(1)).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP);
+        verify(mockCharacter1RoundData).setVariable(ROUND_DATA_AP, CHARACTER_1_BASE_AP + 1);
+        verify(mockCharacter2RoundData).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP);
         verify(mockGetRandomFloat, times(2)).get();
     }
 
@@ -344,9 +335,9 @@ class ActiveCharactersProviderImplTests {
         var aboveCharacter2AlacrityTier1 = 0.5f;
         var aboveCharacter2AlacrityTier2 = 0.25f;
         when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockBonusAp))
-                .thenReturn(Pair.of(character1Alacrity, new HashMap<>()));
+                .thenReturn(Pair.of(character1Alacrity, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockBonusAp))
-                .thenReturn(Pair.of(character2Alacrity, new HashMap<>()));
+                .thenReturn(Pair.of(character2Alacrity, mapOf()));
         when(mockGetRandomFloat.get())
                 .thenReturn(belowCharacter1AlacrityTier1)
                 .thenReturn(belowCharacter1AlacrityTier2)
@@ -357,10 +348,8 @@ class ActiveCharactersProviderImplTests {
 
         activeCharactersProvider.generateInTurnOrder(mockGameZone);
 
-        verify(mockCharacter1RoundData, times(1)).setVariable(ROUND_DATA_AP,
-                CHARACTER_1_BASE_AP + 2);
-        verify(mockCharacter2RoundData, times(1)).setVariable(ROUND_DATA_AP,
-                CHARACTER_2_BASE_AP + 1);
+        verify(mockCharacter1RoundData).setVariable(ROUND_DATA_AP, CHARACTER_1_BASE_AP + 2);
+        verify(mockCharacter2RoundData).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP + 1);
         verify(mockGetRandomFloat, times(4)).get();
     }
 
@@ -373,9 +362,9 @@ class ActiveCharactersProviderImplTests {
         var alacrityWithinRange = characters1And2Alacrity - expectedRangeMinimum;
         var threshold = alacrityWithinRange / (float) rangeWidth;
         when(mockCharacterStatisticCalculation.calculate(mockCharacter1, mockBonusAp))
-                .thenReturn(Pair.of(characters1And2Alacrity, new HashMap<>()));
+                .thenReturn(Pair.of(characters1And2Alacrity, mapOf()));
         when(mockCharacterStatisticCalculation.calculate(mockCharacter2, mockBonusAp))
-                .thenReturn(Pair.of(characters1And2Alacrity, new HashMap<>()));
+                .thenReturn(Pair.of(characters1And2Alacrity, mapOf()));
         // The initial thresholds of 0f are for +8 bonus AP, so the threshold can be tested at
         // level 9 for both characters
         when(mockGetRandomFloat.get())
@@ -388,10 +377,8 @@ class ActiveCharactersProviderImplTests {
 
         activeCharactersProvider.generateInTurnOrder(mockGameZone);
 
-        verify(mockCharacter1RoundData, times(1)).setVariable(ROUND_DATA_AP,
-                CHARACTER_1_BASE_AP + 10);
-        verify(mockCharacter2RoundData, times(1)).setVariable(ROUND_DATA_AP,
-                CHARACTER_2_BASE_AP + 9);
+        verify(mockCharacter1RoundData).setVariable(ROUND_DATA_AP, CHARACTER_1_BASE_AP + 10);
+        verify(mockCharacter2RoundData).setVariable(ROUND_DATA_AP, CHARACTER_2_BASE_AP + 9);
     }
 
     @Test

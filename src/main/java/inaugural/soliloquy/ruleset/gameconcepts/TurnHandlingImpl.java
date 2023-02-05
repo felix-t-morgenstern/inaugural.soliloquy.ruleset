@@ -1,6 +1,7 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
 import inaugural.soliloquy.tools.Check;
+import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange;
@@ -20,11 +21,11 @@ import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 
 public class TurnHandlingImpl implements TurnHandling {
     private final StatisticMagnitudeEffectCalculation EFFECT_CALCULATION;
-    private final Consumer<Character> PASS_CONTROL_TO_PLAYER;
+    private final Consumer<Pair<Character, VariableCache>> PASS_CONTROL_TO_PLAYER;
     private final List<CharacterVariableStatisticType> VARIABLE_STAT_TYPES;
 
     public TurnHandlingImpl(StatisticMagnitudeEffectCalculation effectCalculation,
-                            Consumer<Character> passControlToPlayer,
+                            Consumer<Pair<Character, VariableCache>> passControlToPlayer,
                             List<CharacterVariableStatisticType> variableStatTypes) {
         EFFECT_CALCULATION = Check.ifNull(effectCalculation, "effectCalculation");
         PASS_CONTROL_TO_PLAYER = Check.ifNull(passControlToPlayer, "passControlToPlayer");
@@ -32,64 +33,75 @@ public class TurnHandlingImpl implements TurnHandling {
     }
 
     @Override
-    public void runTurn(Character character) throws IllegalArgumentException {
-        runTurnPhase(character, EffectsCharacterOnRoundOrTurnChange::onTurnStart);
+    public void runTurn(Character character, VariableCache turnData, boolean advancingRounds)
+            throws IllegalArgumentException {
+        runTurnPhase(character, EffectsCharacterOnRoundOrTurnChange::onTurnStart, advancingRounds);
 
-        if (character.getPlayerControlled()) {
-            PASS_CONTROL_TO_PLAYER.accept(character);
-        }
-        else {
-            character.getAIType().act(character);
+        if (!advancingRounds) {
+            if (character.getPlayerControlled()) {
+                PASS_CONTROL_TO_PLAYER.accept(Pair.of(character, turnData));
+            }
+            else {
+                character.getAIType().act(character, turnData);
+            }
         }
 
-        runTurnPhase(character, EffectsCharacterOnRoundOrTurnChange::onTurnEnd);
+        runTurnPhase(character, EffectsCharacterOnRoundOrTurnChange::onTurnEnd, advancingRounds);
     }
 
     private void runTurnPhase(Character character,
                               Function<EffectsCharacterOnRoundOrTurnChange, EffectsOnCharacter>
-                                      getPhaseEffect) {
-        Map<EffectsOnCharacter, Pair<EffectsCharacterOnRoundOrTurnChange, Integer>>
-                phaseEffects = mapOf();
-        character.statusEffects().representation().forEach(((statusEffectType, level) -> {
+                                      getPhaseEffect,
+                              boolean advancingRounds) {
+        Map<EffectsOnCharacter, EffectsCharacterOnRoundOrTurnChange> phaseEffects = mapOf();
+        character.statusEffects().representation().keySet().forEach((statusEffectType -> {
             var phaseEffect = getPhaseEffect.apply(statusEffectType);
             if (phaseEffect != null) {
-                phaseEffects.put(phaseEffect, Pair.of(statusEffectType, level));
+                phaseEffects.put(phaseEffect, statusEffectType);
             }
         }));
         VARIABLE_STAT_TYPES.forEach(variableStatType -> {
             var phaseEffect = getPhaseEffect.apply(variableStatType);
             if (phaseEffect != null) {
-                phaseEffects.put(phaseEffect, Pair.of(variableStatType, character.getVariableStatisticCurrentValue(variableStatType)));
+                phaseEffects.put(phaseEffect, variableStatType);
             }
         });
         var orderedEffects = orderByPriority(phaseEffects.keySet());
 
-        orderedEffects.forEach(effects -> runEffect(effects, phaseEffects.get(effects).getItem1(),
-                phaseEffects.get(effects).getItem2(), character));
+        orderedEffects.forEach(effects -> runEffect(effects, phaseEffects.get(effects), character,
+                advancingRounds));
     }
 
     private void runEffect(EffectsOnCharacter effect,
                            EffectsCharacterOnRoundOrTurnChange effectingType,
-                           int effectingLevels,
-                           Character character) {
-        var effectValues = new int[effect.magnitudes().size()];
-        for (var i = 0; i < effectValues.length; i++) {
+                           Character character,
+                           boolean advancingRounds) {
+        var numberOfMagnitudes = effect.magnitudes().size();
+        var effectValues = new int[numberOfMagnitudes];
+        var targetVariableStats = new CharacterVariableStatisticType[numberOfMagnitudes];
+        for (var i = 0; i < numberOfMagnitudes; i++) {
+            var magnitude = effect.magnitudes().get(i);
+            targetVariableStats[i] = magnitude.effectedStatisticType();
             if (effectingType instanceof CharacterVariableStatisticType) {
                 //noinspection unchecked
                 effectValues[i] =
                         EFFECT_CALCULATION.getEffect((CharacterVariableStatisticType) effectingType,
-                                effect.magnitudes().get(i), effectingLevels, character);
+                                magnitude, character);
             }
             else {
                 //noinspection unchecked
                 effectValues[i] =
-                        EFFECT_CALCULATION.getEffect((StatusEffectType) effectingType,
-                                effect.magnitudes().get(i), effectingLevels, character);
+                        EFFECT_CALCULATION.getEffect((StatusEffectType) effectingType, magnitude,
+                                character);
             }
         }
 
-        effect.accompanyEffect(effectValues, character);
+        effect.accompanyEffect(effectValues, character, advancingRounds);
 
-        effect.otherEffects(effectValues, character);
+        for (var i = 0; i < numberOfMagnitudes; i++) {
+            targetVariableStats[i].alter(character, effectValues[i]);
+        }
+
+        effect.otherEffects(effectValues, character, advancingRounds);
     }
 }

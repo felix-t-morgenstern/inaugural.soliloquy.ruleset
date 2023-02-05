@@ -1,5 +1,8 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
+import inaugural.soliloquy.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -12,15 +15,14 @@ import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
-import inaugural.soliloquy.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
-import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
 
-import java.util.ArrayList;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
+import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static org.junit.jupiter.api.Assertions.*;
@@ -52,14 +54,16 @@ class CharacterVariableStatisticTypeFactoryTests {
     @SuppressWarnings("rawtypes")
     @Mock private Function<String, Action> mockGetAction;
 
-    @Mock private EffectsOnCharacterDefinition mockRoundEndEffectDefinition;
+    @Mock private RoundEndEffectsOnCharacterDefinition mockRoundEndEffectDefinition;
     @Mock private EffectsOnCharacterDefinition mockTurnStartEffectDefinition;
     @Mock private EffectsOnCharacterDefinition mockTurnEndEffectDefinition;
-    @Mock private EffectsOnCharacter mockRoundEndEffect;
+    @Mock private RoundEndEffectsOnCharacter mockRoundEndEffect;
     @Mock private EffectsOnCharacter mockTurnStartEffect;
     @Mock private EffectsOnCharacter mockTurnEndEffect;
     @Mock private Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             mockEffectsOnCharacterFactory;
+    @Mock private Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+            mockRoundEndEffectsOnCharacterFactory;
 
     private CharacterVariableStatisticTypeDefinition definition;
 
@@ -103,23 +107,29 @@ class CharacterVariableStatisticTypeFactoryTests {
         mockGetAction = (Function<String, Action>) mock(Function.class);
         when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
 
-        mockRoundEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
         mockTurnStartEffectDefinition = mock(EffectsOnCharacterDefinition.class);
         mockTurnEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
 
-        mockRoundEndEffect = mock(EffectsOnCharacter.class);
         mockTurnStartEffect = mock(EffectsOnCharacter.class);
         mockTurnEndEffect = mock(EffectsOnCharacter.class);
 
         //noinspection unchecked
         mockEffectsOnCharacterFactory =
                 (Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>) mock(Factory.class);
-        when(mockEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
-                .thenReturn(mockRoundEndEffect);
         when(mockEffectsOnCharacterFactory.make(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
         when(mockEffectsOnCharacterFactory.make(mockTurnEndEffectDefinition))
                 .thenReturn(mockTurnEndEffect);
+
+        mockRoundEndEffectDefinition = mock(RoundEndEffectsOnCharacterDefinition.class);
+        mockRoundEndEffect = mock(RoundEndEffectsOnCharacter.class);
+
+        //noinspection unchecked
+        mockRoundEndEffectsOnCharacterFactory =
+                (Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>) mock(
+                        Factory.class);
+        when(mockRoundEndEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
+                .thenReturn(mockRoundEndEffect);
 
         definition =
                 new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
@@ -130,27 +140,31 @@ class CharacterVariableStatisticTypeFactoryTests {
 
         factory = new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
                 mockGetImageAssetSet, mockGetFunction, mockGetAction,
-                mockEffectsOnCharacterFactory);
+                mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
                 () -> new CharacterVariableStatisticTypeFactory(null, mockGetImageAssetSet,
-                        mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory));
+                        mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
+                        mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
                 () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler, null,
-                        mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory));
+                        mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
+                        mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
                 () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
-                        mockGetImageAssetSet, null, mockGetAction, mockEffectsOnCharacterFactory));
+                        mockGetImageAssetSet, null, mockGetAction, mockEffectsOnCharacterFactory,
+                        mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
                 () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
                         mockGetImageAssetSet, mockGetFunction, null,
-                        mockEffectsOnCharacterFactory));
+                        mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
                 () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
-                        mockGetImageAssetSet, mockGetFunction, mockGetAction, null));
+                        mockGetImageAssetSet, mockGetFunction, mockGetAction, null,
+                        mockRoundEndEffectsOnCharacterFactory));
     }
 
     @Test
@@ -167,25 +181,20 @@ class CharacterVariableStatisticTypeFactoryTests {
         assertEquals(PLURAL_NAME, output.getPluralName());
         assertEquals(DESCRIPTION, output.getDescription());
         assertSame(mockImageAssetSet, output.imageAssetSet());
-        assertEquals(new ArrayList<>() {{
-            add(mockColorShiftProvider);
-        }}, output.colorShiftProviders());
+        assertEquals(listOf(mockColorShiftProvider), output.colorShiftProviders());
         assertEquals(CharacterVariableStatisticType.class.getCanonicalName(),
                 output.getInterfaceName());
-        verify(mockGetImageAssetSet, times(1)).apply(IMAGE_ASSET_SET_ID);
-        verify(mockColorShiftProviderHandler, times(1)).read(WRITTEN_COLOR_SHIFT_PROVIDER);
-        verify(mockGetFunction, times(1)).apply(ICON_FOR_CHARACTER_FUNCTION_ID);
-        verify(mockGetAction, times(1)).apply(ALTER_ACTION_ID);
-        verify(mockAlterAction, times(1)).run(eq(arrayOf(mockCharacter, amount)));
+        verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
+        verify(mockColorShiftProviderHandler).read(WRITTEN_COLOR_SHIFT_PROVIDER);
+        verify(mockGetFunction).apply(ICON_FOR_CHARACTER_FUNCTION_ID);
+        verify(mockGetAction).apply(ALTER_ACTION_ID);
+        verify(mockAlterAction).run(eq(arrayOf(mockCharacter, amount)));
         assertSame(mockRoundEndEffect, output.onRoundEnd());
-        verify(mockEffectsOnCharacterFactory, times(1))
-                .make(mockRoundEndEffectDefinition);
+        verify(mockRoundEndEffectsOnCharacterFactory).make(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
-        verify(mockEffectsOnCharacterFactory, times(1))
-                .make(mockTurnStartEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).make(mockTurnStartEffectDefinition);
         assertSame(mockTurnEndEffect, output.onTurnEnd());
-        verify(mockEffectsOnCharacterFactory, times(1))
-                .make(mockTurnEndEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).make(mockTurnEndEffectDefinition);
     }
 
     @Test
@@ -362,7 +371,7 @@ class CharacterVariableStatisticTypeFactoryTests {
         Pair<ImageAsset, Integer> iconForCharacter = output.getIcon(iconType, character);
 
         assertSame(mockIconForCharacter, iconForCharacter);
-        verify(mockIconForCharacterFunction, times(1)).apply(Pair.of(iconType, character));
+        verify(mockIconForCharacterFunction).apply(Pair.of(iconType, character));
     }
 
     @Test

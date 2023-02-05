@@ -1,13 +1,14 @@
 package inaugural.soliloquy.ruleset.entities.actonroundendandcharacterturn.factories;
 
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.entities.Action;
 import soliloquy.specs.common.factories.Factory;
+import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
-import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
-import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition;
-import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
-import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 
 import java.util.List;
@@ -18,13 +19,13 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 @SuppressWarnings("rawtypes")
-public class EffectsOnCharacterFactory
-        implements Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> {
+public class RoundEndEffectsOnCharacterFactory
+        implements Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> {
     @SuppressWarnings("rawtypes") private final Function<String, Action> GET_ACTION;
     private final Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude>
             MAGNITUDE_FACTORY;
 
-    public EffectsOnCharacterFactory(
+    public RoundEndEffectsOnCharacterFactory(
             @SuppressWarnings("rawtypes") Function<String, Action> getAction,
             Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> magnitudeFactory) {
         GET_ACTION = Check.ifNull(getAction, "getAction");
@@ -32,7 +33,7 @@ public class EffectsOnCharacterFactory
     }
 
     @Override
-    public EffectsOnCharacter make(EffectsOnCharacterDefinition definition)
+    public RoundEndEffectsOnCharacter make(RoundEndEffectsOnCharacterDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNull(definition.magnitudeForStatisticDefinitions,
@@ -53,9 +54,14 @@ public class EffectsOnCharacterFactory
                 getNullableAction(GET_ACTION, definition.otherEffectsFunctionId,
                         "definition.otherEffectsFunctionId");
 
+        final Action<Object[]> accompanyAllEffectsAction =
+                getNullableAction(GET_ACTION, definition.accompanyAllEffectsFunctionId,
+                        "definition.accompanyAllEffectsFunctionId");
+
         //noinspection rawtypes
-        return new EffectsOnCharacter() {
-            private final MagnitudeForStatisticDefinition[] MAGNITUDE_DEFINITIONS =
+        return new RoundEndEffectsOnCharacter() {
+            private final EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition[]
+                    MAGNITUDE_DEFINITIONS =
                     definition.magnitudeForStatisticDefinitions;
             private List<StatisticChangeMagnitude> magnitudes = null;
 
@@ -68,7 +74,8 @@ public class EffectsOnCharacterFactory
             public List<StatisticChangeMagnitude> magnitudes() {
                 if (magnitudes == null) {
                     magnitudes = listOf();
-                    for (MagnitudeForStatisticDefinition definition : MAGNITUDE_DEFINITIONS) {
+                    for (EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition definition
+                            : MAGNITUDE_DEFINITIONS) {
                         magnitudes.add(MAGNITUDE_FACTORY.make(definition.magnitudeDefinition));
                     }
                 }
@@ -76,11 +83,10 @@ public class EffectsOnCharacterFactory
             }
 
             @Override
-            public void accompanyEffect(int[] effects, Character character, boolean advancingRounds)
-                    throws IllegalArgumentException {
+            public void accompanyEffect(int[] effects, Character character, boolean advancingRounds) throws IllegalArgumentException {
                 Check.ifNull(effects, "effects");
                 if (effects.length == 0) {
-                    throw new IllegalArgumentException("EffectsOnCharacter.accompanyEffect: effects cannot be empty");
+                    throw new IllegalArgumentException("RoundEndEffectsOnCharacter.accompanyEffect: effects cannot be empty");
                 }
                 Check.ifNull(character, "character");
                 if (accompanyEffectAction == null) {
@@ -90,11 +96,10 @@ public class EffectsOnCharacterFactory
             }
 
             @Override
-            public void otherEffects(int[] effects, Character character, boolean advancingRounds)
-                    throws IllegalArgumentException {
+            public void otherEffects(int[] effects, Character character, boolean advancingRounds) throws IllegalArgumentException {
                 Check.ifNull(effects, "effects");
                 if (effects.length == 0) {
-                    throw new IllegalArgumentException("EffectsOnCharacter.otherEffects: effects cannot be empty");
+                    throw new IllegalArgumentException("RoundEndEffectsOnCharacter.otherEffects: effects cannot be empty");
                 }
                 Check.ifNull(character, "character");
                 if (otherEffectsAction == null) {
@@ -102,13 +107,27 @@ public class EffectsOnCharacterFactory
                 }
                 otherEffectsAction.run(arrayOf(effects, character, advancingRounds));
             }
+
+            @Override
+            public void accompanyAllEffects(List<Pair<int[], Character>> list, boolean advancingRounds) throws IllegalArgumentException {
+                Check.ifNull(list, "list");
+                for (var pair : list) {
+                    Check.ifNull(pair, "pair within list");
+                    Check.ifNull(pair.getItem1(), "magnitudes within pair within list");
+                    Check.ifNull(pair.getItem2(), "character within pair within list");
+                }
+                if (accompanyAllEffectsAction == null) {
+                    return;
+                }
+                accompanyAllEffectsAction.run(arrayOf(list, advancingRounds));
+            }
         };
     }
 
     @Override
     public String getInterfaceName() {
         return Factory.class.getCanonicalName() + "<" +
-                EffectsOnCharacterDefinition.class.getCanonicalName() + "," +
-                EffectsOnCharacter.class.getCanonicalName() + ">";
+                RoundEndEffectsOnCharacterDefinition.class.getCanonicalName() + "," +
+                RoundEndEffectsOnCharacter.class.getCanonicalName() + ">";
     }
 }

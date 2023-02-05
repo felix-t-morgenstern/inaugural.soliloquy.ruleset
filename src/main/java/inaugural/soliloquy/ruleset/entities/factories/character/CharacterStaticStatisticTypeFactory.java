@@ -1,19 +1,22 @@
 package inaugural.soliloquy.ruleset.entities.factories.character;
 
+import inaugural.soliloquy.ruleset.definitions.CharacterStaticStatisticTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
-import inaugural.soliloquy.ruleset.definitions.CharacterStaticStatisticTypeDefinition;
-import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+
+import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 public class CharacterStaticStatisticTypeFactory implements
         Factory<CharacterStaticStatisticTypeDefinition, CharacterStaticStatisticType> {
@@ -21,16 +24,21 @@ public class CharacterStaticStatisticTypeFactory implements
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
+    private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+            ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     public CharacterStaticStatisticTypeFactory(
             TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
             Function<String, ImageAssetSet> getImageAssetSet,
-            Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory) {
+            Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
+            Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
         COLOR_SHIFT_PROVIDER_HANDLER =
                 Check.ifNull(colorShiftProviderHandler, "colorShiftProviderHandler");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
         EFFECTS_ON_CHARACTER_FACTORY =
                 Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
+        ROUND_END_EFFECTS_ON_CHARACTER_FACTORY = Check.ifNull(roundEndEffectsOnCharacterFactory,
+                "roundEndEffectsOnCharacterFactory");
     }
 
     @Override
@@ -51,13 +59,13 @@ public class CharacterStaticStatisticTypeFactory implements
                             "not correspond to a valid ImageAssetSet");
         }
 
-        ArrayList<ProviderAtTime<ColorShift>> colorShiftProviders = new ArrayList<>();
+        List<ProviderAtTime<ColorShift>> colorShiftProviders = listOf();
         for (String colorShiftProvider : definition.defaultColorShifts) {
             colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
         }
 
-        EffectsOnCharacter onRoundEnd =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
+        RoundEndEffectsOnCharacter onRoundEnd =
+                ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
         EffectsOnCharacter onTurnStart =
                 EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
         EffectsOnCharacter onTurnEnd =
@@ -103,7 +111,7 @@ public class CharacterStaticStatisticTypeFactory implements
             }
 
             @Override
-            public EffectsOnCharacter onRoundEnd() {
+            public RoundEndEffectsOnCharacter onRoundEnd() {
                 return onRoundEnd;
             }
 

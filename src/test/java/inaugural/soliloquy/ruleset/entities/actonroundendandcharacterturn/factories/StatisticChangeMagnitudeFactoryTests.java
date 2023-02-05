@@ -78,7 +78,7 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertNotNull(output);
         assertSame(mockVariableStatType, output.effectedStatisticType());
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
+        verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertEquals(Pair.of(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
@@ -99,7 +99,7 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertNotNull(output);
         assertSame(mockVariableStatType, output.effectedStatisticType());
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
+        verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertEquals(Pair.of(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
@@ -119,7 +119,7 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertNotNull(output);
         assertSame(mockVariableStatType, output.effectedStatisticType());
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
+        verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertNull(output.perLevelRange());
@@ -140,9 +140,9 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertNotNull(output);
         assertSame(mockVariableStatType, output.effectedStatisticType());
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
+        verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(mockElement, output.element());
-        verify(mockGetElement, times(1)).apply(ELEMENT_ID);
+        verify(mockGetElement).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM, output.amountType());
         assertEquals(Pair.of(PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM),
@@ -163,9 +163,9 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertNotNull(output);
         assertSame(mockVariableStatType, output.effectedStatisticType());
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
+        verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(mockElement, output.element());
-        verify(mockGetElement, times(1)).apply(ELEMENT_ID);
+        verify(mockGetElement).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM, output.amountType());
         assertEquals(Pair.of(PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM),
@@ -185,9 +185,9 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertNotNull(output);
         assertSame(mockVariableStatType, output.effectedStatisticType());
-        verify(mockGetVariableStatType, times(1)).apply(VARIABLE_STAT_TYPE_ID);
+        verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(mockElement, output.element());
-        verify(mockGetElement, times(1)).apply(ELEMENT_ID);
+        verify(mockGetElement).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM, output.amountType());
         assertNull(output.perLevelRange());

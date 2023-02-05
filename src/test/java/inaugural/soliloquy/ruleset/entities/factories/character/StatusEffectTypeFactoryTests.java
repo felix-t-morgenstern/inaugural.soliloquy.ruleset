@@ -1,6 +1,7 @@
 package inaugural.soliloquy.ruleset.entities.factories.character;
 
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 
 import java.util.function.Function;
@@ -43,14 +45,16 @@ class StatusEffectTypeFactoryTests {
     @SuppressWarnings("rawtypes")
     @Mock private Function<String, Action> mockGetAction;
 
-    @Mock private EffectsOnCharacterDefinition mockRoundEndEffectDefinition;
+    @Mock private RoundEndEffectsOnCharacterDefinition mockRoundEndEffectDefinition;
     @Mock private EffectsOnCharacterDefinition mockTurnStartEffectDefinition;
     @Mock private EffectsOnCharacterDefinition mockTurnEndEffectDefinition;
-    @Mock private EffectsOnCharacter mockRoundEndEffect;
+    @Mock private RoundEndEffectsOnCharacter mockRoundEndEffect;
     @Mock private EffectsOnCharacter mockTurnStartEffect;
     @Mock private EffectsOnCharacter mockTurnEndEffect;
     @Mock private Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             mockEffectsOnCharacterFactory;
+    @Mock private Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+            mockRoundEndEffectsOnCharacterFactory;
 
     private StatusEffectTypeDefinition definition;
 
@@ -79,23 +83,29 @@ class StatusEffectTypeFactoryTests {
         mockGetAction = (Function<String, Action>) mock(Function.class);
         when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
 
-        mockRoundEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
         mockTurnStartEffectDefinition = mock(EffectsOnCharacterDefinition.class);
         mockTurnEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
 
-        mockRoundEndEffect = mock(EffectsOnCharacter.class);
         mockTurnStartEffect = mock(EffectsOnCharacter.class);
         mockTurnEndEffect = mock(EffectsOnCharacter.class);
 
         //noinspection unchecked
         mockEffectsOnCharacterFactory =
                 (Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>) mock(Factory.class);
-        when(mockEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
-                .thenReturn(mockRoundEndEffect);
         when(mockEffectsOnCharacterFactory.make(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
         when(mockEffectsOnCharacterFactory.make(mockTurnEndEffectDefinition))
                 .thenReturn(mockTurnEndEffect);
+
+        mockRoundEndEffectDefinition = mock(RoundEndEffectsOnCharacterDefinition.class);
+        mockRoundEndEffect = mock(RoundEndEffectsOnCharacter.class);
+
+        //noinspection unchecked
+        mockRoundEndEffectsOnCharacterFactory =
+                (Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>) mock(
+                        Factory.class);
+        when(mockRoundEndEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
+                .thenReturn(mockRoundEndEffect);
 
         definition =
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
@@ -108,19 +118,23 @@ class StatusEffectTypeFactoryTests {
 
         statusEffectTypeFactory =
                 new StatusEffectTypeFactory(mockGetFunction, mockGetAction,
-                        mockEffectsOnCharacterFactory);
+                        mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory);
     }
 
     @Test
     void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
                 () -> new StatusEffectTypeFactory(null, mockGetAction,
-                        mockEffectsOnCharacterFactory));
+                        mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
                 () -> new StatusEffectTypeFactory(mockGetFunction, null,
-                        mockEffectsOnCharacterFactory));
+                        mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new StatusEffectTypeFactory(mockGetFunction, mockGetAction, null));
+                () -> new StatusEffectTypeFactory(mockGetFunction, mockGetAction, null,
+                        mockRoundEndEffectsOnCharacterFactory));
+        assertThrows(IllegalArgumentException.class,
+                () -> new StatusEffectTypeFactory(mockGetFunction, mockGetAction,
+                        mockEffectsOnCharacterFactory, null));
     }
 
     @Test
@@ -141,20 +155,17 @@ class StatusEffectTypeFactoryTests {
         verify(mockGetFunction).apply(ICON_TYPE_FUNCTION_1_ID);
         verify(mockGetFunction).apply(ICON_TYPE_FUNCTION_2_ID);
         verify(mockGetAction).apply(ALTER_ACTION_ID);
-        verify(mockNameAtValueFunction, times(1)).apply(value);
-        verify(mockIconTypeFunction1, times(1)).apply(mockCharacter);
-        verify(mockIconTypeFunction2, times(1)).apply(mockCharacter);
-        verify(mockAlterAction, times(1)).run(eq(arrayOf(mockCharacter, value)));
+        verify(mockNameAtValueFunction).apply(value);
+        verify(mockIconTypeFunction1).apply(mockCharacter);
+        verify(mockIconTypeFunction2).apply(mockCharacter);
+        verify(mockAlterAction).run(eq(arrayOf(mockCharacter, value)));
         assertEquals(StatusEffectType.class.getCanonicalName(), output.getInterfaceName());
         assertSame(mockRoundEndEffect, output.onRoundEnd());
-        verify(mockEffectsOnCharacterFactory, times(1))
-                .make(mockRoundEndEffectDefinition);
+        verify(mockRoundEndEffectsOnCharacterFactory).make(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
-        verify(mockEffectsOnCharacterFactory, times(1))
-                .make(mockTurnStartEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).make(mockTurnStartEffectDefinition);
         assertSame(mockTurnEndEffect, output.onTurnEnd());
-        verify(mockEffectsOnCharacterFactory, times(1))
-                .make(mockTurnEndEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).make(mockTurnEndEffectDefinition);
     }
 
     @Test
