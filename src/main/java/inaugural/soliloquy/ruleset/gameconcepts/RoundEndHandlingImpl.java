@@ -6,6 +6,7 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.GameZone;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
 import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
@@ -28,27 +29,35 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
     private final Map<RoundEndEffectsOnCharacter, StatusEffectType> STATUS_EFFECT_TYPES;
     private final Map<RoundEndEffectsOnCharacter, CharacterVariableStatisticType>
             VARIABLE_STAT_TYPES;
+    private final Map<RoundEndEffectsOnCharacter, CharacterStaticStatisticType>
+            STATIC_STAT_TYPES;
     private final StatisticMagnitudeEffectCalculation MAGNITUDE_CALCULATION;
 
     public RoundEndHandlingImpl(Supplier<GameZone> getCurrentGameZone,
                                 ActiveCharactersProvider activeCharactersProvider,
                                 List<StatusEffectType> statusEffectTypes,
                                 List<CharacterVariableStatisticType> variableStatTypes,
+                                List<CharacterStaticStatisticType> staticStatTypes,
                                 StatisticMagnitudeEffectCalculation magnitudeCalculation) {
         GET_CURRENT_GAME_ZONE = Check.ifNull(getCurrentGameZone, "getCurrentGameZone");
         ACTIVE_CHARACTERS_PROVIDER =
                 Check.ifNull(activeCharactersProvider, "activeCharactersProvider");
         Check.ifNull(statusEffectTypes, "statusEffectTypes");
         Check.ifNull(variableStatTypes, "variableStatTypes");
+        Check.ifNull(staticStatTypes, "staticStatTypes");
         statusEffectTypes.forEach(
                 e -> Check.ifNull(e, "statusEffectType within statusEffectTypes"));
         variableStatTypes.forEach(
                 e -> Check.ifNull(e, "variableStatType within variableStatTypes"));
+        staticStatTypes.forEach(
+                e -> Check.ifNull(e, "staticStatType within staticStatTypes"));
         List<EffectsCharacterOnRoundOrTurnChange> effectsCharacterOnRoundOrTurnChanges = listOf();
         effectsCharacterOnRoundOrTurnChanges.addAll(statusEffectTypes);
         effectsCharacterOnRoundOrTurnChanges.addAll(variableStatTypes);
+        effectsCharacterOnRoundOrTurnChanges.addAll(staticStatTypes);
         STATUS_EFFECT_TYPES = mapOf();
         VARIABLE_STAT_TYPES = mapOf();
+        STATIC_STAT_TYPES = mapOf();
         ROUND_END_EFFECTS = orderByPriority(effectsCharacterOnRoundOrTurnChanges
                 .stream()
                 .map(e -> {
@@ -56,8 +65,11 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
                     if (e instanceof StatusEffectType) {
                         STATUS_EFFECT_TYPES.put(roundEnd, (StatusEffectType) e);
                     }
-                    else {
+                    else if(e instanceof CharacterVariableStatisticType) {
                         VARIABLE_STAT_TYPES.put(roundEnd, (CharacterVariableStatisticType) e);
+                    }
+                    else {
+                        STATIC_STAT_TYPES.put(roundEnd, (CharacterStaticStatisticType) e);
                     }
                     return roundEnd;
                 })
@@ -86,10 +98,16 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
                         calculatedEffect = MAGNITUDE_CALCULATION.getEffect(statusEffectType,
                                 effect.magnitudes().get(i), character);
                     }
-                    else {
+                    else if (VARIABLE_STAT_TYPES.containsKey(effect)) {
                         var variableStatType = VARIABLE_STAT_TYPES.get(effect);
                         //noinspection unchecked
                         calculatedEffect = MAGNITUDE_CALCULATION.getEffect(variableStatType,
+                                effect.magnitudes().get(i), character);
+                    }
+                    else {
+                        var staticStatType = STATIC_STAT_TYPES.get(effect);
+                        //noinspection unchecked
+                        calculatedEffect = MAGNITUDE_CALCULATION.getEffect(staticStatType,
                                 effect.magnitudes().get(i), character);
                     }
                     calculatedEffects[i] = calculatedEffect;

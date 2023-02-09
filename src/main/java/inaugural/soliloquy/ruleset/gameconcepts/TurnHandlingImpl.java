@@ -6,6 +6,7 @@ import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
 import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
@@ -23,13 +24,16 @@ public class TurnHandlingImpl implements TurnHandling {
     private final StatisticMagnitudeEffectCalculation EFFECT_CALCULATION;
     private final Consumer<Pair<Character, VariableCache>> PASS_CONTROL_TO_PLAYER;
     private final List<CharacterVariableStatisticType> VARIABLE_STAT_TYPES;
+    private final List<CharacterStaticStatisticType> STATIC_STAT_TYPES;
 
     public TurnHandlingImpl(StatisticMagnitudeEffectCalculation effectCalculation,
                             Consumer<Pair<Character, VariableCache>> passControlToPlayer,
-                            List<CharacterVariableStatisticType> variableStatTypes) {
+                            List<CharacterVariableStatisticType> variableStatTypes,
+                            List<CharacterStaticStatisticType> staticStatTypes) {
         EFFECT_CALCULATION = Check.ifNull(effectCalculation, "effectCalculation");
         PASS_CONTROL_TO_PLAYER = Check.ifNull(passControlToPlayer, "passControlToPlayer");
         VARIABLE_STAT_TYPES = Check.ifNull(variableStatTypes, "variableStatTypes");
+        STATIC_STAT_TYPES = Check.ifNull(staticStatTypes, "staticStatTypes");
     }
 
     @Override
@@ -66,6 +70,12 @@ public class TurnHandlingImpl implements TurnHandling {
                 phaseEffects.put(phaseEffect, variableStatType);
             }
         });
+        STATIC_STAT_TYPES.forEach(staticStatType -> {
+            var phaseEffect = getPhaseEffect.apply(staticStatType);
+            if (phaseEffect != null) {
+                phaseEffects.put(phaseEffect, staticStatType);
+            }
+        });
         var orderedEffects = orderByPriority(phaseEffects.keySet());
 
         orderedEffects.forEach(effects -> runEffect(effects, phaseEffects.get(effects), character,
@@ -86,6 +96,12 @@ public class TurnHandlingImpl implements TurnHandling {
                 //noinspection unchecked
                 effectValues[i] =
                         EFFECT_CALCULATION.getEffect((CharacterVariableStatisticType) effectingType,
+                                magnitude, character);
+            }
+            else if (effectingType instanceof CharacterStaticStatisticType) {
+                //noinspection unchecked
+                effectValues[i] =
+                        EFFECT_CALCULATION.getEffect((CharacterStaticStatisticType) effectingType,
                                 magnitude, character);
             }
             else {
