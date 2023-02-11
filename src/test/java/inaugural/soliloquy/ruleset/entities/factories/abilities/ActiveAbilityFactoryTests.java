@@ -10,7 +10,7 @@ import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Item;
-import soliloquy.specs.ruleset.entities.abilities.AbilitySource;
+import soliloquy.specs.gamestate.entities.abilities.AbilitySource;
 import soliloquy.specs.ruleset.entities.abilities.ActiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.ActiveAbility.TargetType;
 import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring;
