@@ -1,4 +1,4 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.factories.character;
 
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.tools.Check;
@@ -12,9 +12,9 @@ import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
-import inaugural.soliloquy.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.VariableStatisticTypeDefinition;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 
@@ -27,8 +27,8 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 /** @noinspection rawtypes */
-public class CharacterVariableStatisticTypeFactory implements
-        Factory<CharacterVariableStatisticTypeDefinition, CharacterVariableStatisticType> {
+public class VariableStatisticTypeFactory implements
+        Factory<VariableStatisticTypeDefinition, VariableStatisticType> {
     private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Function<String, Function> GET_FUNCTION;
@@ -38,7 +38,7 @@ public class CharacterVariableStatisticTypeFactory implements
     private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
-    public CharacterVariableStatisticTypeFactory(
+    public VariableStatisticTypeFactory(
             TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
             Function<String, ImageAssetSet> getImageAssetSet,
             Function<String, Function> getFunction,
@@ -56,7 +56,7 @@ public class CharacterVariableStatisticTypeFactory implements
     }
 
     @Override
-    public CharacterVariableStatisticType make(CharacterVariableStatisticTypeDefinition definition)
+    public VariableStatisticType make(VariableStatisticTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -70,12 +70,14 @@ public class CharacterVariableStatisticTypeFactory implements
         var imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "CharacterVariableStatisticTypeFactory.make: definition.imageAssetSetId does " +
+                    "VariableStatisticTypeFactory.make: definition.imageAssetSetId does " +
                             "not correspond to a valid ImageAssetSet");
         }
 
-        Function<Pair<String, Character>, Pair<ImageAsset, Integer>> iconForCharacterFunction = getNonNullableFunction(GET_FUNCTION,
-                definition.iconForCharacterFunctionId, "definition.iconForCharacterFunctionId");
+        Function<Pair<String, Character>, Pair<ImageAsset, Integer>> iconForCharacterFunction =
+                getNonNullableFunction(GET_FUNCTION,
+                        definition.iconForCharacterFunctionId,
+                        "definition.iconForCharacterFunctionId");
 
         Action<Object[]> alterAction = getNonNullableAction(GET_ACTION, definition.alterActionId,
                 "definition.alterActionId");
@@ -89,7 +91,7 @@ public class CharacterVariableStatisticTypeFactory implements
         var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
         var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
 
-        return new CharacterVariableStatisticType() {
+        return new VariableStatisticType() {
             @Override
             public void alter(Character character, int amount)
                     throws IllegalArgumentException, EntityDeletedException {
@@ -148,7 +150,7 @@ public class CharacterVariableStatisticTypeFactory implements
 
             @Override
             public String getInterfaceName() {
-                return CharacterVariableStatisticType.class.getCanonicalName();
+                return VariableStatisticType.class.getCanonicalName();
             }
 
             @Override
@@ -177,7 +179,7 @@ public class CharacterVariableStatisticTypeFactory implements
     @Override
     public String getInterfaceName() {
         return Factory.class.getCanonicalName() + "<" +
-                CharacterVariableStatisticTypeDefinition.class.getCanonicalName() + "," +
-                CharacterVariableStatisticType.class.getCanonicalName() + ">";
+                VariableStatisticTypeDefinition.class.getCanonicalName() + "," +
+                VariableStatisticType.class.getCanonicalName() + ">";
     }
 }

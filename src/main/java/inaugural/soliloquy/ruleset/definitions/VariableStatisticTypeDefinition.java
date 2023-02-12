@@ -1,6 +1,6 @@
 package inaugural.soliloquy.ruleset.definitions;
 
-public class CharacterVariableStatisticTypeDefinition {
+public class VariableStatisticTypeDefinition {
     public String id;
     public String name;
     public String pluralName;
@@ -13,17 +13,17 @@ public class CharacterVariableStatisticTypeDefinition {
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
 
-    public CharacterVariableStatisticTypeDefinition(String id,
-                                                    String name,
-                                                    String pluralName,
-                                                    String description,
-                                                    String imageAssetSetId,
-                                                    String[] defaultColorShifts,
-                                                    String iconForCharacterFunctionId,
-                                                    String alterActionId,
-                                                    RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
-                                                    EffectsOnCharacterDefinition effectsOnTurnStart,
-                                                    EffectsOnCharacterDefinition effectsOnTurnEnd) {
+    public VariableStatisticTypeDefinition(String id,
+                                           String name,
+                                           String pluralName,
+                                           String description,
+                                           String imageAssetSetId,
+                                           String[] defaultColorShifts,
+                                           String iconForCharacterFunctionId,
+                                           String alterActionId,
+                                           RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
+                                           EffectsOnCharacterDefinition effectsOnTurnStart,
+                                           EffectsOnCharacterDefinition effectsOnTurnEnd) {
         this.id = id;
         this.name = name;
         this.pluralName = pluralName;

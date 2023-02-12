@@ -1,6 +1,6 @@
 package inaugural.soliloquy.ruleset.entities.factories.character;
 
-import inaugural.soliloquy.ruleset.definitions.CharacterStaticStatisticTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.StaticStatisticTypeDefinition;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.tools.Check;
@@ -11,15 +11,15 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
-import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
+import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
 
 import java.util.List;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
-public class CharacterStaticStatisticTypeFactory implements
-        Factory<CharacterStaticStatisticTypeDefinition, CharacterStaticStatisticType> {
+public class StaticStatisticTypeFactory implements
+        Factory<StaticStatisticTypeDefinition, StaticStatisticType> {
     private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
@@ -27,7 +27,7 @@ public class CharacterStaticStatisticTypeFactory implements
     private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
-    public CharacterStaticStatisticTypeFactory(
+    public StaticStatisticTypeFactory(
             TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
             Function<String, ImageAssetSet> getImageAssetSet,
             Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
@@ -42,7 +42,7 @@ public class CharacterStaticStatisticTypeFactory implements
     }
 
     @Override
-    public CharacterStaticStatisticType make(CharacterStaticStatisticTypeDefinition definition)
+    public StaticStatisticType make(StaticStatisticTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -55,7 +55,7 @@ public class CharacterStaticStatisticTypeFactory implements
         ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "CharacterStaticStatisticTypeFactory.make: definition.imageAssetSetId does " +
+                    "StaticStatisticTypeFactory.make: definition.imageAssetSetId does " +
                             "not correspond to a valid ImageAssetSet");
         }
 
@@ -71,7 +71,7 @@ public class CharacterStaticStatisticTypeFactory implements
         EffectsOnCharacter onTurnEnd =
                 EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
 
-        return new CharacterStaticStatisticType() {
+        return new StaticStatisticType() {
             private String name = definition.name;
             private String description = definition.description;
 
@@ -127,7 +127,7 @@ public class CharacterStaticStatisticTypeFactory implements
 
             @Override
             public String getInterfaceName() {
-                return CharacterStaticStatisticType.class.getCanonicalName();
+                return StaticStatisticType.class.getCanonicalName();
             }
         };
     }
@@ -135,7 +135,7 @@ public class CharacterStaticStatisticTypeFactory implements
     @Override
     public String getInterfaceName() {
         return Factory.class.getCanonicalName() + "<" +
-                CharacterStaticStatisticTypeDefinition.class.getCanonicalName() + "," +
-                CharacterStaticStatisticType.class.getCanonicalName() + ">";
+                StaticStatisticTypeDefinition.class.getCanonicalName() + "," +
+                StaticStatisticType.class.getCanonicalName() + ">";
     }
 }

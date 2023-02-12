@@ -8,7 +8,7 @@ import soliloquy.specs.common.valueobjects.Pair;
 import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 
 import java.util.function.Function;
 
@@ -33,8 +33,8 @@ class StatisticChangeMagnitudeFactoryTests {
     private final float ABSOLUTE_PERCENT_MINIMUM = randomFloat();
     private final float ABSOLUTE_PERCENT_MAXIMUM = randomFloat();
 
-    @Mock private CharacterVariableStatisticType mockVariableStatType;
-    @Mock private Function<String, CharacterVariableStatisticType> mockGetVariableStatType;
+    @Mock private VariableStatisticType mockVariableStatType;
+    @Mock private Function<String, VariableStatisticType> mockGetVariableStatType;
     @Mock private Element mockElement;
     @Mock private Function<String, Element> mockGetElement;
 
@@ -43,11 +43,11 @@ class StatisticChangeMagnitudeFactoryTests {
 
     @BeforeEach
     void setUp() {
-        mockVariableStatType = mock(CharacterVariableStatisticType.class);
+        mockVariableStatType = mock(VariableStatisticType.class);
 
         //noinspection unchecked
         mockGetVariableStatType =
-                (Function<String, CharacterVariableStatisticType>) mock(Function.class);
+                (Function<String, VariableStatisticType>) mock(Function.class);
         when(mockGetVariableStatType.apply(anyString())).thenReturn(mockVariableStatType);
 
         mockElement = mock(Element.class);

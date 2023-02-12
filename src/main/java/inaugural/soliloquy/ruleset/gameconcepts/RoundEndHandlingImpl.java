@@ -6,8 +6,8 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.GameZone;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
-import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
 import soliloquy.specs.ruleset.gameconcepts.RoundEndHandling;
@@ -27,17 +27,17 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
     private final ActiveCharactersProvider ACTIVE_CHARACTERS_PROVIDER;
     private final List<RoundEndEffectsOnCharacter> ROUND_END_EFFECTS;
     private final Map<RoundEndEffectsOnCharacter, StatusEffectType> STATUS_EFFECT_TYPES;
-    private final Map<RoundEndEffectsOnCharacter, CharacterVariableStatisticType>
+    private final Map<RoundEndEffectsOnCharacter, VariableStatisticType>
             VARIABLE_STAT_TYPES;
-    private final Map<RoundEndEffectsOnCharacter, CharacterStaticStatisticType>
+    private final Map<RoundEndEffectsOnCharacter, StaticStatisticType>
             STATIC_STAT_TYPES;
     private final StatisticMagnitudeEffectCalculation MAGNITUDE_CALCULATION;
 
     public RoundEndHandlingImpl(Supplier<GameZone> getCurrentGameZone,
                                 ActiveCharactersProvider activeCharactersProvider,
                                 List<StatusEffectType> statusEffectTypes,
-                                List<CharacterVariableStatisticType> variableStatTypes,
-                                List<CharacterStaticStatisticType> staticStatTypes,
+                                List<VariableStatisticType> variableStatTypes,
+                                List<StaticStatisticType> staticStatTypes,
                                 StatisticMagnitudeEffectCalculation magnitudeCalculation) {
         GET_CURRENT_GAME_ZONE = Check.ifNull(getCurrentGameZone, "getCurrentGameZone");
         ACTIVE_CHARACTERS_PROVIDER =
@@ -65,11 +65,11 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
                     if (e instanceof StatusEffectType) {
                         STATUS_EFFECT_TYPES.put(roundEnd, (StatusEffectType) e);
                     }
-                    else if(e instanceof CharacterVariableStatisticType) {
-                        VARIABLE_STAT_TYPES.put(roundEnd, (CharacterVariableStatisticType) e);
+                    else if(e instanceof VariableStatisticType) {
+                        VARIABLE_STAT_TYPES.put(roundEnd, (VariableStatisticType) e);
                     }
                     else {
-                        STATIC_STAT_TYPES.put(roundEnd, (CharacterStaticStatisticType) e);
+                        STATIC_STAT_TYPES.put(roundEnd, (StaticStatisticType) e);
                     }
                     return roundEnd;
                 })

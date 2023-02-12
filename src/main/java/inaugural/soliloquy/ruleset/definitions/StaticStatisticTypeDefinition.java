@@ -1,6 +1,6 @@
 package inaugural.soliloquy.ruleset.definitions;
 
-public class CharacterStaticStatisticTypeDefinition {
+public class StaticStatisticTypeDefinition {
     public String id;
     public String name;
     public String description;
@@ -10,14 +10,14 @@ public class CharacterStaticStatisticTypeDefinition {
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
 
-    public CharacterStaticStatisticTypeDefinition(String id,
-                                                  String name,
-                                                  String description,
-                                                  String imageAssetSetId,
-                                                  String[] defaultColorShifts,
-                                                  RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
-                                                  EffectsOnCharacterDefinition effectsOnTurnStart,
-                                                  EffectsOnCharacterDefinition effectsOnTurnEnd) {
+    public StaticStatisticTypeDefinition(String id,
+                                         String name,
+                                         String description,
+                                         String imageAssetSetId,
+                                         String[] defaultColorShifts,
+                                         RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
+                                         EffectsOnCharacterDefinition effectsOnTurnStart,
+                                         EffectsOnCharacterDefinition effectsOnTurnEnd) {
         this.id = id;
         this.name = name;
         this.description = description;

@@ -6,8 +6,8 @@ import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
-import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TurnHandling;
@@ -23,13 +23,13 @@ import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 public class TurnHandlingImpl implements TurnHandling {
     private final StatisticMagnitudeEffectCalculation EFFECT_CALCULATION;
     private final Consumer<Pair<Character, VariableCache>> PASS_CONTROL_TO_PLAYER;
-    private final List<CharacterVariableStatisticType> VARIABLE_STAT_TYPES;
-    private final List<CharacterStaticStatisticType> STATIC_STAT_TYPES;
+    private final List<VariableStatisticType> VARIABLE_STAT_TYPES;
+    private final List<StaticStatisticType> STATIC_STAT_TYPES;
 
     public TurnHandlingImpl(StatisticMagnitudeEffectCalculation effectCalculation,
                             Consumer<Pair<Character, VariableCache>> passControlToPlayer,
-                            List<CharacterVariableStatisticType> variableStatTypes,
-                            List<CharacterStaticStatisticType> staticStatTypes) {
+                            List<VariableStatisticType> variableStatTypes,
+                            List<StaticStatisticType> staticStatTypes) {
         EFFECT_CALCULATION = Check.ifNull(effectCalculation, "effectCalculation");
         PASS_CONTROL_TO_PLAYER = Check.ifNull(passControlToPlayer, "passControlToPlayer");
         VARIABLE_STAT_TYPES = Check.ifNull(variableStatTypes, "variableStatTypes");
@@ -88,20 +88,20 @@ public class TurnHandlingImpl implements TurnHandling {
                            boolean advancingRounds) {
         var numberOfMagnitudes = effect.magnitudes().size();
         var effectValues = new int[numberOfMagnitudes];
-        var targetVariableStats = new CharacterVariableStatisticType[numberOfMagnitudes];
+        var targetVariableStats = new VariableStatisticType[numberOfMagnitudes];
         for (var i = 0; i < numberOfMagnitudes; i++) {
             var magnitude = effect.magnitudes().get(i);
             targetVariableStats[i] = magnitude.effectedStatisticType();
-            if (effectingType instanceof CharacterVariableStatisticType) {
+            if (effectingType instanceof VariableStatisticType) {
                 //noinspection unchecked
                 effectValues[i] =
-                        EFFECT_CALCULATION.getEffect((CharacterVariableStatisticType) effectingType,
+                        EFFECT_CALCULATION.getEffect((VariableStatisticType) effectingType,
                                 magnitude, character);
             }
-            else if (effectingType instanceof CharacterStaticStatisticType) {
+            else if (effectingType instanceof StaticStatisticType) {
                 //noinspection unchecked
                 effectValues[i] =
-                        EFFECT_CALCULATION.getEffect((CharacterStaticStatisticType) effectingType,
+                        EFFECT_CALCULATION.getEffect((StaticStatisticType) effectingType,
                                 magnitude, character);
             }
             else {

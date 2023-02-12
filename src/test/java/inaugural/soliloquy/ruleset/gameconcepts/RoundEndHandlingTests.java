@@ -12,8 +12,8 @@ import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
 import soliloquy.specs.gamestate.entities.GameZone;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
-import soliloquy.specs.ruleset.entities.character.CharacterStaticStatisticType;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.gameconcepts.ActiveCharactersProvider;
 import soliloquy.specs.ruleset.gameconcepts.RoundEndHandling;
@@ -59,7 +59,7 @@ class RoundEndHandlingTests {
     @Mock private VariableCache mockRoundData;
     @Mock private ActiveCharactersProvider mockActiveCharactersProvider;
 
-    @Mock private CharacterVariableStatisticType mockTargetVariableStatType;
+    @Mock private VariableStatisticType mockTargetVariableStatType;
     @Mock private StatisticChangeMagnitude<Integer> mockStatusEffectRoundEndEffectMagnitude;
     @Mock private StatisticChangeMagnitude<Integer> mockVariableStat1RoundEndEffectMagnitude;
     @Mock private StatisticChangeMagnitude<Integer> mockStaticStatRoundEndEffectMagnitude;
@@ -69,12 +69,12 @@ class RoundEndHandlingTests {
     @Mock private RoundEndEffectsOnCharacter mockStaticStatRoundEndEffects;
 
     @Mock private StatusEffectType mockStatusEffectType;
-    @Mock private CharacterVariableStatisticType mockVariableStatType1;
-    @Mock private CharacterVariableStatisticType mockVariableStatType2;
-    @Mock private CharacterStaticStatisticType mockStaticStatType;
+    @Mock private VariableStatisticType mockVariableStatType1;
+    @Mock private VariableStatisticType mockVariableStatType2;
+    @Mock private StaticStatisticType mockStaticStatType;
     private List<StatusEffectType> statusEffectTypes;
-    private List<CharacterVariableStatisticType> variableStatTypes;
-    private List<CharacterStaticStatisticType> staticStatTypes;
+    private List<VariableStatisticType> variableStatTypes;
+    private List<StaticStatisticType> staticStatTypes;
 
     @Mock private StatisticMagnitudeEffectCalculation mockMagnitudeCalculation;
 
@@ -106,7 +106,7 @@ class RoundEndHandlingTests {
                         Pair.of(mockCharacter2, mockRoundData),
                         Pair.of(mockCharacter3, mockRoundData)));
 
-        mockTargetVariableStatType = mock(CharacterVariableStatisticType.class);
+        mockTargetVariableStatType = mock(VariableStatisticType.class);
 
         //noinspection unchecked
         mockStatusEffectRoundEndEffectMagnitude =
@@ -146,13 +146,13 @@ class RoundEndHandlingTests {
         when(mockStatusEffectType.onRoundEnd()).thenReturn(mockStatusEffectRoundEndEffects);
         statusEffectTypes = listOf(mockStatusEffectType);
 
-        mockVariableStatType1 = mock(CharacterVariableStatisticType.class);
+        mockVariableStatType1 = mock(VariableStatisticType.class);
         when(mockVariableStatType1.onRoundEnd()).thenReturn(mockVariableStat1RoundEndEffects);
-        mockVariableStatType2 = mock(CharacterVariableStatisticType.class);
+        mockVariableStatType2 = mock(VariableStatisticType.class);
         when(mockVariableStatType2.onRoundEnd()).thenReturn(null);
         variableStatTypes = listOf(mockVariableStatType1, mockVariableStatType2);
 
-        mockStaticStatType = mock(CharacterStaticStatisticType.class);
+        mockStaticStatType = mock(StaticStatisticType.class);
         when(mockStaticStatType.onRoundEnd()).thenReturn(mockStaticStatRoundEndEffects);
         staticStatTypes = listOf(mockStaticStatType);
 
@@ -212,8 +212,8 @@ class RoundEndHandlingTests {
                         statusEffectTypes, null, staticStatTypes, mockMagnitudeCalculation));
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndHandlingImpl(mockGetCurrentGameZone, mockActiveCharactersProvider,
-                        statusEffectTypes, listOf((CharacterVariableStatisticType) null),
-                        staticStatTypes, mockMagnitudeCalculation));
+                        statusEffectTypes, listOf((VariableStatisticType) null), staticStatTypes,
+                        mockMagnitudeCalculation));
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndHandlingImpl(mockGetCurrentGameZone, mockActiveCharactersProvider,
                         statusEffectTypes, null, staticStatTypes, mockMagnitudeCalculation));
@@ -222,8 +222,8 @@ class RoundEndHandlingTests {
                         statusEffectTypes, variableStatTypes, null, mockMagnitudeCalculation));
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndHandlingImpl(mockGetCurrentGameZone, mockActiveCharactersProvider,
-                        statusEffectTypes, variableStatTypes,
-                        listOf((CharacterStaticStatisticType) null), mockMagnitudeCalculation));
+                        statusEffectTypes, variableStatTypes, listOf((StaticStatisticType) null),
+                        mockMagnitudeCalculation));
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndHandlingImpl(mockGetCurrentGameZone, mockActiveCharactersProvider,
                         statusEffectTypes, variableStatTypes, staticStatTypes, null));
@@ -236,10 +236,11 @@ class RoundEndHandlingTests {
         roundEndHandling.runRoundEnd(isAdvancingRounds);
 
         var inOrder =
-                Mockito.inOrder(mockStatusEffectType, mockStatusEffectType, mockVariableStatType1, mockStaticStatType,
-                        mockGetCurrentGameZone, mockActiveCharactersProvider,
-                        mockStatusEffectRoundEndEffects, mockVariableStat1RoundEndEffects, mockStaticStatRoundEndEffects,
-                        mockMagnitudeCalculation, mockTargetVariableStatType);
+                Mockito.inOrder(mockStatusEffectType, mockStatusEffectType, mockVariableStatType1,
+                        mockStaticStatType, mockGetCurrentGameZone, mockActiveCharactersProvider,
+                        mockStatusEffectRoundEndEffects, mockVariableStat1RoundEndEffects,
+                        mockStaticStatRoundEndEffects, mockMagnitudeCalculation,
+                        mockTargetVariableStatType);
 
         inOrder.verify(mockGetCurrentGameZone).get();
         inOrder.verify(mockActiveCharactersProvider).generateInTurnOrder(mockGameZone);

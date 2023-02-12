@@ -8,18 +8,18 @@ import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.AmountType;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.EffectType;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 
 import java.util.function.Function;
 
 @SuppressWarnings("rawtypes")
 public class StatisticChangeMagnitudeFactory
         implements Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> {
-    private final Function<String, CharacterVariableStatisticType> GET_VARIABLE_STAT_TYPE;
+    private final Function<String, VariableStatisticType> GET_VARIABLE_STAT_TYPE;
     private final Function<String, Element> GET_ELEMENT;
 
     public StatisticChangeMagnitudeFactory(
-            Function<String, CharacterVariableStatisticType> getVariableStatType,
+            Function<String, VariableStatisticType> getVariableStatType,
             Function<String, Element> getElement) {
         GET_VARIABLE_STAT_TYPE = Check.ifNull(getVariableStatType, "getVariableStatType");
         GET_ELEMENT = Check.ifNull(getElement, "getElement");
@@ -71,13 +71,13 @@ public class StatisticChangeMagnitudeFactory
         }
     }
 
-    private static StatisticChangeMagnitude makeValueMagnitude(CharacterVariableStatisticType
-                                                                       variableStatType,
-                                                               Element element,
-                                                               AmountType amountType,
-                                                               EffectType effectType,
-                                                               Integer[] perLevelValueRange,
-                                                               Integer[] absoluteValueRange) {
+    private static StatisticChangeMagnitude makeValueMagnitude(
+            VariableStatisticType variableStatType,
+            Element element,
+            AmountType amountType,
+            EffectType effectType,
+            Integer[] perLevelValueRange,
+            Integer[] absoluteValueRange) {
         Pair<Integer, Integer> perLevelRange;
         if (perLevelValueRange != null) {
             perLevelRange = Pair.of(perLevelValueRange[0], perLevelValueRange[1]);
@@ -102,7 +102,7 @@ public class StatisticChangeMagnitudeFactory
             }
 
             @Override
-            public CharacterVariableStatisticType effectedStatisticType() {
+            public VariableStatisticType effectedStatisticType() {
                 return variableStatType;
             }
 
@@ -133,13 +133,13 @@ public class StatisticChangeMagnitudeFactory
         };
     }
 
-    private static StatisticChangeMagnitude makePercentMagnitude(CharacterVariableStatisticType
-                                                                         variableStatType,
-                                                                 Element element,
-                                                                 AmountType amountType,
-                                                                 EffectType effectType,
-                                                                 Float[] perLevelPercentRange,
-                                                                 Float[] absolutePercentRange) {
+    private static StatisticChangeMagnitude makePercentMagnitude(
+            VariableStatisticType variableStatType,
+            Element element,
+            AmountType amountType,
+            EffectType effectType,
+            Float[] perLevelPercentRange,
+            Float[] absolutePercentRange) {
         Pair<Float, Float> perLevelRange;
         if (perLevelPercentRange != null) {
             perLevelRange = Pair.of(perLevelPercentRange[0], perLevelPercentRange[1]);
@@ -164,7 +164,7 @@ public class StatisticChangeMagnitudeFactory
             }
 
             @Override
-            public CharacterVariableStatisticType effectedStatisticType() {
+            public VariableStatisticType effectedStatisticType() {
                 return variableStatType;
             }
 

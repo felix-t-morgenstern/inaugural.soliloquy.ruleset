@@ -1,6 +1,6 @@
-package inaugural.soliloquy.ruleset.entities.factories;
+package inaugural.soliloquy.ruleset.entities.factories.character;
 
-import inaugural.soliloquy.ruleset.definitions.CharacterVariableStatisticTypeDefinition;
+import inaugural.soliloquy.ruleset.definitions.VariableStatisticTypeDefinition;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +17,7 @@ import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
-import soliloquy.specs.ruleset.entities.character.CharacterVariableStatisticType;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 
 import java.util.function.Function;
 
@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-class CharacterVariableStatisticTypeFactoryTests {
+class VariableStatisticTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String PLURAL_NAME = randomString();
@@ -65,9 +65,9 @@ class CharacterVariableStatisticTypeFactoryTests {
     @Mock private Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             mockRoundEndEffectsOnCharacterFactory;
 
-    private CharacterVariableStatisticTypeDefinition definition;
+    private VariableStatisticTypeDefinition definition;
 
-    private Factory<CharacterVariableStatisticTypeDefinition, CharacterVariableStatisticType>
+    private Factory<VariableStatisticTypeDefinition, VariableStatisticType>
             factory;
 
     @BeforeEach
@@ -132,13 +132,13 @@ class CharacterVariableStatisticTypeFactoryTests {
                 .thenReturn(mockRoundEndEffect);
 
         definition =
-                new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition);
 
-        factory = new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
+        factory = new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
                 mockGetImageAssetSet, mockGetFunction, mockGetAction,
                 mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory);
     }
@@ -146,23 +146,23 @@ class CharacterVariableStatisticTypeFactoryTests {
     @Test
     void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> new CharacterVariableStatisticTypeFactory(null, mockGetImageAssetSet,
+                () -> new VariableStatisticTypeFactory(null, mockGetImageAssetSet,
                         mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
                         mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler, null,
+                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler, null,
                         mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
                         mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
+                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
                         mockGetImageAssetSet, null, mockGetAction, mockEffectsOnCharacterFactory,
                         mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
+                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
                         mockGetImageAssetSet, mockGetFunction, null,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new CharacterVariableStatisticTypeFactory(mockColorShiftProviderHandler,
+                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
                         mockGetImageAssetSet, mockGetFunction, mockGetAction, null,
                         mockRoundEndEffectsOnCharacterFactory));
     }
@@ -182,7 +182,7 @@ class CharacterVariableStatisticTypeFactoryTests {
         assertEquals(DESCRIPTION, output.getDescription());
         assertSame(mockImageAssetSet, output.imageAssetSet());
         assertEquals(listOf(mockColorShiftProvider), output.colorShiftProviders());
-        assertEquals(CharacterVariableStatisticType.class.getCanonicalName(),
+        assertEquals(VariableStatisticType.class.getCanonicalName(),
                 output.getInterfaceName());
         verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
         verify(mockColorShiftProviderHandler).read(WRITTEN_COLOR_SHIFT_PROVIDER);
@@ -208,103 +208,101 @@ class CharacterVariableStatisticTypeFactoryTests {
 
         assertThrows(IllegalArgumentException.class, () -> factory.make(null));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(null, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
-                        ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
-                        mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
-                        mockTurnEndEffectDefinition)));
-        assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition("", NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
-                        ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
-                        mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
-                        mockTurnEndEffectDefinition)));
-        assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, null, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
-                        ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
-                        mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
-                        mockTurnEndEffectDefinition)));
-        assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, "", PLURAL_NAME, DESCRIPTION,
+                .make(new VariableStatisticTypeDefinition(null, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, null, DESCRIPTION,
+                .make(new VariableStatisticTypeDefinition("", NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, "", DESCRIPTION,
+                .make(new VariableStatisticTypeDefinition(ID, null, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, null, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, "", PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, "", arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, null, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, invalidImageAssetSetId, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, "", DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
-                        null, ALTER_ACTION_ID, mockRoundEndEffectDefinition,
-                        mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
-        assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), "",
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION, null,
+                        arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), ICON_FOR_CHARACTER_FUNCTION_ID,
                         ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION, "",
+                        arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), ICON_FOR_CHARACTER_FUNCTION_ID,
+                        ALTER_ACTION_ID, mockRoundEndEffectDefinition,
+                        mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        invalidImageAssetSetId, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                        ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
+                        mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
+                        mockTurnEndEffectDefinition)));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), null,
+                        ALTER_ACTION_ID, mockRoundEndEffectDefinition,
+                        mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), "",
+                        ALTER_ACTION_ID, mockRoundEndEffectDefinition,
+                        mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
+        assertThrows(IllegalArgumentException.class, () -> factory
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         invalidFunctionId, ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, null, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, "", mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, invalidActionId,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID, null,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, null, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new CharacterVariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME,
-                        DESCRIPTION, IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
+                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                        IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition, null)));
     }
@@ -377,8 +375,8 @@ class CharacterVariableStatisticTypeFactoryTests {
     @Test
     void testGetInterfaceName() {
         assertEquals(Factory.class.getCanonicalName() + "<" +
-                        CharacterVariableStatisticTypeDefinition.class.getCanonicalName() + "," +
-                        CharacterVariableStatisticType.class.getCanonicalName() + ">",
+                        VariableStatisticTypeDefinition.class.getCanonicalName() + "," +
+                        VariableStatisticType.class.getCanonicalName() + ">",
                 factory.getInterfaceName());
     }
 }
