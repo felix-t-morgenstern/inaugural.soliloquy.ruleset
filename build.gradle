@@ -7,27 +7,26 @@ group 'disorg.soliloquy'
 version '0.0.0'
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url = uri("https://maven.pkg.github.com/felix-t-morgenstern/soliloquy.specs")
         credentials {
             username = 'felix-t-morgenstern'
-            password = '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'
+            password = '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'
         }
     }
 }
 
 dependencies {
     implementation 'com.google.inject:guice:5.1.0'
-    implementation "disorg.soliloquy:soliloquy.specs:0.0.487"
-    implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.126"
+    implementation "disorg.soliloquy:soliloquy.specs:0.0.493"
+    implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.131"
     implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.19"
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.9.0"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.0"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.9.0"
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testImplementation 'junit:junit:4.13.2'
-    implementation 'org.mockito:mockito-core:4.11.0'
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation 'org.mockito:mockito-core:5.1.1'
+    // https://mvnrepository.com/artifact/junit/junit
+    implementation 'junit:junit:4.13.2'
 }
 
 test {
