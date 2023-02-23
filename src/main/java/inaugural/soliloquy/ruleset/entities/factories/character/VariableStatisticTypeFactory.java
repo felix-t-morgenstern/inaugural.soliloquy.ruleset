@@ -96,7 +96,7 @@ public class VariableStatisticTypeFactory implements
             public void alter(Character character, int amount)
                     throws IllegalArgumentException, EntityDeletedException {
                 Check.ifNull(character, "character");
-                alterAction.run(arrayOf(character, amount));
+                alterAction.run(arrayOf(character, amount, this));
             }
 
             private String name = definition.name;

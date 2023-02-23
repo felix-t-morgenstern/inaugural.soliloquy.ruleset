@@ -153,6 +153,10 @@ public class StatisticCalculationImpl implements StatisticCalculation {
             Character character,
             StatisticType statisticType)
             throws IllegalArgumentException, IllegalStateException {
+        Check.ifNull(character, "character");
+        Check.ifDeleted(character, "character");
+        Check.ifNull(statisticType, "statisticType");
+
         var typeDefinition = DEFINITIONS.get(statisticType);
 
         Map<Object, BigDecimal> modifiers = mapOf();

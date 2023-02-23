@@ -466,6 +466,9 @@ public class StatisticCalculationImplTests {
                 () -> statisticCalculation.calculate(null, mockVariableStatTypeToCalculate));
         assertThrows(IllegalArgumentException.class,
                 () -> statisticCalculation.calculate(mockCharacter, null));
+        when(mockCharacter.isDeleted()).thenReturn(true);
+        assertThrows(IllegalArgumentException.class,
+                () -> statisticCalculation.calculate(mockCharacter, mockVariableStatTypeToCalculate));
     }
 
     @Test

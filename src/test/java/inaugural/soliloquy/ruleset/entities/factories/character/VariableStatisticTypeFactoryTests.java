@@ -188,7 +188,7 @@ class VariableStatisticTypeFactoryTests {
         verify(mockColorShiftProviderHandler).read(WRITTEN_COLOR_SHIFT_PROVIDER);
         verify(mockGetFunction).apply(ICON_FOR_CHARACTER_FUNCTION_ID);
         verify(mockGetAction).apply(ALTER_ACTION_ID);
-        verify(mockAlterAction).run(eq(arrayOf(mockCharacter, amount)));
+        verify(mockAlterAction).run(eq(arrayOf(mockCharacter, amount, output)));
         assertSame(mockRoundEndEffect, output.onRoundEnd());
         verify(mockRoundEndEffectsOnCharacterFactory).make(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
