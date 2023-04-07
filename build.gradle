@@ -13,14 +13,15 @@ repositories {
         url = uri("https://maven.pkg.github.com/felix-t-morgenstern/soliloquy.specs")
         credentials {
             username = 'felix-t-morgenstern'
-            password = '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'
+            password = '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'
         }
     }
 }
 
+//noinspection DependencyNotationArgument
 dependencies {
     implementation 'com.google.inject:guice:5.1.0'
-    implementation "disorg.soliloquy:soliloquy.specs:0.0.494"
+    implementation "disorg.soliloquy:soliloquy.specs:0.0.496"
     implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.131"
     implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.19"
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
