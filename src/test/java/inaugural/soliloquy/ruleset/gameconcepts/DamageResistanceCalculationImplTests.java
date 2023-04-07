@@ -19,9 +19,9 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DamageResistanceCalculationImplTests {
-    // NB: Stats are calculated as percentages, so having resistance between 1-99% results in a
+    // NB: Stats are calculated as percentages, so having resistance between -99 - 99% results in a
     //     more meaningful test
-    private final int CALCULATED_ELEMENT_RESIST_STAT = randomIntInRange(1, 99);
+    private final int CALCULATED_ELEMENT_RESIST_STAT = randomIntInRange(-99, 99);
 
     @Mock private StaticStatisticType mockElementResistStat;
     @Mock private StatisticCalculation mockStatisticCalculation;
@@ -49,9 +49,12 @@ public class DamageResistanceCalculationImplTests {
     @Test
     public void testCalculateEffectiveChangeWithNegativeAmount() {
         var baseAmount = randomIntWithInclusiveCeiling(-1);
-        var expectedEffectiveChange = (int) (baseAmount * (CALCULATED_ELEMENT_RESIST_STAT / 100f));
+        var expectedEffectiveChange =
+                (int) (baseAmount * ((100f - CALCULATED_ELEMENT_RESIST_STAT) / 100f));
 
-        var effectiveChange = damageResistanceCalculation.calculateEffectiveChange(mockCharacter, baseAmount, mockElement);
+        var effectiveChange =
+                damageResistanceCalculation.calculateEffectiveChange(mockCharacter, baseAmount,
+                        mockElement);
 
         assertEquals(expectedEffectiveChange, effectiveChange);
         verify(mockElement).resistanceStatisticType();
@@ -62,7 +65,9 @@ public class DamageResistanceCalculationImplTests {
     public void testCalculateEffectiveChangeWithPositiveAmount() {
         var baseAmount = randomIntWithInclusiveFloor(1);
 
-        var effectiveChange = damageResistanceCalculation.calculateEffectiveChange(mockCharacter, baseAmount, mockElement);
+        var effectiveChange =
+                damageResistanceCalculation.calculateEffectiveChange(mockCharacter, baseAmount,
+                        mockElement);
 
         assertEquals(baseAmount, effectiveChange);
         verify(mockElement, never()).resistanceStatisticType();

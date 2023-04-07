@@ -10,6 +10,7 @@ public class StatusEffectTypeDefinition {
     public RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd;
     public EffectsOnCharacterDefinition effectsOnTurnStart;
     public EffectsOnCharacterDefinition effectsOnTurnEnd;
+    public String resistanceStatisticTypeId;
 
     public StatusEffectTypeDefinition(String id, String name, boolean stopsAtZero,
                                       String nameAtValueFunctionId,
@@ -17,7 +18,8 @@ public class StatusEffectTypeDefinition {
                                       String alterValueActionId,
                                       RoundEndEffectsOnCharacterDefinition effectsOnRoundEnd,
                                       EffectsOnCharacterDefinition effectsOnTurnStart,
-                                      EffectsOnCharacterDefinition effectsOnTurnEnd) {
+                                      EffectsOnCharacterDefinition effectsOnTurnEnd,
+                                      String resistanceStatisticTypeId) {
         this.id = id;
         this.name = name;
         this.stopsAtZero = stopsAtZero;
@@ -27,6 +29,7 @@ public class StatusEffectTypeDefinition {
         this.effectsOnRoundEnd = effectsOnRoundEnd;
         this.effectsOnTurnStart = effectsOnTurnStart;
         this.effectsOnTurnEnd = effectsOnTurnEnd;
+        this.resistanceStatisticTypeId = resistanceStatisticTypeId;
     }
 
     public static class IconForCharacterFunction {

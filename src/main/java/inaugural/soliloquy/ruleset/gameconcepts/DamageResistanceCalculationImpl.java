@@ -9,8 +9,7 @@ import soliloquy.specs.ruleset.gameconcepts.StatisticCalculation;
 public class DamageResistanceCalculationImpl implements DamageResistanceCalculation {
     private final StatisticCalculation STAT_CALCULATION;
 
-    public DamageResistanceCalculationImpl(
-            StatisticCalculation statisticCalculation) {
+    public DamageResistanceCalculationImpl(StatisticCalculation statisticCalculation) {
         STAT_CALCULATION = Check.ifNull(statisticCalculation, "statisticCalculation");
     }
 
@@ -23,8 +22,9 @@ public class DamageResistanceCalculationImpl implements DamageResistanceCalculat
         if (baseAmount >= 0) {
             return baseAmount;
         }
-        var calculatedResistStat = STAT_CALCULATION.calculate(character, element.resistanceStatisticType());
-        return (int)(baseAmount * (calculatedResistStat / 100f));
+        var calculatedResistStat =
+                STAT_CALCULATION.calculate(character, element.resistanceStatisticType());
+        return (int) (baseAmount * ((100f - calculatedResistStat) / 100f));
     }
 
     @Override

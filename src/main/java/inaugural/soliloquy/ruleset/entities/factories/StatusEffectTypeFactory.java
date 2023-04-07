@@ -1,4 +1,4 @@
-package inaugural.soliloquy.ruleset.entities.factories.character;
+package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
@@ -12,6 +12,7 @@ import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 
 import java.util.Map;
@@ -26,6 +27,7 @@ public class StatusEffectTypeFactory implements
         Factory<StatusEffectTypeDefinition, StatusEffectType> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
     @SuppressWarnings("rawtypes") private final Function<String, Action> GET_ACTION;
+    private final Function<String, StaticStatisticType> GET_STATIC_STAT_TYPE;
     private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
     private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
@@ -34,16 +36,18 @@ public class StatusEffectTypeFactory implements
     @SuppressWarnings("rawtypes")
     public StatusEffectTypeFactory(Function<String, Function> getFunction,
                                    Function<String, Action> getAction,
-                                   Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
-                                           effectsOnCharacterFactory,
+                                   Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
                                    Factory<RoundEndEffectsOnCharacterDefinition,
-                                           RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
+                                           RoundEndEffectsOnCharacter>
+                                           roundEndEffectsOnCharacterFactory,
+                                   Function<String, StaticStatisticType> getStaticStatType) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
         GET_ACTION = Check.ifNull(getAction, "getAction");
         EFFECTS_ON_CHARACTER_FACTORY =
                 Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
         ROUND_END_EFFECTS_ON_CHARACTER_FACTORY = Check.ifNull(roundEndEffectsOnCharacterFactory,
                 "roundEndEffectsOnCharacterFactory");
+        GET_STATIC_STAT_TYPE = Check.ifNull(getStaticStatType, "getStaticStatType");
     }
 
     @Override
@@ -84,6 +88,14 @@ public class StatusEffectTypeFactory implements
         var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
         var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
         var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+
+        var staticStatType = GET_STATIC_STAT_TYPE.apply(definition.resistanceStatisticTypeId);
+        if (staticStatType == null) {
+            throw new IllegalArgumentException(
+                    "StatusEffectTypeFactory.make: definition.resistanceStatisticTypeId (" +
+                            definition.resistanceStatisticTypeId +
+                            ") does not correspond to a valid StaticStatisticType");
+        }
 
         return new StatusEffectType() {
             private final String ID = definition.id;
@@ -138,6 +150,11 @@ public class StatusEffectTypeFactory implements
                 }
 
                 return ICON_TYPE_FUNCTIONS.get(iconType).apply(character);
+            }
+
+            @Override
+            public StaticStatisticType resistanceStatisticType() {
+                return staticStatType;
             }
 
             @Override
