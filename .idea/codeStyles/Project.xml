@@ -1,5 +1,6 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <option name="RIGHT_MARGIN" value="100" />
     <JavaCodeStyleSettings>
       <option name="ALIGN_MULTILINE_TEXT_BLOCKS" value="true" />
       <option name="JD_P_AT_EMPTY_LINES" value="false" />
