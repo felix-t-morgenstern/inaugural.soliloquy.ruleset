@@ -62,7 +62,7 @@ public class StatusEffectResistanceCalculationImplTests {
                 .thenReturn(resistanceFromStatusEffectType);
 
         var baseAmount = randomInt();
-        var expectedEffectiveChange = (int) (((100f - resistanceFromElement) / 100f) * baseAmount);
+        var expectedEffectiveChange = (int) (((100d - resistanceFromElement) / 100d) * baseAmount);
 
         var output = statusEffectResistanceCalculation.calculateEffectiveChange(mockCharacter,
                 mockStatusEffectType, baseAmount, false, mockElement);
@@ -85,7 +85,7 @@ public class StatusEffectResistanceCalculationImplTests {
                 .thenReturn(resistanceFromStatusEffectType);
 
         var baseAmount = randomInt();
-        var expectedEffectiveChange = (int) (((100f - resistanceFromStatusEffectType) / 100f) * baseAmount);
+        var expectedEffectiveChange = (int) (((100d - resistanceFromStatusEffectType) / 100d) * baseAmount);
 
         var output = statusEffectResistanceCalculation.calculateEffectiveChange(mockCharacter,
                 mockStatusEffectType, baseAmount, false, mockElement);
@@ -124,7 +124,7 @@ public class StatusEffectResistanceCalculationImplTests {
         when(mockCharacterStatusEffects.getStatusEffectLevel(mockStatusEffectType))
                 .thenReturn(statusEffectLevel);
 
-        var baseAmount = -(statusEffectLevel + 1);
+        var baseAmount = -(statusEffectLevel + 2);
         var expectedEffectiveChange = -statusEffectLevel;
 
         var output = statusEffectResistanceCalculation.calculateEffectiveChange(mockCharacter,

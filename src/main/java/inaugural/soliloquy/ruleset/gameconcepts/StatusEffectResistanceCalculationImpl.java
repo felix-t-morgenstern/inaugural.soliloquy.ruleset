@@ -28,16 +28,17 @@ public class StatusEffectResistanceCalculationImpl implements StatusEffectResist
                 STAT_CALCULATION.calculate(character, statusEffectType.resistanceStatisticType());
         var resistance = Math.max(resistFromElement, resistFromStatusType);
 
-        var effectiveChange = (int) (((100f - resistance) / 100f) * baseAmount);
+        var effectPercentage = ((100d - resistance) / 100d);
+        var effectiveChange = (int) (effectPercentage * baseAmount);
 
         if (stopAtZero) {
             var statusEffectLevel =
                     character.statusEffects().getStatusEffectLevel(statusEffectType);
             if (statusEffectLevel < 0) {
-                effectiveChange = Math.max(effectiveChange, -statusEffectLevel);
+                effectiveChange = Math.min(effectiveChange, -statusEffectLevel);
             }
             else if (statusEffectLevel > 0) {
-                effectiveChange = Math.min(effectiveChange, -statusEffectLevel);
+                effectiveChange = Math.max(effectiveChange, -statusEffectLevel);
             }
         }
 
