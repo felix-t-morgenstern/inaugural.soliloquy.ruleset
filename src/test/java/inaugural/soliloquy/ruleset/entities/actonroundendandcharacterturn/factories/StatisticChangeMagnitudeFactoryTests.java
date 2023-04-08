@@ -25,13 +25,13 @@ class StatisticChangeMagnitudeFactoryTests {
     private final String VARIABLE_STAT_TYPE_ID = randomString();
     private final String ELEMENT_ID = randomString();
     private final int PER_LEVEL_VALUE_MINIMUM = randomInt();
-    private final int PER_LEVEL_VALUE_MAXIMUM = randomInt();
+    private final int PER_LEVEL_VALUE_MAXIMUM = randomIntWithInclusiveFloor(PER_LEVEL_VALUE_MINIMUM + 1);
     private final float PER_LEVEL_PERCENT_MINIMUM = randomFloat();
-    private final float PER_LEVEL_PERCENT_MAXIMUM = randomFloat();
+    private final float PER_LEVEL_PERCENT_MAXIMUM = randomFloatWithInclusiveFloor(PER_LEVEL_PERCENT_MINIMUM + 1f);
     private final int ABSOLUTE_VALUE_MINIMUM = randomInt();
-    private final int ABSOLUTE_VALUE_MAXIMUM = randomInt();
+    private final int ABSOLUTE_VALUE_MAXIMUM = randomIntWithInclusiveFloor(ABSOLUTE_VALUE_MINIMUM + 1);
     private final float ABSOLUTE_PERCENT_MINIMUM = randomFloat();
-    private final float ABSOLUTE_PERCENT_MAXIMUM = randomFloat();
+    private final float ABSOLUTE_PERCENT_MAXIMUM = randomFloatWithInclusiveFloor(ABSOLUTE_PERCENT_MINIMUM + 1f);
 
     @Mock private VariableStatisticType mockVariableStatType;
     @Mock private Function<String, VariableStatisticType> mockGetVariableStatType;
@@ -201,8 +201,18 @@ class StatisticChangeMagnitudeFactoryTests {
     void testMakeWithInvalidParams() {
         var oneIntArray = new Integer[]{randomInt()};
         var threeIntArray = new Integer[]{randomInt(), randomInt(), randomInt()};
+        var intArrayWith0Null = new Integer[]{null, randomInt()};
+        var intArrayWith1Null = new Integer[]{randomInt(), null};
+        var outOfOrderIntHigher = randomInt();
+        var outOfOrderIntLower = randomIntWithInclusiveCeiling(outOfOrderIntHigher - 1);
+        var outOfOrderIntArray = new Integer[]{outOfOrderIntHigher, outOfOrderIntLower};
         var oneFloatArray = new Float[]{randomFloat()};
         var threeFloatArray = new Float[]{randomFloat(), randomFloat(), randomFloat()};
+        var floatArrayWith0Null = new Float[]{null, randomFloat()};
+        var floatArrayWith1Null = new Float[]{randomFloat(), null};
+        var outOfOrderFloatHigher = randomFloat();
+        var outOfOrderFloatLower = randomFloatWithInclusiveCeiling(outOfOrderFloatHigher - 1);
+        var outOfOrderFloatArray = new Float[]{outOfOrderFloatHigher, outOfOrderFloatLower};
         var invalidEffectType = randomString();
         var invalidAmountType = randomString();
         var invalidElementId = randomString();
@@ -210,51 +220,87 @@ class StatisticChangeMagnitudeFactoryTests {
 
         assertThrows(IllegalArgumentException.class, () -> factory.make(null));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(), null,
                         VALUE.name(), null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
                 new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, invalidElementId,
                         ALTERATION.name(), VALUE.name(), null, null, null,
                         null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null, "",
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(), "",
                         VALUE.name(), null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         invalidEffectType, VALUE.name(), null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), null, null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), "", null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), invalidAmountType, null, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), oneIntArray, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), threeIntArray, null, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), intArrayWith0Null, null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), intArrayWith1Null, null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), outOfOrderIntArray, null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), null, oneFloatArray, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), null, threeFloatArray, null, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, floatArrayWith0Null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, floatArrayWith1Null, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, outOfOrderFloatArray, null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), null, null, oneIntArray, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), null, null, threeIntArray, null)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, null, intArrayWith0Null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, null, intArrayWith1Null, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, null, outOfOrderIntArray, null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), null, null, null, oneFloatArray)));
         assertThrows(IllegalArgumentException.class, () -> factory.make(
-                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, null,
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
                         ALTERATION.name(), VALUE.name(), null, null, null, threeFloatArray)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, null, null, floatArrayWith0Null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, null, null, floatArrayWith1Null)));
+        assertThrows(IllegalArgumentException.class, () -> factory.make(
+                new StatisticChangeMagnitudeDefinition(VARIABLE_STAT_TYPE_ID, randomString(),
+                        ALTERATION.name(), VALUE.name(), null, null, null, outOfOrderFloatArray)));
     }
 
     @Test

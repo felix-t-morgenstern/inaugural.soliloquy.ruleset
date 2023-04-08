@@ -34,7 +34,9 @@ public class StatisticCalculationImpl implements StatisticCalculation {
                                     Function<String, StatusEffectType> getStatusEffectType) {
         Check.ifNull(variableStatTypes, "variableStatTypes");
         Check.ifNull(definition, "definition");
-        MATH_CONTEXT = new MathContext(definition.decimalPlacesForModifiers);
+        Check.ifNull(definition.roundingMode, "definition.roundingMode");
+        MATH_CONTEXT =
+                new MathContext(definition.decimalPlacesForModifiers, definition.roundingMode);
         GET_STATIC_STAT_TYPE = Check.ifNull(staticStatTypes, "staticStatTypes")::get;
         GET_PASSIVE_ABILITY = Check.ifNull(getPassiveAbility, "getPassiveAbility");
         GET_STATUS_EFFECT_TYPE = Check.ifNull(getStatusEffectType, "getStatusEffectType");
@@ -47,7 +49,6 @@ public class StatisticCalculationImpl implements StatisticCalculation {
         for (var typeDefinition : definition.typeDefinitions) {
             checkTypeDefinitionValidity(typeDefinition);
         }
-        Check.ifNull(definition.roundingMode, "definition.roundingMode");
         Check.throwOnLtValue(definition.decimalPlacesForModifiers, 0,
                 "definition.decimalPlacesForModifiers");
     }

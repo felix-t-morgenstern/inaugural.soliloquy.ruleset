@@ -21,7 +21,7 @@ repositories {
 //noinspection DependencyNotationArgument
 dependencies {
     implementation 'com.google.inject:guice:5.1.0'
-    implementation "disorg.soliloquy:soliloquy.specs:0.0.498"
+    implementation "disorg.soliloquy:soliloquy.specs:0.0.500"
     implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.131"
     implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.19"
     // https://mvnrepository.com/artifact/org.mockito/mockito-core

@@ -62,12 +62,23 @@ public class StatisticChangeMagnitudeFactory
         }
     }
 
-    private static void checkRangeArray(Object[] array, String paramName) {
-        if (array != null && array.length != 2) {
+    private static <T extends Number> void checkRangeArray(T[] array, String paramName) {
+        if (array == null) {
+            return;
+        }
+        if (array.length != 2) {
             throw new IllegalArgumentException(
                     "StatisticChangeMagnitudeFactory.make: " + paramName +
                             " must have length of 2, but was provided with length of " +
                             array.length);
+        }
+        Check.ifNull(array[0], "first item in " + paramName);
+        Check.ifNull(array[1], "second item in " + paramName);
+        if (array[0].floatValue() > array[1].floatValue()) {
+            throw new IllegalArgumentException(
+                    "StatisticChangeMagnitudeFactory.make: " + paramName +
+                            " cannot have a first item (" + array[0] +
+                            ") with a higher value than the second (" + array[1] + ")");
         }
     }
 
