@@ -10,8 +10,8 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
-import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.EffectType;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.AmountType;
+import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.EffectType;
 import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
 import soliloquy.specs.ruleset.entities.character.StatusEffectType;
 import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
@@ -19,12 +19,11 @@ import soliloquy.specs.ruleset.gameconcepts.DamageResistanceCalculation;
 import soliloquy.specs.ruleset.gameconcepts.StatisticCalculation;
 import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
 
-import java.math.RoundingMode;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.random.Random.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -32,7 +31,6 @@ import static org.mockito.Mockito.*;
 public class StatisticMagnitudeEffectCalculationImplTests {
     // The numbers used here are totally arbitrary, I'm just restraining the ranges to make test
     // cases more reasonable, and in some cases, not wholly ridiculous.
-    private final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
     private final int EFFECT_ENTITY_LEVEL = 3;
     private final double RANDOM_DOUBLE_1 = randomDouble();
     private final double RANDOM_DOUBLE_2 = randomDouble();
@@ -85,7 +83,6 @@ public class StatisticMagnitudeEffectCalculationImplTests {
     @Mock StatisticCalculation mockStatisticCalculation;
     @Mock Supplier<Double> mockRandomDoubleProvider;
     @Mock StaticStatisticType mockStaticStatType;
-    @Mock VariableStatisticType mockVariableStatType;
     @Mock StatusEffectType mockStatusEffectType;
     @Mock VariableStatisticType mockEffectedVariableStatType;
     @Mock Element mockElement;
@@ -257,7 +254,11 @@ public class StatisticMagnitudeEffectCalculationImplTests {
                 mockValueMagnitude, mockCharacter);
 
         assertEquals(ROUNDED_VALUE_BASE_EFFECT, output);
-        verify(mockStatisticCalculation).calculate(mockCharacter, mockStaticStatType);
+        verify(mockCharacter).statusEffects();
+        verify(mockCharacterStatusEffects).getStatusEffectLevel(mockStatusEffectType);
+        verify(mockValueMagnitude, times(3)).absoluteRange();
+        verify(mockValueMagnitude, times(1 + (EFFECT_ENTITY_LEVEL * 2))).perLevelRange();
+        verify(mockValueMagnitude).amountType();
         verify(mockRandomDoubleProvider, times(EFFECT_ENTITY_LEVEL + 1)).get();
     }
 
@@ -269,7 +270,11 @@ public class StatisticMagnitudeEffectCalculationImplTests {
                 .getEffect(mockStatusEffectType, mockValueMagnitude, mockCharacter);
 
         assertEquals(DAMAGE_RESISTANCE_CALCULATION_OUTPUT, output);
-        verify(mockStatisticCalculation).calculate(mockCharacter, mockStaticStatType);
+        verify(mockCharacter).statusEffects();
+        verify(mockCharacterStatusEffects).getStatusEffectLevel(mockStatusEffectType);
+        verify(mockValueMagnitude, times(3)).absoluteRange();
+        verify(mockValueMagnitude, times(1 + (EFFECT_ENTITY_LEVEL * 2))).perLevelRange();
+        verify(mockValueMagnitude).amountType();
         verify(mockRandomDoubleProvider, times(EFFECT_ENTITY_LEVEL + 1)).get();
         verify(mockDamageResistanceCalculation).calculateEffectiveChange(mockCharacter,
                 ROUNDED_VALUE_BASE_EFFECT, mockElement);
@@ -284,7 +289,11 @@ public class StatisticMagnitudeEffectCalculationImplTests {
                 .getEffect(mockStatusEffectType, mockPercentMagnitude, mockCharacter);
 
         assertEquals(ROUNDED_PERCENT_CURRENT_EFFECT, output);
-        verify(mockStatisticCalculation).calculate(mockCharacter, mockStaticStatType);
+        verify(mockCharacter).statusEffects();
+        verify(mockCharacterStatusEffects).getStatusEffectLevel(mockStatusEffectType);
+        verify(mockPercentMagnitude, times(3)).absoluteRange();
+        verify(mockPercentMagnitude, times(1 + (EFFECT_ENTITY_LEVEL * 2))).perLevelRange();
+        verify(mockPercentMagnitude).amountType();
         verify(mockRandomDoubleProvider, times(EFFECT_ENTITY_LEVEL + 1)).get();
         verify(mockCharacter).getVariableStatisticCurrentValue(mockEffectedVariableStatType);
     }
@@ -298,7 +307,11 @@ public class StatisticMagnitudeEffectCalculationImplTests {
                 .getEffect(mockStatusEffectType, mockPercentMagnitude, mockCharacter);
 
         assertEquals(DAMAGE_RESISTANCE_CALCULATION_OUTPUT, output);
-        verify(mockStatisticCalculation).calculate(mockCharacter, mockStaticStatType);
+        verify(mockCharacter).statusEffects();
+        verify(mockCharacterStatusEffects).getStatusEffectLevel(mockStatusEffectType);
+        verify(mockPercentMagnitude, times(3)).absoluteRange();
+        verify(mockPercentMagnitude, times(1 + (EFFECT_ENTITY_LEVEL * 2))).perLevelRange();
+        verify(mockPercentMagnitude).amountType();
         verify(mockRandomDoubleProvider, times(EFFECT_ENTITY_LEVEL + 1)).get();
         verify(mockCharacter).getVariableStatisticCurrentValue(mockEffectedVariableStatType);
         verify(mockDamageResistanceCalculation).calculateEffectiveChange(mockCharacter,
@@ -314,7 +327,11 @@ public class StatisticMagnitudeEffectCalculationImplTests {
                 .getEffect(mockStatusEffectType, mockPercentMagnitude, mockCharacter);
 
         assertEquals(ROUNDED_PERCENT_MAXIMUM_EFFECT, output);
-        verify(mockStatisticCalculation).calculate(mockCharacter, mockStaticStatType);
+        verify(mockCharacter).statusEffects();
+        verify(mockCharacterStatusEffects).getStatusEffectLevel(mockStatusEffectType);
+        verify(mockPercentMagnitude, times(3)).absoluteRange();
+        verify(mockPercentMagnitude, times(1 + (EFFECT_ENTITY_LEVEL * 2))).perLevelRange();
+        verify(mockPercentMagnitude).amountType();
         verify(mockRandomDoubleProvider, times(EFFECT_ENTITY_LEVEL + 1)).get();
         verify(mockStatisticCalculation).calculate(mockCharacter, mockEffectedVariableStatType);
     }
@@ -328,7 +345,11 @@ public class StatisticMagnitudeEffectCalculationImplTests {
                 .getEffect(mockStatusEffectType, mockPercentMagnitude, mockCharacter);
 
         assertEquals(DAMAGE_RESISTANCE_CALCULATION_OUTPUT, output);
-        verify(mockStatisticCalculation).calculate(mockCharacter, mockStaticStatType);
+        verify(mockCharacter).statusEffects();
+        verify(mockCharacterStatusEffects).getStatusEffectLevel(mockStatusEffectType);
+        verify(mockPercentMagnitude, times(3)).absoluteRange();
+        verify(mockPercentMagnitude, times(1 + (EFFECT_ENTITY_LEVEL * 2))).perLevelRange();
+        verify(mockPercentMagnitude).amountType();
         verify(mockRandomDoubleProvider, times(EFFECT_ENTITY_LEVEL + 1)).get();
         verify(mockStatisticCalculation).calculate(mockCharacter, mockEffectedVariableStatType);
         verify(mockDamageResistanceCalculation).calculateEffectiveChange(mockCharacter,

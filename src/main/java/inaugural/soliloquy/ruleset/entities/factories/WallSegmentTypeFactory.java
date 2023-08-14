@@ -2,6 +2,8 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
+import soliloquy.specs.gamestate.entities.WallSegmentDirection;
+import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
@@ -28,11 +30,18 @@ public class WallSegmentTypeFactory implements
         Check.ifNull(definition.imageAssetType, "definition.imageAssetType");
         Check.ifNullOrEmpty(definition.imageAssetId, "definition.imageAssetId");
 
-        ImageAsset imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
+        var imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
                 definition.imageAssetType, "WallSegmentTypeFactory");
+
+        var direction = WallSegmentDirection.fromValue(definition.direction);
 
         return new WallSegmentType() {
             private String name = definition.name;
+
+            @Override
+            public WallSegmentDirection direction() throws EntityDeletedException {
+                return direction;
+            }
 
             @Override
             public ImageAsset imageAsset() {
@@ -40,18 +49,13 @@ public class WallSegmentTypeFactory implements
             }
 
             @Override
-            public boolean blocksWest() {
-                return definition.blocksWest;
+            public boolean blocksMovement() {
+                return definition.blocksMovement;
             }
 
             @Override
-            public boolean blocksNorthwest() {
-                return definition.blocksNorthwest;
-            }
-
-            @Override
-            public boolean blocksNorth() {
-                return definition.blocksNorth;
+            public boolean blocksSight() {
+                return definition.blocksSight;
             }
 
             @Override

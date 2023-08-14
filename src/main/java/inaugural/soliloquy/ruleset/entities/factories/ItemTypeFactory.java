@@ -83,7 +83,7 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
                     "ItemFactory.make: Both isStackable and hasCharges cannot both be true");
         }
 
-        EquipmentType equipmentType = GET_EQUIPMENT_TYPE.apply(Check
+        var equipmentType = GET_EQUIPMENT_TYPE.apply(Check
                 .ifNullOrEmpty(definition.equipmentTypeId, "definition.equipmentTypeId"));
         if (equipmentType == null) {
             throw new IllegalArgumentException(
@@ -102,22 +102,22 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
                             ") does not correspond to a valid Function");
         }
 
-        VariableCache traits = VARIABLE_CACHE_HANDLER
+        var traits = VARIABLE_CACHE_HANDLER
                 .read(Check.ifNullOrEmpty(definition.traits, "definition.traits"));
 
-        List<ActiveAbility> activeAbilities =
+        var activeAbilities =
                 populateEntityList(definition.activeAbilityIds, GET_ACTIVE_ABILITY,
                         "definition.activeAbilityIds");
 
-        List<ReactiveAbility> reactiveAbilities =
+        var reactiveAbilities =
                 populateEntityList(definition.reactiveAbilityIds, GET_REACTIVE_ABILITY,
                         "definition.reactiveAbilityIds");
 
-        List<PassiveAbility> passiveAbilities =
+        var passiveAbilities =
                 populateEntityList(definition.passiveAbilityIds, GET_PASSIVE_ABILITY,
                         "definition.passiveAbilityIds");
 
-        ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(Check
+        var imageAssetSet = GET_IMAGE_ASSET_SET.apply(Check
                 .ifNullOrEmpty(definition.imageAssetSetId, "definition.imageAssetSetId"));
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(

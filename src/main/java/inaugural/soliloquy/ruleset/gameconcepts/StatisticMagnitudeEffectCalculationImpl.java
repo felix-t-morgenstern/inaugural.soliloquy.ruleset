@@ -41,7 +41,27 @@ public class StatisticMagnitudeEffectCalculationImpl
 
         var staticStatLevel = STATISTIC_CALCULATION.calculate(character, statisticType);
 
-        var baseEffect = getBaseEffect(staticStatLevel, statisticChangeMagnitude);
+        return getEffectWithAmountType(staticStatLevel, statisticChangeMagnitude, character);
+    }
+
+    @Override
+    public <T extends Number> int getEffect(StatusEffectType statusEffectType,
+                                            StatisticChangeMagnitude<T> statisticChangeMagnitude,
+                                            Character character)
+            throws IllegalArgumentException, EntityDeletedException {
+        Check.ifNull(statusEffectType, "statusEffectType");
+        Check.ifNull(statisticChangeMagnitude, "statisticChangeMagnitude");
+        Check.ifNull(character, "character");
+
+        var statusEffectLevel = character.statusEffects().getStatusEffectLevel(statusEffectType);
+
+        return getEffectWithAmountType(statusEffectLevel, statisticChangeMagnitude, character);
+    }
+
+    private <T extends Number> int getEffectWithAmountType(int level,
+                                                           StatisticChangeMagnitude<T> statisticChangeMagnitude,
+                                                           Character character) {
+        var baseEffect = getBaseEffect(level, statisticChangeMagnitude);
 
         var effect = switch (statisticChangeMagnitude.amountType()) {
             case VALUE -> (int) Math.round(baseEffect);
@@ -57,14 +77,6 @@ public class StatisticMagnitudeEffectCalculationImpl
         }
 
         return effect;
-    }
-
-    @Override
-    public <T extends Number> int getEffect(StatusEffectType statusEffectType,
-                                            StatisticChangeMagnitude<T> statisticChangeMagnitude,
-                                            Character character)
-            throws IllegalArgumentException, EntityDeletedException {
-        return 0;
     }
 
     private <T extends Number> double getBaseEffect(int entityTypeLevel,
