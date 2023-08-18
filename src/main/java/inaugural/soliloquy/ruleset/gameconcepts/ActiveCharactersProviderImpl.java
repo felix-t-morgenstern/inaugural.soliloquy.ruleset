@@ -20,6 +20,7 @@ import static inaugural.soliloquy.ruleset.constants.Constants.BONUS_AP_TIER_1_RA
 import static inaugural.soliloquy.ruleset.constants.Constants.BONUS_AP_TIER_1_RANGE_MINIMUM;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 
 public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
     private final StatisticType ROUND_PRIORITY_STAT;
@@ -83,7 +84,7 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
             characterRoundData.setVariable(ROUND_DATA_COMBAT_PRIORITY, roundPriorityStatValue);
             characterRoundData.setVariable(ROUND_DATA_AP, roundAp);
 
-            var characterWithRoundData = Pair.of(character, characterRoundData);
+            var characterWithRoundData = pairOf(character, characterRoundData);
 
             if (activeCharactersByImpulse.containsKey(roundPriorityStatValue)) {
                 activeCharactersByImpulse.get(roundPriorityStatValue).add(characterWithRoundData);

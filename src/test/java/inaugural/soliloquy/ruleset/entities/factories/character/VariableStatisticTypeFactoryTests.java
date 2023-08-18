@@ -25,6 +25,7 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -369,7 +370,7 @@ class VariableStatisticTypeFactoryTests {
         Pair<ImageAsset, Integer> iconForCharacter = output.getIcon(iconType, character);
 
         assertSame(mockIconForCharacter, iconForCharacter);
-        verify(mockIconForCharacterFunction).apply(Pair.of(iconType, character));
+        verify(mockIconForCharacterFunction).apply(pairOf(iconType, character));
     }
 
     @Test

@@ -25,6 +25,7 @@ import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableAction;
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 
 /** @noinspection rawtypes */
 public class VariableStatisticTypeFactory implements
@@ -156,7 +157,7 @@ public class VariableStatisticTypeFactory implements
             @Override
             public Pair<ImageAsset, Integer> getIcon(String iconType, Character character)
                     throws IllegalArgumentException {
-                return iconForCharacterFunction.apply(Pair.of(iconType, character));
+                return iconForCharacterFunction.apply(pairOf(iconType, character));
             }
 
             @Override

@@ -18,6 +18,7 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -102,7 +103,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
         var output = factory.make(definition);
         output.accompanyEffect(inputMagnitudes, mockCharacter, true);
         output.otherEffects(inputMagnitudes, mockCharacter, false);
-        output.accompanyAllEffects(listOf(Pair.of(inputMagnitudes, mockCharacter)), true);
+        output.accompanyAllEffects(listOf(pairOf(inputMagnitudes, mockCharacter)), true);
 
         assertNotNull(output);
         var magnitudes = output.magnitudes();
@@ -113,7 +114,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
         verify(mockAccompanyEffectAction).run(eq(arrayOf(inputMagnitudes, mockCharacter, true)));
         verify(mockOtherEffectsAction).run(eq(arrayOf(inputMagnitudes, mockCharacter, false)));
         verify(mockAccompanyAllEffectsAction).run(
-                eq(arrayOf(listOf(Pair.of(inputMagnitudes, mockCharacter)), true)));
+                eq(arrayOf(listOf(pairOf(inputMagnitudes, mockCharacter)), true)));
     }
 
     @Test
@@ -130,7 +131,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
         var output = factory.make(definitionWithNoAccompanyOrOtherEffects);
         output.accompanyEffect(inputMagnitudes, mockCharacter, true);
         output.otherEffects(inputMagnitudes, mockCharacter, false);
-        output.accompanyAllEffects(listOf(Pair.of(inputMagnitudes, mockCharacter)), true);
+        output.accompanyAllEffects(listOf(pairOf(inputMagnitudes, mockCharacter)), true);
 
         assertNotNull(output);
         var magnitudes = output.magnitudes();
@@ -172,9 +173,9 @@ class RoundEndEffectsOnCharacterFactoryTests {
         assertThrows(IllegalArgumentException.class,
                 () -> output.accompanyAllEffects(listOf((Pair<int[], Character>) null), true));
         assertThrows(IllegalArgumentException.class, () -> output.accompanyAllEffects(
-                listOf(new Pair<>(null, mockCharacter, new int[0], mockCharacter)), true));
+                listOf(pairOf(null, mockCharacter, new int[0], mockCharacter)), true));
         assertThrows(IllegalArgumentException.class, () -> output.accompanyAllEffects(
-                listOf(new Pair<>(inputMagnitudes, null, new int[0], mockCharacter)), true));
+                listOf(pairOf(inputMagnitudes, null, new int[0], mockCharacter)), true));
     }
 
     @Test

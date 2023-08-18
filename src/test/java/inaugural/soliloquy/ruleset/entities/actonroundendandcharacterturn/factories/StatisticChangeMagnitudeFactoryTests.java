@@ -13,6 +13,7 @@ import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.random.Random.*;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -81,9 +82,9 @@ class StatisticChangeMagnitudeFactoryTests {
         verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
-        assertEquals(Pair.of(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
+        assertEquals(pairOf(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
                 output.perLevelRange());
-        assertEquals(Pair.of(ABSOLUTE_VALUE_MINIMUM, ABSOLUTE_VALUE_MAXIMUM),
+        assertEquals(pairOf(ABSOLUTE_VALUE_MINIMUM, ABSOLUTE_VALUE_MAXIMUM),
                 output.absoluteRange());
         assertEquals(StatisticChangeMagnitude.class.getCanonicalName() + "<" +
                 Integer.class.getCanonicalName() + ">", output.getInterfaceName());
@@ -102,7 +103,7 @@ class StatisticChangeMagnitudeFactoryTests {
         verify(mockGetVariableStatType).apply(VARIABLE_STAT_TYPE_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
-        assertEquals(Pair.of(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
+        assertEquals(pairOf(PER_LEVEL_VALUE_MINIMUM, PER_LEVEL_VALUE_MAXIMUM),
                 output.perLevelRange());
         assertNull(output.absoluteRange());
         assertEquals(StatisticChangeMagnitude.class.getCanonicalName() + "<" +
@@ -123,7 +124,7 @@ class StatisticChangeMagnitudeFactoryTests {
         assertSame(DAMAGE, output.effectType());
         assertSame(VALUE, output.amountType());
         assertNull(output.perLevelRange());
-        assertEquals(Pair.of(ABSOLUTE_VALUE_MINIMUM, ABSOLUTE_VALUE_MAXIMUM),
+        assertEquals(pairOf(ABSOLUTE_VALUE_MINIMUM, ABSOLUTE_VALUE_MAXIMUM),
                 output.absoluteRange());
         assertEquals(StatisticChangeMagnitude.class.getCanonicalName() + "<" +
                 Integer.class.getCanonicalName() + ">", output.getInterfaceName());
@@ -145,9 +146,9 @@ class StatisticChangeMagnitudeFactoryTests {
         verify(mockGetElement).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM, output.amountType());
-        assertEquals(Pair.of(PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM),
+        assertEquals(pairOf(PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM),
                 output.perLevelRange());
-        assertEquals(Pair.of(ABSOLUTE_PERCENT_MINIMUM, ABSOLUTE_PERCENT_MAXIMUM),
+        assertEquals(pairOf(ABSOLUTE_PERCENT_MINIMUM, ABSOLUTE_PERCENT_MAXIMUM),
                 output.absoluteRange());
         assertEquals(StatisticChangeMagnitude.class.getCanonicalName() + "<" +
                 Float.class.getCanonicalName() + ">", output.getInterfaceName());
@@ -168,7 +169,7 @@ class StatisticChangeMagnitudeFactoryTests {
         verify(mockGetElement).apply(ELEMENT_ID);
         assertSame(DAMAGE, output.effectType());
         assertSame(StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM, output.amountType());
-        assertEquals(Pair.of(PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM),
+        assertEquals(pairOf(PER_LEVEL_PERCENT_MINIMUM, PER_LEVEL_PERCENT_MAXIMUM),
                 output.perLevelRange());
         assertNull(output.absoluteRange());
         assertEquals(StatisticChangeMagnitude.class.getCanonicalName() + "<" +
@@ -191,7 +192,7 @@ class StatisticChangeMagnitudeFactoryTests {
         assertSame(DAMAGE, output.effectType());
         assertSame(StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM, output.amountType());
         assertNull(output.perLevelRange());
-        assertEquals(Pair.of(ABSOLUTE_PERCENT_MINIMUM, ABSOLUTE_PERCENT_MAXIMUM),
+        assertEquals(pairOf(ABSOLUTE_PERCENT_MINIMUM, ABSOLUTE_PERCENT_MAXIMUM),
                 output.absoluteRange());
         assertEquals(StatisticChangeMagnitude.class.getCanonicalName() + "<" +
                 Float.class.getCanonicalName() + ">", output.getInterfaceName());

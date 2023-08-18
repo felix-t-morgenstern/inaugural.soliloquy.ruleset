@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 
 public class StatisticCalculationImpl implements StatisticCalculation {
     private final MathContext MATH_CONTEXT;
@@ -146,7 +147,7 @@ public class StatisticCalculationImpl implements StatisticCalculation {
     @Override
     public int calculate(Character character, StatisticType statisticType)
             throws IllegalArgumentException, IllegalStateException {
-        return calculateWithDescriptors(character, statisticType).getItem1();
+        return calculateWithDescriptors(character, statisticType).item1();
     }
 
     @Override
@@ -204,6 +205,6 @@ public class StatisticCalculationImpl implements StatisticCalculation {
                 .round(MATH_CONTEXT)
                 .intValue();
 
-        return Pair.of(typeDefinition.baseAmount + modifiersTotal, modifiers);
+        return pairOf(typeDefinition.baseAmount + modifiersTotal, modifiers);
     }
 }

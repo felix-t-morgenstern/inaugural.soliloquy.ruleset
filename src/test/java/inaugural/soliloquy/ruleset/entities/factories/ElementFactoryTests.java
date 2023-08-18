@@ -16,6 +16,7 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
@@ -40,10 +41,10 @@ public class ElementFactoryTests {
     @Before
     public void setUp() {
         mockGetImageAssetSet =
-                generateMockLookupFunction(Pair.of(IMAGE_ASSET_SET_ID, mockImageAssetSet));
+                generateMockLookupFunction(pairOf(IMAGE_ASSET_SET_ID, mockImageAssetSet));
 
         mockGetStaticStatType = generateMockLookupFunction(
-                Pair.of(RESISTANCE_STAT_TYPE_ID, mockResistanceStatType));
+                pairOf(RESISTANCE_STAT_TYPE_ID, mockResistanceStatType));
 
         elementFactory = new ElementFactory(mockGetImageAssetSet, mockGetStaticStatType);
     }

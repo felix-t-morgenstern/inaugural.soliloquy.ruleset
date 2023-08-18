@@ -22,6 +22,7 @@ import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.random.Random.*;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,16 +107,16 @@ public class StatisticMagnitudeEffectCalculationImplTests {
 
         when(mockValueMagnitude.element()).thenReturn(mockElement);
         when(mockValueMagnitude.perLevelRange())
-                .thenReturn(Pair.of(VALUE_MAGNITUDE_PER_LEVEL_MIN, VALUE_MAGNITUDE_PER_LEVEL_MAX));
+                .thenReturn(pairOf(VALUE_MAGNITUDE_PER_LEVEL_MIN, VALUE_MAGNITUDE_PER_LEVEL_MAX));
         when(mockValueMagnitude.absoluteRange())
-                .thenReturn(Pair.of(VALUE_MAGNITUDE_ABSOLUTE_MIN, VALUE_MAGNITUDE_ABSOLUTE_MAX));
+                .thenReturn(pairOf(VALUE_MAGNITUDE_ABSOLUTE_MIN, VALUE_MAGNITUDE_ABSOLUTE_MAX));
         when(mockValueMagnitude.amountType()).thenReturn(AmountType.VALUE);
 
         when(mockPercentMagnitude.element()).thenReturn(mockElement);
         when(mockPercentMagnitude.absoluteRange()).thenReturn(
-                Pair.of(PERCENT_MAGNITUDE_ABSOLUTE_MIN, PERCENT_MAGNITUDE_ABSOLUTE_MAX));
+                pairOf(PERCENT_MAGNITUDE_ABSOLUTE_MIN, PERCENT_MAGNITUDE_ABSOLUTE_MAX));
         when(mockPercentMagnitude.perLevelRange()).thenReturn(
-                Pair.of(PERCENT_MAGNITUDE_PER_LEVEL_MIN, PERCENT_MAGNITUDE_PER_LEVEL_MAX));
+                pairOf(PERCENT_MAGNITUDE_PER_LEVEL_MIN, PERCENT_MAGNITUDE_PER_LEVEL_MAX));
         when(mockPercentMagnitude.effectedStatisticType()).thenReturn(mockEffectedVariableStatType);
 
         when(mockStatisticCalculation.calculate(any(), any())).thenReturn(EFFECT_ENTITY_LEVEL);

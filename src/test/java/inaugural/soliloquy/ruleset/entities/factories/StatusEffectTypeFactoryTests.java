@@ -23,6 +23,7 @@ import java.util.function.Function;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.*;
@@ -71,13 +72,13 @@ public class StatusEffectTypeFactoryTests {
     @Before
     public void setUp() {
         mockGetFunction = generateMockLookupFunction(
-                Pair.of(NAME_AT_VALUE_FUNCTION_ID, mockNameAtValueFunction),
-                Pair.of(ICON_TYPE_FUNCTION_1_ID, mockIconTypeFunction1),
-                Pair.of(ICON_TYPE_FUNCTION_2_ID, mockIconTypeFunction2)
+                pairOf(NAME_AT_VALUE_FUNCTION_ID, mockNameAtValueFunction),
+                pairOf(ICON_TYPE_FUNCTION_1_ID, mockIconTypeFunction1),
+                pairOf(ICON_TYPE_FUNCTION_2_ID, mockIconTypeFunction2)
         );
 
         mockGetStaticStatType = generateMockLookupFunction(
-                Pair.of(RESISTANCE_STAT_TYPE_ID, mockResistanceStatType));
+                pairOf(RESISTANCE_STAT_TYPE_ID, mockResistanceStatType));
 
         //noinspection unchecked
         mockAlterAction = (Action<Object[]>) mock(Action.class);

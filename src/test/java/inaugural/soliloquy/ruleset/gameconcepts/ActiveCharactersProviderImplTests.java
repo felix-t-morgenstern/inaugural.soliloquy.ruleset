@@ -241,14 +241,14 @@ class ActiveCharactersProviderImplTests {
 
         assertNotNull(activeCharacters);
         assertEquals(4, activeCharacters.size());
-        assertSame(mockCharacter1, activeCharacters.get(0).getItem1());
-        assertSame(mockCharacter2, activeCharacters.get(1).getItem1());
-        assertSame(mockCharacter3, activeCharacters.get(2).getItem1());
-        assertSame(mockCharacter4, activeCharacters.get(3).getItem1());
-        assertSame(mockCharacter1RoundData, activeCharacters.get(0).getItem2());
-        assertSame(mockCharacter2RoundData, activeCharacters.get(1).getItem2());
-        assertSame(mockCharacter3RoundData, activeCharacters.get(2).getItem2());
-        assertSame(mockCharacter4RoundData, activeCharacters.get(3).getItem2());
+        assertSame(mockCharacter1, activeCharacters.get(0).item1());
+        assertSame(mockCharacter2, activeCharacters.get(1).item1());
+        assertSame(mockCharacter3, activeCharacters.get(2).item1());
+        assertSame(mockCharacter4, activeCharacters.get(3).item1());
+        assertSame(mockCharacter1RoundData, activeCharacters.get(0).item2());
+        assertSame(mockCharacter2RoundData, activeCharacters.get(1).item2());
+        assertSame(mockCharacter3RoundData, activeCharacters.get(2).item2());
+        assertSame(mockCharacter4RoundData, activeCharacters.get(3).item2());
         verify(mockGameZone).charactersRepresentation();
         verify(mockStatisticCalculation).calculate(mockCharacter1, mockCombatOrder);
         verify(mockStatisticCalculation).calculate(mockCharacter1, mockBonusAp);
@@ -292,12 +292,12 @@ class ActiveCharactersProviderImplTests {
 
         assertNotNull(activeCharacters);
         assertEquals(3, activeCharacters.size());
-        assertSame(mockCharacter3, activeCharacters.get(0).getItem1());
-        assertSame(mockCharacter2, activeCharacters.get(1).getItem1());
-        assertSame(mockCharacter1, activeCharacters.get(2).getItem1());
-        assertSame(mockCharacter3RoundData, activeCharacters.get(0).getItem2());
-        assertSame(mockCharacter2RoundData, activeCharacters.get(1).getItem2());
-        assertSame(mockCharacter1RoundData, activeCharacters.get(2).getItem2());
+        assertSame(mockCharacter3, activeCharacters.get(0).item1());
+        assertSame(mockCharacter2, activeCharacters.get(1).item1());
+        assertSame(mockCharacter1, activeCharacters.get(2).item1());
+        assertSame(mockCharacter3RoundData, activeCharacters.get(0).item2());
+        assertSame(mockCharacter2RoundData, activeCharacters.get(1).item2());
+        assertSame(mockCharacter1RoundData, activeCharacters.get(2).item2());
         verify(mockGetRandomFloat, times(3)).get();
     }
 
@@ -394,10 +394,10 @@ class ActiveCharactersProviderImplTests {
 
         assertNotNull(activeCharacters);
         assertEquals(2, activeCharacters.size());
-        assertSame(mockCharacter2, activeCharacters.get(0).getItem1());
-        assertSame(mockCharacter3, activeCharacters.get(1).getItem1());
-        assertSame(mockCharacter2RoundData, activeCharacters.get(0).getItem2());
-        assertSame(mockCharacter3RoundData, activeCharacters.get(1).getItem2());
+        assertSame(mockCharacter2, activeCharacters.get(0).item1());
+        assertSame(mockCharacter3, activeCharacters.get(1).item1());
+        assertSame(mockCharacter2RoundData, activeCharacters.get(0).item2());
+        assertSame(mockCharacter3RoundData, activeCharacters.get(1).item2());
     }
 
     @Test

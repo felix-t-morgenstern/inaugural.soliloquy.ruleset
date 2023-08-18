@@ -19,6 +19,7 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.Tools.orderByPriority;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 
 public class TurnHandlingImpl implements TurnHandling {
     private final StatisticMagnitudeEffectCalculation EFFECT_CALCULATION;
@@ -43,7 +44,7 @@ public class TurnHandlingImpl implements TurnHandling {
 
         if (!advancingRounds) {
             if (character.getPlayerControlled()) {
-                PASS_CONTROL_TO_PLAYER.accept(Pair.of(character, turnData));
+                PASS_CONTROL_TO_PLAYER.accept(pairOf(character, turnData));
             }
             else {
                 character.getAIType().act(character, turnData);

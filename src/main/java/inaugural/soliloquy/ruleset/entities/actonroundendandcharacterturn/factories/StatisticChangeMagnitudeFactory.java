@@ -12,6 +12,8 @@ import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 
 import java.util.function.Function;
 
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+
 @SuppressWarnings("rawtypes")
 public class StatisticChangeMagnitudeFactory
         implements Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> {
@@ -91,7 +93,7 @@ public class StatisticChangeMagnitudeFactory
             Integer[] absoluteValueRange) {
         Pair<Integer, Integer> perLevelRange;
         if (perLevelValueRange != null) {
-            perLevelRange = Pair.of(perLevelValueRange[0], perLevelValueRange[1]);
+            perLevelRange = pairOf(perLevelValueRange[0], perLevelValueRange[1]);
         }
         else {
             perLevelRange = null;
@@ -99,7 +101,7 @@ public class StatisticChangeMagnitudeFactory
 
         Pair<Integer, Integer> absoluteRange;
         if (absoluteValueRange != null) {
-            absoluteRange = Pair.of(absoluteValueRange[0], absoluteValueRange[1]);
+            absoluteRange = pairOf(absoluteValueRange[0], absoluteValueRange[1]);
         }
         else {
             absoluteRange = null;
@@ -153,7 +155,7 @@ public class StatisticChangeMagnitudeFactory
             Float[] absolutePercentRange) {
         Pair<Float, Float> perLevelRange;
         if (perLevelPercentRange != null) {
-            perLevelRange = Pair.of(perLevelPercentRange[0], perLevelPercentRange[1]);
+            perLevelRange = pairOf(perLevelPercentRange[0], perLevelPercentRange[1]);
         }
         else {
             perLevelRange = null;
@@ -161,7 +163,7 @@ public class StatisticChangeMagnitudeFactory
 
         Pair<Float, Float> absoluteRange;
         if (absolutePercentRange != null) {
-            absoluteRange = Pair.of(absolutePercentRange[0], absolutePercentRange[1]);
+            absoluteRange = pairOf(absolutePercentRange[0], absolutePercentRange[1]);
         }
         else {
             absoluteRange = null;

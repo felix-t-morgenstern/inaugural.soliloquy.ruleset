@@ -25,6 +25,7 @@ import static inaugural.soliloquy.tools.collections.Collections.*;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomIntWithInclusiveCeiling;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockList;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
@@ -122,7 +123,7 @@ class TurnHandlingImplTests {
 
         mockStatusEffects = mock(CharacterStatusEffects.class);
         when(mockStatusEffects.representation())
-                .thenReturn(mapOf(Pair.of(mockStatusEffectType, STATUS_EFFECT_LEVEL)));
+                .thenReturn(mapOf(pairOf(mockStatusEffectType, STATUS_EFFECT_LEVEL)));
 
         mockVariableStatType = mock(VariableStatisticType.class);
         when(mockVariableStatType.onTurnStart()).thenReturn(mockVariableStatTypeTurnStart);
@@ -272,8 +273,8 @@ class TurnHandlingImplTests {
         //noinspection unchecked
         inOrder.verify(mockPassControlToPlayer).accept(playerControlCaptor.capture());
         var playerControlParam = playerControlCaptor.getValue();
-        assertSame(mockCharacter, playerControlParam.getItem1());
-        assertSame(mockTurnData, playerControlParam.getItem2());
+        assertSame(mockCharacter, playerControlParam.item1());
+        assertSame(mockTurnData, playerControlParam.item2());
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnEnd();
         inOrder.verify(mockVariableStatTypes).iterator();
@@ -401,8 +402,8 @@ class TurnHandlingImplTests {
         //noinspection unchecked
         inOrder.verify(mockPassControlToPlayer).accept(playerControlCaptor.capture());
         var playerControlParam = playerControlCaptor.getValue();
-        assertSame(mockCharacter, playerControlParam.getItem1());
-        assertSame(mockTurnData, playerControlParam.getItem2());
+        assertSame(mockCharacter, playerControlParam.item1());
+        assertSame(mockTurnData, playerControlParam.item2());
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffectType).onTurnEnd();
         inOrder.verify(mockVariableStatTypes).iterator();

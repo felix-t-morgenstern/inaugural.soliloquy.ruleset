@@ -85,14 +85,14 @@ public class StatisticMagnitudeEffectCalculationImpl
 
         if (magnitude.absoluteRange() != null) {
             baseEffect += RANDOM_VALUE_SUPPLIER.get() *
-                    (magnitude.absoluteRange().getItem2().doubleValue() -
-                            magnitude.absoluteRange().getItem1().doubleValue());
+                    (magnitude.absoluteRange().item2().doubleValue() -
+                            magnitude.absoluteRange().item1().doubleValue());
         }
         if (magnitude.perLevelRange() != null) {
             for (var i = 0; i < entityTypeLevel; i++) {
                 baseEffect += RANDOM_VALUE_SUPPLIER.get() *
-                        (magnitude.perLevelRange().getItem2().doubleValue() -
-                                magnitude.perLevelRange().getItem1().doubleValue());
+                        (magnitude.perLevelRange().item2().doubleValue() -
+                                magnitude.perLevelRange().item1().doubleValue());
             }
         }
 

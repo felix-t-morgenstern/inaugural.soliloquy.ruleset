@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.*;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -102,9 +103,8 @@ class RoundEndHandlingTests {
 
         mockActiveCharactersProvider = mock(ActiveCharactersProvider.class);
         when(mockActiveCharactersProvider.generateInTurnOrder(any())).thenReturn(
-                listOf(Pair.of(mockCharacter1, mockRoundData),
-                        Pair.of(mockCharacter2, mockRoundData),
-                        Pair.of(mockCharacter3, mockRoundData)));
+                listOf(pairOf(mockCharacter1, mockRoundData), pairOf(mockCharacter2, mockRoundData),
+                        pairOf(mockCharacter3, mockRoundData)));
 
         mockTargetVariableStatType = mock(VariableStatisticType.class);
 
@@ -292,14 +292,14 @@ class RoundEndHandlingTests {
                 (List<Pair<int[], Character>>) staticStatRoundEndEffectsCaptor.getValue();
         assertEquals(3, staticStatAccompanyAllEffects.size());
         assertArrayEquals(new int[]{CHARACTER_1_STATIC_STAT_MAGNITUDE},
-                staticStatAccompanyAllEffects.get(0).getItem1());
-        assertSame(mockCharacter1, staticStatAccompanyAllEffects.get(0).getItem2());
+                staticStatAccompanyAllEffects.get(0).item1());
+        assertSame(mockCharacter1, staticStatAccompanyAllEffects.get(0).item2());
         assertArrayEquals(new int[]{CHARACTER_2_STATIC_STAT_MAGNITUDE},
-                staticStatAccompanyAllEffects.get(1).getItem1());
-        assertSame(mockCharacter2, staticStatAccompanyAllEffects.get(1).getItem2());
+                staticStatAccompanyAllEffects.get(1).item1());
+        assertSame(mockCharacter2, staticStatAccompanyAllEffects.get(1).item2());
         assertArrayEquals(new int[]{CHARACTER_3_STATIC_STAT_MAGNITUDE},
-                staticStatAccompanyAllEffects.get(2).getItem1());
-        assertSame(mockCharacter3, staticStatAccompanyAllEffects.get(2).getItem2());
+                staticStatAccompanyAllEffects.get(2).item1());
+        assertSame(mockCharacter3, staticStatAccompanyAllEffects.get(2).item2());
 
         inOrder.verify(mockMagnitudeCalculation)
                 .getEffect(mockVariableStatType1, mockVariableStat1RoundEndEffectMagnitude,
@@ -348,14 +348,14 @@ class RoundEndHandlingTests {
                 (List<Pair<int[], Character>>) variableStat1RoundEndEffectsCaptor.getValue();
         assertEquals(3, variableStat1AccompanyAllEffects.size());
         assertArrayEquals(new int[]{CHARACTER_1_VARIABLE_STAT_1_MAGNITUDE},
-                variableStat1AccompanyAllEffects.get(0).getItem1());
-        assertSame(mockCharacter1, variableStat1AccompanyAllEffects.get(0).getItem2());
+                variableStat1AccompanyAllEffects.get(0).item1());
+        assertSame(mockCharacter1, variableStat1AccompanyAllEffects.get(0).item2());
         assertArrayEquals(new int[]{CHARACTER_2_VARIABLE_STAT_1_MAGNITUDE},
-                variableStat1AccompanyAllEffects.get(1).getItem1());
-        assertSame(mockCharacter2, variableStat1AccompanyAllEffects.get(1).getItem2());
+                variableStat1AccompanyAllEffects.get(1).item1());
+        assertSame(mockCharacter2, variableStat1AccompanyAllEffects.get(1).item2());
         assertArrayEquals(new int[]{CHARACTER_3_VARIABLE_STAT_1_MAGNITUDE},
-                variableStat1AccompanyAllEffects.get(2).getItem1());
-        assertSame(mockCharacter3, variableStat1AccompanyAllEffects.get(2).getItem2());
+                variableStat1AccompanyAllEffects.get(2).item1());
+        assertSame(mockCharacter3, variableStat1AccompanyAllEffects.get(2).item2());
 
         inOrder.verify(mockMagnitudeCalculation)
                 .getEffect(mockStatusEffectType, mockStatusEffectRoundEndEffectMagnitude,
@@ -404,13 +404,13 @@ class RoundEndHandlingTests {
                 (List<Pair<int[], Character>>) statusEffectRoundEndEffectsCaptor.getValue();
         assertEquals(3, statusEffectAccompanyAllEffects.size());
         assertArrayEquals(new int[]{CHARACTER_1_STATUS_EFFECT_MAGNITUDE},
-                statusEffectAccompanyAllEffects.get(0).getItem1());
-        assertSame(mockCharacter1, statusEffectAccompanyAllEffects.get(0).getItem2());
+                statusEffectAccompanyAllEffects.get(0).item1());
+        assertSame(mockCharacter1, statusEffectAccompanyAllEffects.get(0).item2());
         assertArrayEquals(new int[]{CHARACTER_2_STATUS_EFFECT_MAGNITUDE},
-                statusEffectAccompanyAllEffects.get(1).getItem1());
-        assertSame(mockCharacter2, statusEffectAccompanyAllEffects.get(1).getItem2());
+                statusEffectAccompanyAllEffects.get(1).item1());
+        assertSame(mockCharacter2, statusEffectAccompanyAllEffects.get(1).item2());
         assertArrayEquals(new int[]{CHARACTER_3_STATUS_EFFECT_MAGNITUDE},
-                statusEffectAccompanyAllEffects.get(2).getItem1());
-        assertSame(mockCharacter3, statusEffectAccompanyAllEffects.get(2).getItem2());
+                statusEffectAccompanyAllEffects.get(2).item1());
+        assertSame(mockCharacter3, statusEffectAccompanyAllEffects.get(2).item2());
     }
 }

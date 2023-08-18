@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 import static inaugural.soliloquy.tools.Tools.orderByPriority;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 
 public class RoundEndHandlingImpl implements RoundEndHandling {
     private final Supplier<GameZone> GET_CURRENT_GAME_ZONE;
@@ -88,7 +89,7 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
         ROUND_END_EFFECTS.forEach(effect -> {
             List<Pair<int[], Character>> allEffects = listOf();
             activeCharacters.forEach(characterWithTurnData -> {
-                var character = characterWithTurnData.getItem1();
+                var character = characterWithTurnData.item1();
                 var calculatedEffects = new int[effect.magnitudes().size()];
                 for (var i = 0; i < effect.magnitudes().size(); i++) {
                     int calculatedEffect;
@@ -118,7 +119,7 @@ public class RoundEndHandlingImpl implements RoundEndHandling {
                             .alter(character, calculatedEffects[i]);
                 }
                 effect.otherEffects(calculatedEffects, character, advancingRounds);
-                allEffects.add(Pair.of(calculatedEffects, character));
+                allEffects.add(pairOf(calculatedEffects, character));
             });
             effect.accompanyAllEffects(allEffects, advancingRounds);
         });

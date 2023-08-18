@@ -31,6 +31,7 @@ import java.util.function.Function;
 import static inaugural.soliloquy.tools.collections.Collections.*;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.*;
+import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -101,10 +102,10 @@ public class StatisticCalculationImplTests {
     @Before
     public void setUp() {
         mockGetPassiveAbility = generateMockLookupFunction(
-                Pair.of(SOURCE_PASSIVE_ABILITY_ID, mockSourcePassiveAbility));
+                pairOf(SOURCE_PASSIVE_ABILITY_ID, mockSourcePassiveAbility));
 
         mockGetStatusEffectType =
-                generateMockLookupFunction(Pair.of(STATUS_EFFECT_TYPE_ID, mockStatusEffectType));
+                generateMockLookupFunction(pairOf(STATUS_EFFECT_TYPE_ID, mockStatusEffectType));
 
         when(mockItemData.getVariable(ITEM_DATA_PARAM)).thenReturn(ITEM_DATA_PARAM_VALUE);
 
@@ -112,7 +113,7 @@ public class StatisticCalculationImplTests {
 
         mockEquipmentSlots = mock(CharacterEquipmentSlots.class);
         when(mockEquipmentSlots.representation())
-                .thenReturn(mapOf(Pair.of(randomString(), mockItem)));
+                .thenReturn(mapOf(pairOf(randomString(), mockItem)));
 
         when(mockStatusEffects.getStatusEffectLevel(any())).thenReturn(STATUS_EFFECT_LEVEL);
 
@@ -123,10 +124,10 @@ public class StatisticCalculationImplTests {
         when(mockCharacter.passiveAbilities()).thenReturn(mockPassiveAbilities);
 
         mockStaticStatTypesToCalculate = generateMockMap(
-                Pair.of(CALCULATED_STATIC_STAT_TYPE_ID, mockSourceStaticStatType));
+                pairOf(CALCULATED_STATIC_STAT_TYPE_ID, mockSourceStaticStatType));
 
         mockVariableStatTypesToCalculate = generateMockMap(
-                Pair.of(CALCULATED_VARIABLE_STAT_TYPE_ID, mockVariableStatTypeToCalculate));
+                pairOf(CALCULATED_VARIABLE_STAT_TYPE_ID, mockVariableStatTypeToCalculate));
 
         var statisticComponent = new TypeComponentDefinition(CALCULATED_STATIC_STAT_TYPE_ID,
                 SOURCE_STATIC_STAT_MULTIPLICATION_FACTOR);
@@ -398,11 +399,11 @@ public class StatisticCalculationImplTests {
 
     @Test
     public void testCalculateWithDescriptors() {
-        var expectedResult = Pair.of(EXPECTED_VARIABLE_STAT_VALUE, mapOf(
-                Pair.of(mockSourceStaticStatType, EXPECTED_STATIC_STAT_MODIFIER),
-                Pair.of(mockSourcePassiveAbility, EXPECTED_PASSIVE_ABILITY_MODIFIER),
-                Pair.of(mockItem, EXPECTED_ITEM_DATA_MODIFIER),
-                Pair.of(mockStatusEffectType, EXPECTED_STATUS_EFFECT_MODIFIER)
+        var expectedResult = pairOf(EXPECTED_VARIABLE_STAT_VALUE, mapOf(
+                pairOf(mockSourceStaticStatType, EXPECTED_STATIC_STAT_MODIFIER),
+                pairOf(mockSourcePassiveAbility, EXPECTED_PASSIVE_ABILITY_MODIFIER),
+                pairOf(mockItem, EXPECTED_ITEM_DATA_MODIFIER),
+                pairOf(mockStatusEffectType, EXPECTED_STATUS_EFFECT_MODIFIER)
         ));
 
         var calculatedWithDescriptors = statisticCalculation.calculateWithDescriptors(mockCharacter,

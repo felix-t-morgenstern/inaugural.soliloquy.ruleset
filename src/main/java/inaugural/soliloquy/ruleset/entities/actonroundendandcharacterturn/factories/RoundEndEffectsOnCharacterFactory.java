@@ -113,8 +113,8 @@ public class RoundEndEffectsOnCharacterFactory
                 Check.ifNull(list, "list");
                 for (var pair : list) {
                     Check.ifNull(pair, "pair within list");
-                    Check.ifNull(pair.getItem1(), "magnitudes within pair within list");
-                    Check.ifNull(pair.getItem2(), "character within pair within list");
+                    Check.ifNull(pair.item1(), "magnitudes within pair within list");
+                    Check.ifNull(pair.item2(), "character within pair within list");
                 }
                 if (accompanyAllEffectsAction == null) {
                     return;
