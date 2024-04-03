@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
