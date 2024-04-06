@@ -3,16 +3,16 @@ package inaugural.soliloquy.ruleset.gameconcepts;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.valueobjects.Coordinate2d;
 import soliloquy.specs.common.valueobjects.Coordinate3d;
-import soliloquy.specs.gamestate.entities.GameZone;
 import soliloquy.specs.gamestate.entities.Tile;
 import soliloquy.specs.gamestate.entities.WallSegmentDirection;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityRayCalculation;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
-import static inaugural.soliloquy.tools.collections.Collections.*;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.collections.Collections.setOf;
 
 public class TileVisibilityCalculationImpl implements TileVisibilityCalculation {
     private final TileVisibilityRayCalculation RAY_CALCULATION;
@@ -29,10 +29,6 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
         Check.ifNull(point, "point");
         Check.throwOnLtValue(visibilityRadius, 0, "visibilityRadius");
         var location = point.location();
-
-        if (visibilityRadius == 0) {
-            return zeroRadius(point, location);
-        }
 
         var offsets = CACHED_OFFSETS.get(visibilityRadius);
         if (offsets == null) {
@@ -85,40 +81,6 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
         return result;
     }
 
-    private Result zeroRadius(Tile point, Coordinate2d location) {
-        var gameZone = point.gameZone();
-        var southOfLocation = Coordinate2d.of(location.X, location.Y + 1);
-        var westOfLocation = Coordinate2d.of(location.X + 1, location.Y);
-        var southwestOfLocation = Coordinate2d.of(location.X + 1, location.Y + 1);
-        Set<Coordinate3d> segmentsN = setOf();
-        Set<Coordinate3d> segmentsNw = setOf();
-        Set<Coordinate3d> segmentsW = setOf();
-        aggregateSegments(segmentsN, gameZone, location, WallSegmentDirection.NORTH);
-        aggregateSegments(segmentsN, gameZone, southOfLocation, WallSegmentDirection.NORTH);
-        aggregateSegments(segmentsW, gameZone, location, WallSegmentDirection.WEST);
-        aggregateSegments(segmentsW, gameZone, westOfLocation, WallSegmentDirection.WEST);
-        aggregateSegments(segmentsNw, gameZone, location, WallSegmentDirection.NORTHWEST);
-        aggregateSegments(segmentsNw, gameZone, southOfLocation,
-                WallSegmentDirection.NORTHWEST);
-        aggregateSegments(segmentsNw, gameZone, southwestOfLocation,
-                WallSegmentDirection.NORTHWEST);
-        aggregateSegments(segmentsNw, gameZone, westOfLocation, WallSegmentDirection.NORTHWEST);
-        return new Result() {
-            @Override
-            public Set<Coordinate2d> tiles() {
-                return setOf(location);
-            }
-
-            @Override
-            public Map<WallSegmentDirection, Set<Coordinate3d>> segments() {
-                return mapOf(
-                        pairOf(WallSegmentDirection.NORTH, segmentsN),
-                        pairOf(WallSegmentDirection.NORTHWEST, segmentsNw),
-                        pairOf(WallSegmentDirection.WEST, segmentsW));
-            }
-        };
-    }
-
     private static void aggregateResults(Result aggregate, Result aggregand) {
         aggregate.tiles().addAll(aggregand.tiles());
         aggregate.segments().get(WallSegmentDirection.NORTH).addAll(
@@ -127,11 +89,5 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
                 aggregand.segments().get(WallSegmentDirection.NORTHWEST));
         aggregate.segments().get(WallSegmentDirection.WEST).addAll(
                 aggregand.segments().get(WallSegmentDirection.WEST));
-    }
-
-    private static void aggregateSegments(Set<Coordinate3d> aggregate, GameZone gameZone,
-                                          Coordinate2d location, WallSegmentDirection direction) {
-        var segments = gameZone.getSegments(location, direction);
-        segments.keySet().forEach(height -> aggregate.add(Coordinate3d.of(location, height)));
     }
 }
