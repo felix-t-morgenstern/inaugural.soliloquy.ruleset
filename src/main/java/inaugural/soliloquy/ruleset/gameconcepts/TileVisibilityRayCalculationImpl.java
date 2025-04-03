@@ -28,9 +28,9 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             throws IllegalArgumentException {
         Set<Coordinate2d> resultTiles = setOf();
         Map<WallSegmentDirection, Set<Coordinate3d>> resultSegments = mapOf();
-        resultSegments.put(NORTH, setOf());
-        resultSegments.put(NORTHWEST, setOf());
-        resultSegments.put(WEST, setOf());
+        resultSegments.put(VERTICAL, setOf());
+        resultSegments.put(CORNER, setOf());
+        resultSegments.put(HORIZONTAL, setOf());
 
         var cursor = origin.to2d();
         var hitTarget = false;

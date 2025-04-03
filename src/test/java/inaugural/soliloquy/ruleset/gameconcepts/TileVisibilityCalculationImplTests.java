@@ -47,9 +47,9 @@ public class TileVisibilityCalculationImplTests {
         tileVisibilityCalculationOrigins = setOf();
         locationsVisible = setOf();
         segmentsVisible = mapOf(
-                pairOf(WallSegmentDirection.NORTH, setOf()),
-                pairOf(WallSegmentDirection.NORTHWEST, setOf()),
-                pairOf(WallSegmentDirection.WEST, setOf()));
+                pairOf(WallSegmentDirection.VERTICAL, setOf()),
+                pairOf(WallSegmentDirection.CORNER, setOf()),
+                pairOf(WallSegmentDirection.HORIZONTAL, setOf()));
 
         when(mockTileVisibilityRayCalculation.castRay(any(), any())).thenAnswer(invocation -> {
             var locationVisible = randomCoordinate2d();
@@ -58,17 +58,17 @@ public class TileVisibilityCalculationImplTests {
             var westSegmentLocation = randomCoordinate3d();
 
             locationsVisible.add(locationVisible);
-            segmentsVisible.get(WallSegmentDirection.NORTH).add(northSegmentLocation);
-            segmentsVisible.get(WallSegmentDirection.NORTHWEST).add(northwestSegmentLocation);
-            segmentsVisible.get(WallSegmentDirection.WEST).add(westSegmentLocation);
+            segmentsVisible.get(WallSegmentDirection.VERTICAL).add(northSegmentLocation);
+            segmentsVisible.get(WallSegmentDirection.CORNER).add(northwestSegmentLocation);
+            segmentsVisible.get(WallSegmentDirection.HORIZONTAL).add(westSegmentLocation);
             tileVisibilityCalculationOrigins.add(invocation.getArgument(0));
 
             return new TileVisibilityCalculation.Result() {
                 private final Set<Coordinate2d> LOCATIONS_VISIBLE = setOf(locationVisible);
                 private final Map<WallSegmentDirection, Set<Coordinate3d>> SEGMENTS = mapOf(
-                        pairOf(WallSegmentDirection.NORTH, setOf(northSegmentLocation)),
-                        pairOf(WallSegmentDirection.NORTHWEST, setOf(northwestSegmentLocation)),
-                        pairOf(WallSegmentDirection.WEST, setOf(westSegmentLocation)));
+                        pairOf(WallSegmentDirection.VERTICAL, setOf(northSegmentLocation)),
+                        pairOf(WallSegmentDirection.CORNER, setOf(northwestSegmentLocation)),
+                        pairOf(WallSegmentDirection.HORIZONTAL, setOf(westSegmentLocation)));
 
                 @Override
                 public Set<Coordinate2d> tiles() {

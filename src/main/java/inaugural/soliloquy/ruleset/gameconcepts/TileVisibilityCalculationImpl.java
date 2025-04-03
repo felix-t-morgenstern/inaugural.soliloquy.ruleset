@@ -83,11 +83,11 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
 
     private static void aggregateResults(Result aggregate, Result aggregand) {
         aggregate.tiles().addAll(aggregand.tiles());
-        aggregate.segments().get(WallSegmentDirection.NORTH).addAll(
-                aggregand.segments().get(WallSegmentDirection.NORTH));
-        aggregate.segments().get(WallSegmentDirection.NORTHWEST).addAll(
-                aggregand.segments().get(WallSegmentDirection.NORTHWEST));
-        aggregate.segments().get(WallSegmentDirection.WEST).addAll(
-                aggregand.segments().get(WallSegmentDirection.WEST));
+        aggregate.segments().get(WallSegmentDirection.VERTICAL).addAll(
+                aggregand.segments().get(WallSegmentDirection.VERTICAL));
+        aggregate.segments().get(WallSegmentDirection.CORNER).addAll(
+                aggregand.segments().get(WallSegmentDirection.CORNER));
+        aggregate.segments().get(WallSegmentDirection.HORIZONTAL).addAll(
+                aggregand.segments().get(WallSegmentDirection.HORIZONTAL));
     }
 }
