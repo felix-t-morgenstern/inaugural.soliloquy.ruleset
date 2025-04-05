@@ -10,28 +10,27 @@ import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.GameZone;
 import soliloquy.specs.gamestate.entities.WallSegment;
-import soliloquy.specs.gamestate.entities.WallSegmentDirection;
-import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation;
+import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityRayCalculation;
 
 import java.util.List;
 
-import static inaugural.soliloquy.tools.random.Random.randomCoordinate3d;
-import static soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Result;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
-import static inaugural.soliloquy.tools.random.Random.*;
+import static inaugural.soliloquy.tools.random.Random.randomInt;
+import static inaugural.soliloquy.tools.random.Random.randomIntInRange;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Result;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TileVisibilityRayCalculationImplTests {
     @Mock private GameZone mockGameZone;
 
-    private List<Pair<WallSegmentDirection, Pair<Coordinate3d, WallSegment>>> segmentsReturned;
+    private List<Pair<WallSegmentOrientation, Pair<Coordinate3d, WallSegment>>> segmentsReturned;
 
     private TileVisibilityRayCalculation rayCalculation;
 
@@ -41,7 +40,7 @@ public class TileVisibilityRayCalculationImplTests {
         when(mockGameZone.getSegments(any())).thenAnswer(invocation -> {
             var segment = mock(WallSegment.class);
             var z = randomInt();
-            var direction = WallSegmentDirection.fromValue(randomIntInRange(1, 3));
+            var direction = WallSegmentOrientation.fromValue(randomIntInRange(1, 3));
             Coordinate2d location = invocation.getArgument(0);
             segmentsReturned.add(pairOf(direction, pairOf(location.to3d(z), segment)));
             return mapOf(pairOf(direction, mapOf(pairOf(location.to3d(z), segment))));

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.gamestate.entities.WallSegmentDirection;
+import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
 import soliloquy.specs.graphics.assets.Sprite;
@@ -66,7 +66,7 @@ class WallSegmentTypeFactoryTests {
         assertNotNull(output);
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
-        assertSame(WallSegmentDirection.fromValue(DIRECTION), output.direction());
+        assertSame(WallSegmentOrientation.fromValue(DIRECTION), output.orientation());
         assertSame(mockSprite, output.imageAsset());
         assertEquals(BLOCKS_MOVEMENT, output.blocksMovement());
         assertEquals(BLOCKS_SIGHT, output.blocksSight());
@@ -84,7 +84,7 @@ class WallSegmentTypeFactoryTests {
         assertNotNull(output);
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
-        assertSame(WallSegmentDirection.fromValue(DIRECTION), output.direction());
+        assertSame(WallSegmentOrientation.fromValue(DIRECTION), output.orientation());
         assertSame(mockGlobalLoopingAnimation, output.imageAsset());
         assertEquals(BLOCKS_MOVEMENT, output.blocksMovement());
         assertEquals(BLOCKS_SIGHT, output.blocksSight());

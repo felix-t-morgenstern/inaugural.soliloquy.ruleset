@@ -2,7 +2,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.gamestate.entities.WallSegmentDirection;
+import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
@@ -33,14 +33,14 @@ public class WallSegmentTypeFactory implements
         var imageAsset = IMAGE_ASSET_SET_RETRIEVAL.getImageAsset(definition.imageAssetId,
                 definition.imageAssetType, "WallSegmentTypeFactory");
 
-        var direction = WallSegmentDirection.fromValue(definition.direction);
+        var orientation = WallSegmentOrientation.fromValue(definition.orientation);
 
         return new WallSegmentType() {
             private String name = definition.name;
 
             @Override
-            public WallSegmentDirection direction() throws EntityDeletedException {
-                return direction;
+            public WallSegmentOrientation orientation() throws EntityDeletedException {
+                return orientation;
             }
 
             @Override

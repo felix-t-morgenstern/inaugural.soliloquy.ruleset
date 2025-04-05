@@ -4,7 +4,7 @@ import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.valueobjects.Coordinate2d;
 import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.gamestate.entities.Tile;
-import soliloquy.specs.gamestate.entities.WallSegmentDirection;
+import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityRayCalculation;
 
@@ -28,7 +28,6 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
             throws IllegalArgumentException {
         Check.ifNull(point, "point");
         Check.throwOnLtValue(visibilityRadius, 0, "visibilityRadius");
-        var location = point.location();
 
         var offsets = CACHED_OFFSETS.get(visibilityRadius);
         if (offsets == null) {
@@ -66,10 +65,10 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
             CACHED_OFFSETS.put(visibilityRadius, offsets);
         }
 
-        var origin = Coordinate3d.of(location.X, location.Y, point.getHeight());
+        var origin = point.location();
         Result result = null;
         for (var offset : offsets) {
-            var locationToCalculate = Coordinate2d.of(location.X + offset.X, location.Y + offset.Y);
+            var locationToCalculate = Coordinate2d.of(origin.X + offset.X, origin.Y + offset.Y);
             var aggregand = RAY_CALCULATION.castRay(origin, locationToCalculate);
             if (result == null) {
                 result = aggregand;
@@ -83,11 +82,11 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
 
     private static void aggregateResults(Result aggregate, Result aggregand) {
         aggregate.tiles().addAll(aggregand.tiles());
-        aggregate.segments().get(WallSegmentDirection.VERTICAL).addAll(
-                aggregand.segments().get(WallSegmentDirection.VERTICAL));
-        aggregate.segments().get(WallSegmentDirection.CORNER).addAll(
-                aggregand.segments().get(WallSegmentDirection.CORNER));
-        aggregate.segments().get(WallSegmentDirection.HORIZONTAL).addAll(
-                aggregand.segments().get(WallSegmentDirection.HORIZONTAL));
+        aggregate.segments().get(WallSegmentOrientation.VERTICAL).addAll(
+                aggregand.segments().get(WallSegmentOrientation.VERTICAL));
+        aggregate.segments().get(WallSegmentOrientation.CORNER).addAll(
+                aggregand.segments().get(WallSegmentOrientation.CORNER));
+        aggregate.segments().get(WallSegmentOrientation.HORIZONTAL).addAll(
+                aggregand.segments().get(WallSegmentOrientation.HORIZONTAL));
     }
 }

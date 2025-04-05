@@ -5,19 +5,19 @@ import soliloquy.specs.graphics.assets.ImageAsset;
 public class WallSegmentTypeDefinition {
     public String id;
     public String name;
-    public int direction;
+    public int orientation;
     public ImageAsset.ImageAssetType imageAssetType;
     public String imageAssetId;
     public boolean blocksMovement;
     public boolean blocksSight;
 
-    public WallSegmentTypeDefinition(String id, String name, int direction,
+    public WallSegmentTypeDefinition(String id, String name, int orientation,
                                      ImageAsset.ImageAssetType imageAssetType,
                                      String imageAssetId, boolean blocksMovement,
                                      boolean blocksSight) {
         this.id = id;
         this.name = name;
-        this.direction = direction;
+        this.orientation = orientation;
         this.imageAssetType = imageAssetType;
         this.imageAssetId = imageAssetId;
         this.blocksMovement = blocksMovement;

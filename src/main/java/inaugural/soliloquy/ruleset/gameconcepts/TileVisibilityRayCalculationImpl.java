@@ -4,7 +4,7 @@ import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.valueobjects.Coordinate2d;
 import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.gamestate.entities.GameZone;
-import soliloquy.specs.gamestate.entities.WallSegmentDirection;
+import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityRayCalculation;
 
@@ -14,7 +14,7 @@ import java.util.Set;
 
 import static inaugural.soliloquy.tools.collections.Collections.*;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
-import static soliloquy.specs.gamestate.entities.WallSegmentDirection.*;
+import static soliloquy.specs.gamestate.entities.WallSegmentOrientation.*;
 
 public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalculation {
     private final GameZone GAME_ZONE;
@@ -27,7 +27,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
     public TileVisibilityCalculation.Result castRay(Coordinate3d origin, Coordinate2d target)
             throws IllegalArgumentException {
         Set<Coordinate2d> resultTiles = setOf();
-        Map<WallSegmentDirection, Set<Coordinate3d>> resultSegments = mapOf();
+        Map<WallSegmentOrientation, Set<Coordinate3d>> resultSegments = mapOf();
         resultSegments.put(VERTICAL, setOf());
         resultSegments.put(CORNER, setOf());
         resultSegments.put(HORIZONTAL, setOf());
@@ -88,7 +88,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             }
 
             @Override
-            public Map<WallSegmentDirection, Set<Coordinate3d>> segments() {
+            public Map<WallSegmentOrientation, Set<Coordinate3d>> segments() {
                 return resultSegments;
             }
         };
