@@ -2,7 +2,6 @@ package inaugural.soliloquy.ruleset.gameconcepts;
 
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.valueobjects.Coordinate2d;
-import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.gamestate.entities.Tile;
 import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation;
@@ -81,12 +80,12 @@ public class TileVisibilityCalculationImpl implements TileVisibilityCalculation 
     }
 
     private static void aggregateResults(Result aggregate, Result aggregand) {
-        aggregate.tiles().addAll(aggregand.tiles());
-        aggregate.segments().get(WallSegmentOrientation.VERTICAL).addAll(
+        aggregate.tiles().putAll(aggregand.tiles());
+        aggregate.segments().get(WallSegmentOrientation.VERTICAL).putAll(
                 aggregand.segments().get(WallSegmentOrientation.VERTICAL));
-        aggregate.segments().get(WallSegmentOrientation.CORNER).addAll(
+        aggregate.segments().get(WallSegmentOrientation.CORNER).putAll(
                 aggregand.segments().get(WallSegmentOrientation.CORNER));
-        aggregate.segments().get(WallSegmentOrientation.HORIZONTAL).addAll(
+        aggregate.segments().get(WallSegmentOrientation.HORIZONTAL).putAll(
                 aggregand.segments().get(WallSegmentOrientation.HORIZONTAL));
     }
 }

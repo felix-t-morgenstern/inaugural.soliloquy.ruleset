@@ -8,6 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import soliloquy.specs.common.valueobjects.Coordinate2d;
 import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.gamestate.entities.Tile;
+import soliloquy.specs.gamestate.entities.WallSegment;
 import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Result;
@@ -28,8 +29,8 @@ public class TileVisibilityCalculationImplTests {
     @Mock private Tile mockTile;
     @Mock private TileVisibilityRayCalculation mockTileVisibilityRayCalculation;
     private Set<Coordinate3d> tileVisibilityCalculationOrigins;
-    private Set<Coordinate2d> locationsVisible;
-    private Map<WallSegmentOrientation, Set<Coordinate3d>> segmentsVisible;
+    private Map<Coordinate3d, Tile> tilesVisible;
+    private Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> segmentsVisible;
 
     // Constraining values to avoid extremely rare calculation inconsistencies near min and max vals
     private final Coordinate3d LOCATION =
@@ -43,38 +44,49 @@ public class TileVisibilityCalculationImplTests {
         when(mockTile.location()).thenReturn(LOCATION);
 
         tileVisibilityCalculationOrigins = setOf();
-        locationsVisible = setOf();
+        tilesVisible = mapOf();
         segmentsVisible = mapOf(
-                pairOf(WallSegmentOrientation.VERTICAL, setOf()),
-                pairOf(WallSegmentOrientation.CORNER, setOf()),
-                pairOf(WallSegmentOrientation.HORIZONTAL, setOf()));
+                pairOf(WallSegmentOrientation.VERTICAL, mapOf()),
+                pairOf(WallSegmentOrientation.CORNER, mapOf()),
+                pairOf(WallSegmentOrientation.HORIZONTAL, mapOf()));
 
         when(mockTileVisibilityRayCalculation.castRay(any(), any())).thenAnswer(invocation -> {
-            var locationVisible = randomCoordinate2d();
-            var northSegmentLocation = randomCoordinate3d();
-            var northwestSegmentLocation = randomCoordinate3d();
-            var westSegmentLocation = randomCoordinate3d();
+            var mockTile = mock(Tile.class);
+            var mockTileLocation = randomCoordinate3d();
+            tilesVisible.put(mockTileLocation, mockTile);
 
-            locationsVisible.add(locationVisible);
-            segmentsVisible.get(WallSegmentOrientation.VERTICAL).add(northSegmentLocation);
-            segmentsVisible.get(WallSegmentOrientation.CORNER).add(northwestSegmentLocation);
-            segmentsVisible.get(WallSegmentOrientation.HORIZONTAL).add(westSegmentLocation);
+            var mockVertSegment = mock(WallSegment.class);
+            var mockCornerSegment = mock(WallSegment.class);
+            var mockHorizSegment = mock(WallSegment.class);
+            var vertSegmentLocation = randomCoordinate3d();
+            var cornerSegmentLocation = randomCoordinate3d();
+            var horizSegmentLocation = randomCoordinate3d();
+            segmentsVisible.get(WallSegmentOrientation.VERTICAL)
+                    .put(vertSegmentLocation, mockVertSegment);
+            segmentsVisible.get(WallSegmentOrientation.CORNER)
+                    .put(cornerSegmentLocation, mockCornerSegment);
+            segmentsVisible.get(WallSegmentOrientation.HORIZONTAL)
+                    .put(horizSegmentLocation, mockHorizSegment);
             tileVisibilityCalculationOrigins.add(invocation.getArgument(0));
 
             return new TileVisibilityCalculation.Result() {
-                private final Set<Coordinate2d> LOCATIONS_VISIBLE = setOf(locationVisible);
-                private final Map<WallSegmentOrientation, Set<Coordinate3d>> SEGMENTS = mapOf(
-                        pairOf(WallSegmentOrientation.VERTICAL, setOf(northSegmentLocation)),
-                        pairOf(WallSegmentOrientation.CORNER, setOf(northwestSegmentLocation)),
-                        pairOf(WallSegmentOrientation.HORIZONTAL, setOf(westSegmentLocation)));
+                private final Map<Coordinate3d, Tile> TILES_VISIBLE = mapOf(tilesVisible);
+                private final Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> SEGMENTS =
+                        mapOf(
+                                pairOf(WallSegmentOrientation.VERTICAL,
+                                        mapOf(pairOf(vertSegmentLocation, mockVertSegment))),
+                                pairOf(WallSegmentOrientation.CORNER,
+                                        mapOf(pairOf(cornerSegmentLocation, mockCornerSegment))),
+                                pairOf(WallSegmentOrientation.HORIZONTAL,
+                                        mapOf(pairOf(horizSegmentLocation, mockHorizSegment))));
 
                 @Override
-                public Set<Coordinate2d> tiles() {
-                    return LOCATIONS_VISIBLE;
+                public Map<Coordinate3d, Tile> tiles() {
+                    return TILES_VISIBLE;
                 }
 
                 @Override
-                public Map<WallSegmentOrientation, Set<Coordinate3d>> segments() {
+                public Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> segments() {
                     return SEGMENTS;
                 }
             };
@@ -355,7 +367,7 @@ public class TileVisibilityCalculationImplTests {
         assertNotNull(result);
         verify(mockTileVisibilityRayCalculation, times(expectedRays))
                 .castRay(eq(ORIGIN), any());
-        assertEquals(locationsVisible, result.tiles());
+        assertEquals(tilesVisible, result.tiles());
         assertEquals(segmentsVisible, result.segments());
         assertEquals(setOf(ORIGIN), tileVisibilityCalculationOrigins);
         expectedRayOffsets.forEach(offset ->

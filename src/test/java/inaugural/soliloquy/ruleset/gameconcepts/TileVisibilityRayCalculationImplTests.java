@@ -9,14 +9,17 @@ import soliloquy.specs.common.valueobjects.Coordinate2d;
 import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.GameZone;
+import soliloquy.specs.gamestate.entities.Tile;
 import soliloquy.specs.gamestate.entities.WallSegment;
 import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.ruleset.gameconcepts.TileVisibilityRayCalculation;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
+import static inaugural.soliloquy.tools.collections.Collections.setOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomIntInRange;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
@@ -28,25 +31,38 @@ import static soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Res
 
 @RunWith(MockitoJUnitRunner.class)
 public class TileVisibilityRayCalculationImplTests {
+    @Mock private Supplier<GameZone> mockGetGameZone;
     @Mock private GameZone mockGameZone;
 
+    private List<Pair<Coordinate3d, Tile>> tilesReturned;
     private List<Pair<WallSegmentOrientation, Pair<Coordinate3d, WallSegment>>> segmentsReturned;
 
     private TileVisibilityRayCalculation rayCalculation;
 
     @Before
     public void setUp() {
+        tilesReturned = listOf();
         segmentsReturned = listOf();
-        when(mockGameZone.getSegments(any())).thenAnswer(invocation -> {
-            var segment = mock(WallSegment.class);
-            var z = randomInt();
-            var direction = WallSegmentOrientation.fromValue(randomIntInRange(1, 3));
-            Coordinate2d location = invocation.getArgument(0);
-            segmentsReturned.add(pairOf(direction, pairOf(location.to3d(z), segment)));
-            return mapOf(pairOf(direction, mapOf(pairOf(location.to3d(z), segment))));
-        });
 
-        rayCalculation = new TileVisibilityRayCalculationImpl(mockGameZone);
+        when(mockGameZone.getSegments(any())).thenAnswer(invocation -> {
+            var mockSegment = mock(WallSegment.class);
+            Coordinate2d location = invocation.getArgument(0);
+            var z = randomInt();
+            when(mockSegment.location()).thenReturn(location.to3d(z));
+            var orientation = WallSegmentOrientation.fromValue(randomIntInRange(1, 3));
+            segmentsReturned.add(pairOf(orientation, pairOf(location.to3d(z), mockSegment)));
+            return mapOf(pairOf(orientation, mapOf(pairOf(location.to3d(z), mockSegment))));
+        });
+        when(mockGameZone.tiles(any())).thenAnswer(invocation -> {
+            var mockTile = mock(Tile.class);
+            var mockTileLoc3d = ((Coordinate2d) invocation.getArgument(0)).to3d(randomInt());
+            when(mockTile.location()).thenReturn(mockTileLoc3d);
+            tilesReturned.add(pairOf(mockTileLoc3d, mockTile));
+            return setOf(mockTile);
+        });
+        when(mockGetGameZone.get()).thenReturn(mockGameZone);
+
+        rayCalculation = new TileVisibilityRayCalculationImpl(mockGetGameZone);
     }
 
     @Test
@@ -56,27 +72,57 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityStraightHorizontalLine() {
+    public void testGetVisibilityAtOrigin() {
+        var origin = randomCoordinate3dInNormalRange();
+        var expectedCursorHits = 1;
+
+        var result = rayCalculation.castRay(origin, origin.to2d());
+
+        assertNotNull(result);
+        assertEquals(expectedCursorHits, result.tiles().size());
+        assertEquals(expectedCursorHits, segmentsReturned.size());
+        testTileHit(origin.to2d(), 0, result);
+    }
+
+    @Test
+    public void testGetVisibilityStraightHorizontalLineEast() {
         var origin = randomCoordinate3dInNormalRange();
         var rayLength = randomIntInRange(2, 10);
-        var expectedNumberOfTiles = rayLength + 1;
+        var expectedCursorHits = rayLength + 1;
         var destination = Coordinate2d.of(origin.X + rayLength, origin.Y);
 
         var result = rayCalculation.castRay(origin, destination);
 
         assertNotNull(result);
-        assertEquals(expectedNumberOfTiles, result.tiles().size());
-        assertEquals(expectedNumberOfTiles, segmentsReturned.size());
+        assertEquals(expectedCursorHits, result.tiles().size());
+        assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
             testTileHit(Coordinate2d.of(origin.X + i, origin.Y), i, result);
         }
     }
 
     @Test
-    public void testGetVisibilityStraightVerticalLine() {
+    public void testGetVisibilityStraightHorizontalLineWest() {
         var origin = randomCoordinate3dInNormalRange();
         var rayLength = randomIntInRange(2, 10);
-        var expectedNumberOfTiles = rayLength + 1;
+        var expectedCursorHits = rayLength + 1;
+        var destination = Coordinate2d.of(origin.X - rayLength, origin.Y);
+
+        var result = rayCalculation.castRay(origin, destination);
+
+        assertNotNull(result);
+        assertEquals(expectedCursorHits, result.tiles().size());
+        assertEquals(expectedCursorHits, segmentsReturned.size());
+        for (var i = 0; i <= rayLength; i++) {
+            testTileHit(Coordinate2d.of(origin.X - i, origin.Y), i, result);
+        }
+    }
+
+    @Test
+    public void testGetVisibilityStraightVerticalLineSouth() {
+        var origin = randomCoordinate3dInNormalRange();
+        var rayLength = randomIntInRange(2, 10);
+        var expectedNumberOfTiles = Math.abs(rayLength) + 1;
         var destination = Coordinate2d.of(origin.X, origin.Y + rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
@@ -86,6 +132,23 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedNumberOfTiles, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
             testTileHit(Coordinate2d.of(origin.X, origin.Y + i), i, result);
+        }
+    }
+
+    @Test
+    public void testGetVisibilityStraightVerticalLineNorth() {
+        var origin = randomCoordinate3dInNormalRange();
+        var rayLength = randomIntInRange(2, 10);
+        var expectedNumberOfTiles = Math.abs(rayLength) + 1;
+        var destination = Coordinate2d.of(origin.X, origin.Y - rayLength);
+
+        var result = rayCalculation.castRay(origin, destination);
+
+        assertNotNull(result);
+        assertEquals(expectedNumberOfTiles, result.tiles().size());
+        assertEquals(expectedNumberOfTiles, segmentsReturned.size());
+        for (var i = 0; i <= rayLength; i++) {
+            testTileHit(Coordinate2d.of(origin.X, origin.Y - i), i, result);
         }
     }
 
@@ -144,24 +207,31 @@ public class TileVisibilityRayCalculationImplTests {
         }
     }
 
+    private void testTileHit(Coordinate2d expectedTarget, int index, Result result) {
+        verify(mockGameZone).tiles(expectedTarget);
+        assertTrue(result.tiles().keySet().stream()
+                .anyMatch(loc -> loc.to2d().equals(expectedTarget)));
+        assertEquals(expectedTarget, tilesReturned.get(index).item1().to2d());
+
+        verify(mockGameZone).getSegments(expectedTarget);
+        var expectedOrientation = segmentsReturned.get(index).item1();
+        var expectedSegReturned = segmentsReturned.get(index).item2().item2();
+        assertEquals(segmentsReturned.get(index).item2().item1(), expectedSegReturned.location());
+        assertTrue(result.segments().get(expectedOrientation)
+                .containsValue(segmentsReturned.get(index).item2().item2()));
+        assertEquals(expectedTarget, expectedSegReturned.location().to2d());
+    }
+
     // NB: With excessively high or low values, the floating point calculations used to calculate
     // the tiles covered by a visibility ray no longer work properly, due to floating point
     // rounding issues. This isn't an issue in practice, since no GameZone should need more than
-    // 100,000 tiles, so this range should be adequate for testing.
+    // 100,000,000 tiles, so this range should be adequate for testing.
     private Coordinate3d randomCoordinate3dInNormalRange() {
         return Coordinate3d.of(
                 randomIntInRange(-10000, 10000),
                 randomIntInRange(-10000, 10000),
                 randomInt()
         );
-    }
-
-    private void testTileHit(Coordinate2d expectedTarget, int index, Result result) {
-        verify(mockGameZone).getSegments(expectedTarget);
-        assertTrue(result.tiles().contains(expectedTarget));
-        assertTrue(result.segments().get(segmentsReturned.get(index).item1())
-                .contains(segmentsReturned.get(index).item2().item1()));
-        assertEquals(expectedTarget, segmentsReturned.get(index).item2().item1().to2d());
     }
 
     @Test
