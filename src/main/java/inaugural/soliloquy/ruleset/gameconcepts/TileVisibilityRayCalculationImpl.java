@@ -38,11 +38,11 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         var rise = (float) target.Y - origin.Y;
         var run = (float) target.X - origin.X;
         var slope = rise / run;
-        var absSlope = Math.abs(slope);
         var incX = run > 0 ? 1 : -1;
         var halfIncX = incX / 2f;
         var incY = rise > 0 ? 1 : -1;
         var halfIncY = incY / 2f;
+        System.out.println("Slope = " + slope);
 
         var origin2d = origin.to2d();
         var cursor = origin2d;
@@ -59,7 +59,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             segmentsAtLocation.forEach(
                     (o, segs) -> segs.forEach((l, s) -> segmentsInRay.get(o).put(l, s)));
 
-            cursor = nextCursor(origin2d, cursor, slope, incX, incY, halfIncX, halfIncY);
+            cursor = nextCursor(origin2d, target, cursor, slope, incX, incY, halfIncX, halfIncY);
         } while (!cursorHitTarget);
 
         return new TileVisibilityCalculation.Result() {
@@ -75,7 +75,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         };
     }
 
-    private Coordinate2d nextCursor(Coordinate2d origin, Coordinate2d cursor,
+    private Coordinate2d nextCursor(Coordinate2d origin, Coordinate2d target, Coordinate2d cursor,
                                     float slope, int incX, int incY,
                                     float halfIncX, float halfIncY) {
         if (slope == 0) {
@@ -84,19 +84,35 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         if (slope == Float.NEGATIVE_INFINITY || slope == Float.POSITIVE_INFINITY) {
             return addOffsets2d(cursor, 0, incY);
         }
-        if (slope < 1) {
-            var nextVertInterceptX = cursor.X + halfIncX;
-            var nextVertInterceptRun = nextVertInterceptX - origin.X;
-            var nextVertInterceptY = (slope * nextVertInterceptRun) + origin.Y;
-
-            if (Math.abs(nextVertInterceptY) >= Math.abs(cursor.Y + halfIncY)) {
-                return addOffsets2d(cursor, 0, incY);
-            }
-            else {
-                return addOffsets2d(cursor, incX, 0);
-            }
+        if (slope == 1 || slope == -1) {
+            return addOffsets2d(cursor, incX, incY);
         }
-        return null;
+        if (addOffsets2d(origin, incX, 0).equals(target)) {
+            System.out.println("Snap to target, +x");
+            return target;
+        }
+        if (addOffsets2d(origin, 0, incY).equals(target)) {
+            System.out.println("Snap to target, +y");
+            return target;
+        }
+
+        var nextVertInterceptX = cursor.X + halfIncX;
+        System.out.println("nextVertInterceptX = " + nextVertInterceptX);
+        var nextVertInterceptRun = nextVertInterceptX - origin.X;
+        System.out.println("nextVertInterceptRun = " + nextVertInterceptRun);
+        var nextVertInterceptY = (slope * nextVertInterceptRun) + origin.Y;
+        System.out.println("nextVertInterceptY = " + nextVertInterceptY);
+
+        // (If incY == 0, then slope is also 0)
+        if ((incY > 0 && nextVertInterceptY >= cursor.Y + halfIncY) ||
+                (incY < 0 && nextVertInterceptY <= cursor.Y + halfIncY)) {
+            System.out.println("incY");
+            return addOffsets2d(cursor, 0, incY);
+        }
+        else {
+            System.out.println("incX");
+            return addOffsets2d(cursor, incX, 0);
+        }
     }
 
     @Override
