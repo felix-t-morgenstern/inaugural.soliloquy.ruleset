@@ -19,8 +19,7 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
-import static inaugural.soliloquy.tools.random.Random.randomInt;
-import static inaugural.soliloquy.tools.random.Random.randomString;
+import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.HandlerAndEntity;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockEntityAndHandler;
 import static org.junit.Assert.*;
@@ -41,6 +40,7 @@ class GroundTypeFactoryTests {
     private final String ON_STEP_FUNCTION_ID = randomString();
     private final String CAN_STEP_FUNCTION_ID = randomString();
     private final String HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID = randomString();
+    private final boolean BLOCKS_SIGHT = randomBoolean();
     private final Direction DIRECTION = SOUTHWEST;
     @SuppressWarnings("rawtypes")
     private final Map<String, Function> FUNCTIONS = mapOf();
@@ -98,7 +98,7 @@ class GroundTypeFactoryTests {
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID,
                         ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        new String[]{COLOR_SHIFT_WRITTEN_VALUE});
+                        BLOCKS_SIGHT, new String[]{COLOR_SHIFT_WRITTEN_VALUE});
 
         groundTypeFactory = new GroundTypeFactory(COLOR_SHIFT_HANDLER, FUNCTIONS::get, SPRITES::get,
                 GLOBAL_LOOPING_ANIMATIONS::get);
@@ -126,7 +126,7 @@ class GroundTypeFactoryTests {
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID,
                         ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        new String[]{COLOR_SHIFT_WRITTEN_VALUE});
+                        BLOCKS_SIGHT, new String[]{COLOR_SHIFT_WRITTEN_VALUE});
 
         var output = groundTypeFactory.make(definitionWithSprite);
         output.onStep(mockCharacter1);
@@ -143,10 +143,12 @@ class GroundTypeFactoryTests {
         assertEquals(listOf(COLOR_SHIFT), output.defaultColorShifts());
         assertEquals(ADDITIONAL_MOVEMENT_COST, additionalMovementCost);
         assertEquals(HEIGHT_MOVEMENT_PENALTY_MITIGATION, heightMovementPenaltyMitigation);
+        assertEquals(BLOCKS_SIGHT, output.blocksSight());
         verify(COLOR_SHIFT_HANDLER).read(COLOR_SHIFT_WRITTEN_VALUE);
         verify(mockOnStepFunction).apply(mockCharacter1);
         verify(mockCanStepFunction).apply(mockCharacter2);
-        verify(mockHeightMovementPenaltyMitigationFunction).apply(eq(new Object[]{mockTile, mockCharacter1, SOUTHWEST}));
+        verify(mockHeightMovementPenaltyMitigationFunction).apply(
+                eq(new Object[]{mockTile, mockCharacter1, SOUTHWEST}));
     }
 
     @Test
@@ -155,7 +157,7 @@ class GroundTypeFactoryTests {
                 new GroundTypeDefinition(ID, NAME, 3, GLOBAL_LOOPING_ANIMATION_ID,
                         ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        new String[]{COLOR_SHIFT_WRITTEN_VALUE});
+                        BLOCKS_SIGHT, new String[]{COLOR_SHIFT_WRITTEN_VALUE});
 
         var output = groundTypeFactory.make(definitionWithLoopingAnimation);
         output.onStep(mockCharacter1);
@@ -172,10 +174,12 @@ class GroundTypeFactoryTests {
         assertEquals(listOf(COLOR_SHIFT), output.defaultColorShifts());
         assertEquals(ADDITIONAL_MOVEMENT_COST, additionalMovementCost);
         assertEquals(HEIGHT_MOVEMENT_PENALTY_MITIGATION, heightMovementPenaltyMitigation);
+        assertEquals(BLOCKS_SIGHT, output.blocksSight());
         verify(COLOR_SHIFT_HANDLER).read(COLOR_SHIFT_WRITTEN_VALUE);
         verify(mockOnStepFunction).apply(mockCharacter1);
         verify(mockCanStepFunction).apply(mockCharacter2);
-        verify(mockHeightMovementPenaltyMitigationFunction).apply(eq(new Object[]{mockTile, mockCharacter1, SOUTHWEST}));
+        verify(mockHeightMovementPenaltyMitigationFunction).apply(
+                eq(new Object[]{mockTile, mockCharacter1, SOUTHWEST}));
     }
 
     @Test
@@ -186,80 +190,81 @@ class GroundTypeFactoryTests {
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(null, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition("", NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, null, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, "", 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 0, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 2, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 4, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, null, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, "", ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        null)));
+                        BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, invalidFunctionId, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 3, invalidFunctionId, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, null, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        null)));
+                        BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, "", CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        null)));
+                        BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, invalidFunctionId,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID, null,
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        null)));
+                        BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID, "",
                         ADDITIONAL_MOVEMENT_COST, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
-                        null)));
+                        BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         invalidFunctionId, ADDITIONAL_MOVEMENT_COST,
-                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, null)));
+                        HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
-                        CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, null, null)));
+                        CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, null, BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
-                        CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, "", null)));
+                        CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, "", BLOCKS_SIGHT, null)));
         assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
-                        CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, invalidFunctionId, null)));
+                        CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, invalidFunctionId,
+                        BLOCKS_SIGHT, null)));
     }
 
     @Test

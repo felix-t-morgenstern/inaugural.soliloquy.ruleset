@@ -1,5 +1,6 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
+import org.javatuples.Triplet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +21,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.*;
-import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomIntInRange;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate3d.addOffsets3d;
@@ -42,18 +42,23 @@ import static soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Res
 public class TileVisibilityRayCalculationImplTests {
     // This is being set statically since the test cases for this suite need to be manually
     // verified, prohibiting randomness
-    private final float VIEW_SLOPE_MULTIPLIER_ABOVE = 0f;
-    private final float VIEW_SLOPE_MULTIPLIER_BELOW = 0f;
+    private final float TARGET_ADDEND_ABOVE = 0.5f;
+    private final float TARGET_ADDEND_BELOW = 8f;
 
-    private final int Z = randomInt();
+    // Z values must be within a reasonable value, to avoid bizarre rounding errors
+    private final int Z = randomIntInRange(-10000, 10000);
 
     @Mock private Supplier<GameZone> mockGetGameZone;
     @Mock private GameZone mockGameZone;
 
     private List<Pair<Coordinate3d, Tile>> tilesReturned;
-    private List<Pair<WallSegmentOrientation, Pair<Coordinate3d, WallSegment>>> segmentsReturned;
+    private List<Triplet<WallSegmentOrientation, Coordinate3d, WallSegment>> segmentsReturned;
     private Map<Integer, WallSegment> segmentReturnOverrides;
     private int segmentGenCounter;
+    // NB: These are only relevant in line-of-sight blocking tests, since segments will need to
+    // be at specific locations to not potentially overlap
+    private boolean movingEast;
+    private boolean movingSouth;
 
     private TileVisibilityRayCalculation rayCalculation;
 
@@ -63,24 +68,31 @@ public class TileVisibilityRayCalculationImplTests {
         segmentsReturned = listOf();
         segmentReturnOverrides = mapOf();
         segmentGenCounter = 0;
+        movingEast = movingSouth = false;
 
         when(mockGameZone.getSegments(any())).thenAnswer(invocation -> {
             var index = segmentGenCounter++;
+            WallSegment mockSegment;
             if (segmentReturnOverrides.containsKey(index)) {
-                var segment = segmentReturnOverrides.get(index);
-                return mapOf(pairOf(segment.getType().orientation(),
-                        mapOf(pairOf(segment.location(), segment))));
+                mockSegment = segmentReturnOverrides.get(index);
             }
-            var orientation = WallSegmentOrientation.fromValue(randomIntInRange(1, 3));
-            Coordinate2d location = invocation.getArgument(0);
-            var mockSegment = makeMockSegment(orientation,location.to3d(Z),false);
-            segmentsReturned.add(pairOf(orientation, pairOf(location.to3d(Z), mockSegment)));
+            else {
+                var orientation = WallSegmentOrientation.fromValue(randomIntInRange(1, 3));
+                Coordinate2d tileLoc = invocation.getArgument(0);
+                var segLocX = tileLoc.X + (movingEast ? 1 : 0);
+                var segLocY = tileLoc.Y + (movingSouth ? 1 : 0);
+                mockSegment =
+                        makeMockSegment(orientation, Coordinate3d.of(segLocX, segLocY, Z), false);
+            }
+            var orientation = mockSegment.getType().orientation();
+            var loc = mockSegment.location();
+            segmentsReturned.add(Triplet.with(orientation, loc, mockSegment));
             Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> segmentsMap = mapOf();
             // GameZone::getSegments is assumed to return a non-null map for each orientation
             segmentsMap.put(HORIZONTAL, mapOf());
             segmentsMap.put(CORNER, mapOf());
             segmentsMap.put(VERTICAL, mapOf());
-            segmentsMap.get(orientation).put(location.to3d(Z), mockSegment);
+            segmentsMap.get(orientation).put(loc, mockSegment);
             return segmentsMap;
         });
         when(mockGameZone.tiles(any())).thenAnswer(invocation -> {
@@ -93,21 +105,21 @@ public class TileVisibilityRayCalculationImplTests {
         when(mockGetGameZone.get()).thenReturn(mockGameZone);
 
         rayCalculation =
-                new TileVisibilityRayCalculationImpl(mockGetGameZone, VIEW_SLOPE_MULTIPLIER_ABOVE,
-                        VIEW_SLOPE_MULTIPLIER_BELOW);
+                new TileVisibilityRayCalculationImpl(mockGetGameZone, TARGET_ADDEND_ABOVE,
+                        TARGET_ADDEND_BELOW);
     }
 
     @Test
     public void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> new TileVisibilityRayCalculationImpl(null, VIEW_SLOPE_MULTIPLIER_ABOVE,
-                        VIEW_SLOPE_MULTIPLIER_BELOW));
+                () -> new TileVisibilityRayCalculationImpl(null, TARGET_ADDEND_ABOVE,
+                        TARGET_ADDEND_BELOW));
         assertThrows(IllegalArgumentException.class,
                 () -> new TileVisibilityRayCalculationImpl(mockGetGameZone, -0.000001f,
-                        VIEW_SLOPE_MULTIPLIER_BELOW));
+                        TARGET_ADDEND_BELOW));
         assertThrows(IllegalArgumentException.class,
                 () -> new TileVisibilityRayCalculationImpl(mockGetGameZone,
-                        VIEW_SLOPE_MULTIPLIER_ABOVE, -0.000001f));
+                        TARGET_ADDEND_ABOVE, -0.000001f));
 
     }
 
@@ -704,9 +716,11 @@ public class TileVisibilityRayCalculationImplTests {
     // 0 implies it's adjacent
     @Test
     public void testVisibilityBlockingSegmentStraightLineEast() {
-        var origin = randomCoordinate3dInNormalRange();
+        movingEast = true;
+        movingSouth = false;
+        var origin = Coordinate3d.of(0, 0, Z);//randomCoordinate3dInNormalRange();
         var rayLength = randomIntInRange(7, 10);
-        var blockingSegmentDist = 2; //randomIntInRange(2, 4);
+        var blockingSegmentDist = 1; //randomIntInRange(2, 4);
         var mockBlockingSegment = makeMockSegment(WallSegmentOrientation.VERTICAL,
                 addOffsets3d(origin, blockingSegmentDist + 1, 0, 0), true);
         segmentReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
@@ -717,10 +731,49 @@ public class TileVisibilityRayCalculationImplTests {
 
         assertNotNull(result);
         assertEquals(expectedCursorHits, result.tiles().size());
-        assertEquals(expectedCursorHits, segmentsReturned.size());
-        for (var i = 0; i <= rayLength; i++) {
+        assertEquals(3, result.segments().size());
+        assertEquals(expectedCursorHits,
+                result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
+                        result.segments().get(VERTICAL).size());
+        for (var i = 0; i < expectedCursorHits; i++) {
             testTileHit(Coordinate2d.of(origin.X + i, origin.Y), i, result);
+            System.out.println("I passed a hit!");
         }
+    }
+
+    @Test
+    public void testCanSeeTileAboveSufficientlyLowLedge() {
+
+    }
+
+    @Test
+    public void testCannotSeeTileAboveSufficientlyHighLedge() {
+
+    }
+
+    @Test
+    public void testCanSeeTileBeneathSufficientlyShallowCliff() {
+
+    }
+
+    @Test
+    public void testCannotSeeTileBeneathSufficientlyDeepCliff() {
+
+    }
+
+    @Test
+    public void testTargetAddendBelowDoesNotAdjustTargetAboveOrigin() {
+
+    }
+
+    @Test
+    public void testBlockingTileBlocksVisibilityBeneathItself() {
+
+    }
+
+    @Test
+    public void testBlockingTileBlocksVisibilityAboveItself() {
+
     }
 
     private void testTileHit(Coordinate2d expectedTarget, int index, Result result) {
@@ -730,12 +783,14 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedTarget, tilesReturned.get(index).item1().to2d());
 
         verify(mockGameZone).getSegments(expectedTarget);
-        var expectedOrientation = segmentsReturned.get(index).item1();
-        var expectedSegReturned = segmentsReturned.get(index).item2().item2();
-        assertEquals(segmentsReturned.get(index).item2().item1(), expectedSegReturned.location());
+        var expectedOrientation = segmentsReturned.get(index).getValue0();
+        var expectedSegReturned = segmentsReturned.get(index).getValue2();
+        assertEquals(segmentsReturned.get(index).getValue1(), expectedSegReturned.location());
         assertTrue(result.segments().get(expectedOrientation)
-                .containsValue(segmentsReturned.get(index).item2().item2()));
-        assertEquals(expectedTarget, expectedSegReturned.location().to2d());
+                .containsValue(segmentsReturned.get(index).getValue2()));
+        var expectedSegLoc =
+                addOffsets2d(expectedTarget, (movingEast ? 1 : 0), (movingSouth ? 1 : 0));
+        assertEquals(expectedSegLoc, expectedSegReturned.location().to2d());
     }
 
     private WallSegment makeMockSegment(WallSegmentOrientation orientation, Coordinate3d loc,

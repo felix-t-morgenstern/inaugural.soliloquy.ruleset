@@ -9,13 +9,14 @@ public class GroundTypeDefinition {
     public String canStepFunctionId;
     public int additionalMovementCost;
     public String heightMovementPenaltyMitigationFunctionId;
+    public boolean blocksSight;
     public String[] defaultColorShifts;
 
     public GroundTypeDefinition(String id, String name, int imageAssetType, String imageAssetId,
                                 String onStepFunctionId, String canStepFunctionId,
                                 int additionalMovementCost,
                                 String heightMovementPenaltyMitigationFunctionId,
-                                String[] defaultColorShifts) {
+                                boolean blocksSight, String[] defaultColorShifts) {
         this.id = id;
         this.name = name;
         this.imageAssetType = imageAssetType;

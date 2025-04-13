@@ -65,8 +65,8 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
                         "definition.heightMovementPenaltyMitigationFunctionId");
 
         return new GroundType() {
-
             private String name = definition.name;
+            private boolean blocksSight = definition.blocksSight;
 
             @Override
             public String id() throws IllegalStateException {
@@ -108,6 +108,11 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
                                                        Direction direction) {
                 return heightMovementPenaltyMitigationFunction.apply(
                         new Object[]{tile, character, direction});
+            }
+
+            @Override
+            public boolean blocksSight() {
+                return false;
             }
 
             @Override

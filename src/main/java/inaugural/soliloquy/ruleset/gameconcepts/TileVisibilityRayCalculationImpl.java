@@ -26,17 +26,15 @@ import static soliloquy.specs.gamestate.entities.WallSegmentOrientation.*;
 
 public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalculation {
     private final Supplier<GameZone> GET_GAME_ZONE;
-    private final float VIEW_SLOPE_ADDEND_ABOVE;
-    private final float VIEW_SLOPE_SUBTRAHEND_BELOW;
+    private final float TARGET_ADDEND_ABOVE;
+    private final float TARGET_ADDEND_BELOW;
 
     public TileVisibilityRayCalculationImpl(Supplier<GameZone> getGameZone,
-                                            float viewSlopeAddendAbove,
-                                            float viewSlopeSubtrahendBelow) {
+                                            float targetAddendAbove, float targetAddendBelow) {
         GET_GAME_ZONE = Check.ifNull(getGameZone, "getGameZone");
-        VIEW_SLOPE_ADDEND_ABOVE =
-                Check.throwOnLtValue(viewSlopeAddendAbove, 0f, "viewSlopeAddendAbove");
-        VIEW_SLOPE_SUBTRAHEND_BELOW =
-                Check.throwOnLtValue(viewSlopeSubtrahendBelow, 0f, "viewSlopeSubtrahendBelow");
+        TARGET_ADDEND_ABOVE = Check.throwOnLtValue(targetAddendAbove, 0f, "targetAddendAbove");
+        TARGET_ADDEND_BELOW =
+                Check.throwOnLtValue(targetAddendBelow, 0f, "targetAddendBelow");
     }
 
     @Override
@@ -60,7 +58,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         var halfIncY = incY / 2f;
         System.out.println("Slope = " + slope);
 
-        var blockingSlopesXYZ = new BlockingSlopesXYZ();
+        var blockingSlopesInXYZSpace = new BlockingSlopesInXYZSpace();
 
         var origin2d = origin.to2d();
         var cursor = origin2d;
@@ -71,25 +69,26 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             }
             System.out.printf("Cursor loc = [%d, %d]%n", cursor.X, cursor.Y);
             var tilesAtCursor = gameZone.tiles(cursor);
-            tilesAtCursor.stream().filter(t -> blockingSlopesXYZ.tileIsVisible(origin, t))
+            tilesAtCursor.stream().filter(t -> blockingSlopesInXYZSpace.tileIsVisible(origin, t))
                     .forEach(t -> tilesInRay.put(t.location(), t));
 
-            var segmentsAtLocation = gameZone.getSegments(cursor);
-            segmentsAtLocation.forEach(
-                    (o, segs) -> segs.forEach((l, s) -> segmentsInRay.get(o).put(l, s)));
+            var segmentsAtCursor = gameZone.getSegments(cursor);
+            segmentsAtCursor.forEach((o, segs) -> segs.entrySet().stream()
+                    .filter(s -> blockingSlopesInXYZSpace.segmentIsVisible(origin, o, s.getKey()))
+                    .forEach(s -> segmentsInRay.get(o).put(s.getKey(), s.getValue())));
 
             var nextCursorInfo =
-                    nextCursor(origin2d, target, cursor, slope, incX, incY, halfIncX, halfIncY);
+                    nextCursor(origin2d, cursor, slope, incX, incY, halfIncX, halfIncY);
             cursor = nextCursorInfo.getValue0();
             if (nextCursorInfo.getValue1() != null) {
-                var blockingSegments = segmentsAtLocation.entrySet().stream()
+                var blockingSegments = segmentsAtCursor.entrySet().stream()
                         .filter(e -> e.getKey() == nextCursorInfo.getValue1())
                         .map(Map.Entry::getValue)
                         .toList().get(0).entrySet().stream()
                         .filter(e -> e.getKey().to2d().equals(nextCursorInfo.getValue2()) &&
                                 e.getValue().getType().blocksSight()).map(Map.Entry::getValue)
                         .collect(Collectors.toSet());
-                blockingSlopesXYZ.addBlockingSegments(origin, blockingSegments,
+                blockingSlopesInXYZSpace.addBlockingSegments(origin, blockingSegments,
                         nextCursorInfo.getValue1(), nextCursorInfo.getValue2());
             }
         } while (!cursorHitTarget);
@@ -108,37 +107,26 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
     }
 
     private Triplet<Coordinate2d, WallSegmentOrientation, Coordinate2d> nextCursor(
-            Coordinate2d origin, Coordinate2d target, Coordinate2d cursor,
-            float slope, int incX, int incY,
+            Coordinate2d origin, Coordinate2d cursor, float slope, int incX, int incY,
             float halfIncX, float halfIncY) {
-        if (slope == 0) {
+        if (slopeIsHorizontal(slope)) {
             var newCursor = addOffsets2d(cursor, incX, 0);
             var segmentX = cursor.X + (incX > 0 ? 1 : 0);
             return Triplet.with(newCursor, VERTICAL,
                     Coordinate2d.of(segmentX, cursor.Y));
         }
-        if (slope == Float.NEGATIVE_INFINITY) {
+        if (slopeIsStraightDown(slope)) {
             return Triplet.with(addOffsets2d(cursor, 0, incY), HORIZONTAL,
                     addOffsets2d(cursor, 0, incY));
         }
-        if (slope == Float.POSITIVE_INFINITY) {
+        if (slopeIsStraightUp(slope)) {
             return Triplet.with(addOffsets2d(cursor, 0, incY), HORIZONTAL, cursor);
         }
-        if (slope == 1 || slope == -1) {
+        if (slopeIsDiagonal(slope)) {
             var segX = cursor.X + (incX > 0 ? 1 : 0);
             var segY = cursor.Y + (incY < 0 ? 1 : 0);
             return Triplet.with(addOffsets2d(cursor, incX, incY), CORNER,
                     Coordinate2d.of(segX, segY));
-        }
-        if (addOffsets2d(origin, incX, 0).equals(target)) {
-            System.out.println("Snap to target, +x");
-            return Triplet.with(target, VERTICAL,
-                    Coordinate2d.of(cursor.X + (incX > 0 ? 1 : 0), cursor.Y));
-        }
-        if (addOffsets2d(origin, 0, incY).equals(target)) {
-            System.out.println("Snap to target, +y");
-            return Triplet.with(target, HORIZONTAL,
-                    Coordinate2d.of(cursor.X, cursor.Y + (incY < 0 ? 1 : 0)));
         }
 
         var nextVertInterceptX = cursor.X + halfIncX;
@@ -160,20 +148,35 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         }
     }
 
-    private float slope3d(Coordinate3d c1, Coordinate3d c2) {
-        return slope3d(c1, c2.X, c2.Y, c2.Z);
+    private boolean slopeIsHorizontal(float slope) {
+        return slope == 0;
     }
 
-    private float slope3d(Coordinate3d c1, float x2, float y2, int z2) {
-        var riseXY = y2 - c1.Y;
-        var runXY = x2 - c1.X;
-        var runXYZ = riseXY / runXY;
-        return slope3d(z2, c1.Z, runXYZ);
+    private boolean slopeIsStraightDown(float slope) {
+        return slope == Float.NEGATIVE_INFINITY;
     }
 
-    private float slope3d(int z1, int z2, float runXYZ) {
-        var riseXYZ = z2 - z1;
-        return riseXYZ / runXYZ;
+    private boolean slopeIsStraightUp(float slope) {
+        return slope == Float.POSITIVE_INFINITY;
+    }
+
+    private boolean slopeIsDiagonal(float slope) {
+        return slope == 1 || slope == -1;
+    }
+
+    private float slope3d(Coordinate3d c1, float x2, float y2, float z2) {
+        return slope3d(z2, c1.Z, runInXYZSpace(c1.X, x2, c1.Y, y2));
+    }
+
+    private float runInXYZSpace(float x1, float x2, float y1, float y2) {
+        var xDist = x2 - x1;
+        var yDist = y2 - y1;
+        return (float) Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+    }
+
+    private float slope3d(float z1, float z2, float runInXYZSpace) {
+        var riseInXYZSpace = z2 - z1;
+        return riseInXYZSpace / runInXYZSpace;
     }
 
     @Override
@@ -181,7 +184,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         return TileVisibilityRayCalculation.class.getCanonicalName();
     }
 
-    protected class BlockingSlopesXYZ {
+    protected class BlockingSlopesInXYZSpace {
         // Each of the RANGES are top-down; i.e., item1 > item2
         private final ArrayList<Pair<Float, Float>> RANGES = new ArrayList<>();
 
@@ -193,12 +196,9 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             }
             // this is an adjustment, since segments are half a tile's distance away its center
             var segmentLocOnTileGrid = segmentLocOnTileGrid(orientation, segmentsLoc);
-            var segmentX = segmentsLoc.X - (orientation != HORIZONTAL ? 0.5f : 0);
-            var segmentY = segmentsLoc.Y - (orientation != VERTICAL ? 0.5f : 0);
-            // the '2d' slope is along the xy plane, and is treated as the 'run' for the 3d slope
-            var runXY = segmentX - origin.X;
-            var riseXY = segmentY - origin.Y;
-            var runXYZ = riseXY / runXY;
+            var segmentX = segmentLocOnTileGrid.item1();
+            var segmentY = segmentLocOnTileGrid.item2();
+            var runInXYZSpace = runInXYZSpace(origin.X, segmentX, origin.Y, segmentY);
 
             var blockingZs = segments.stream().map(s -> s.location().Z);
             var inOrder = new TreeSet<>(blockingZs.toList()).descendingSet();
@@ -214,23 +214,36 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
                     rangeCursor--;
                     continue;
                 }
-                addZRange(origin, rangeStart, rangeCursor, runXYZ);
+                addZRange(origin, rangeStart, rangeCursor, runInXYZSpace);
                 rangeStart = rangeCursor = z;
             }
             // The loop will *never* wrap up the last range, and if there were no ranges, we'd
             // have exited the method at the start
             //noinspection DataFlowIssue
-            addZRange(origin, rangeStart, rangeCursor, runXYZ);
+            addZRange(origin, rangeStart, rangeCursor, runInXYZSpace);
         }
 
-        // Merging overlapping ranges could either save or spend more CPU time
-        private void addZRange(Coordinate3d origin, int rangeStartZ, int rangeEndZ, float runXYZ) {
-            RANGES.add(pairOf(slope3d(origin.Z, rangeStartZ, runXYZ),
-                    slope3d(origin.Z, rangeEndZ, runXYZ)));
+        // Merging overlapping ranges could either save or spend more CPU time, this is untested
+        private void addZRange(Coordinate3d origin, int rangeStartZ, int rangeEndZ,
+                               float runInXYZSpace) {
+            // A z coordinate is at the 'center' of its height;
+            var rangeStartWithHeight = rangeStartZ + 0.5f;
+            var rangeEndWithHeight = rangeEndZ - 0.5f;
+            RANGES.add(pairOf(slope3d(origin.Z, rangeStartWithHeight, runInXYZSpace),
+                    slope3d(origin.Z, rangeEndWithHeight, runInXYZSpace)));
         }
 
         private boolean tileIsVisible(Coordinate3d origin, Tile tile) {
-            return !slopeIsBlocked(slope3d(origin, tile.location()));
+            var loc = tile.location();
+            var adjZ = loc.Z;
+            var riseInXYZSpace = loc.Z - origin.Z;
+            if (riseInXYZSpace > 0) {
+                adjZ += TARGET_ADDEND_ABOVE;
+            }
+            if (riseInXYZSpace < 0) {
+                adjZ += TARGET_ADDEND_BELOW;
+            }
+            return !slopeIsBlocked(slope3d(origin, loc.X, loc.Y, adjZ));
         }
 
         private boolean segmentIsVisible(Coordinate3d origin, WallSegmentOrientation orientation,
@@ -249,8 +262,8 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
 
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         private boolean slopeIsBlocked(float slope) {
-            return RANGES.stream().anyMatch(r -> r.item1() > (slope + VIEW_SLOPE_ADDEND_ABOVE) &&
-                    r.item2() < (slope - VIEW_SLOPE_SUBTRAHEND_BELOW));
+            return RANGES.stream().anyMatch(r -> r.item1() > slope &&
+                    r.item2() < slope);
         }
     }
 }
