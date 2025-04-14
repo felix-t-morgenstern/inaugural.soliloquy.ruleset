@@ -40,13 +40,9 @@ import static soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Res
 // location from its previous location.
 @RunWith(MockitoJUnitRunner.class)
 public class TileVisibilityRayCalculationImplTests {
-    // This is being set statically since the test cases for this suite need to be manually
-    // verified, prohibiting randomness
-    private final float TARGET_ADDEND_ABOVE = 0.5f;
-    private final float TARGET_ADDEND_BELOW = 8f;
 
     // Z values must be within a reasonable value, to avoid bizarre rounding errors
-    private final int Z = randomIntInRange(-10000, 10000);
+    private final int Z = 0;//randomIntInRange(-10000, 10000);
 
     @Mock private Supplier<GameZone> mockGetGameZone;
     @Mock private GameZone mockGameZone;
@@ -95,32 +91,19 @@ public class TileVisibilityRayCalculationImplTests {
             segmentsMap.get(orientation).put(loc, mockSegment);
             return segmentsMap;
         });
-        when(mockGameZone.tiles(any())).thenAnswer(invocation -> {
-            var mockTile = mock(Tile.class);
-            var mockTileLoc3d = ((Coordinate2d) invocation.getArgument(0)).to3d(Z);
-            when(mockTile.location()).thenReturn(mockTileLoc3d);
-            tilesReturned.add(pairOf(mockTileLoc3d, mockTile));
-            return setOf(mockTile);
-        });
+        when(mockGameZone.tiles(any())).thenAnswer(invocation -> setOf(
+                makeMockTile(((Coordinate2d) invocation.getArgument(0)).to3d(Z))));
         when(mockGetGameZone.get()).thenReturn(mockGameZone);
 
         rayCalculation =
-                new TileVisibilityRayCalculationImpl(mockGetGameZone, TARGET_ADDEND_ABOVE,
-                        TARGET_ADDEND_BELOW);
+                new TileVisibilityRayCalculationImpl(mockGetGameZone
+                );
     }
 
     @Test
     public void testConstructorWithInvalidParams() {
         assertThrows(IllegalArgumentException.class,
-                () -> new TileVisibilityRayCalculationImpl(null, TARGET_ADDEND_ABOVE,
-                        TARGET_ADDEND_BELOW));
-        assertThrows(IllegalArgumentException.class,
-                () -> new TileVisibilityRayCalculationImpl(mockGetGameZone, -0.000001f,
-                        TARGET_ADDEND_BELOW));
-        assertThrows(IllegalArgumentException.class,
-                () -> new TileVisibilityRayCalculationImpl(mockGetGameZone,
-                        TARGET_ADDEND_ABOVE, -0.000001f));
-
+                () -> new TileVisibilityRayCalculationImpl(null));
     }
 
     @Test
@@ -714,14 +697,15 @@ public class TileVisibilityRayCalculationImplTests {
 
     // 'blockingSegmentDist' implies the number of tiles _away from_ the origin, e.g. a value of
     // 0 implies it's adjacent
+
     @Test
     public void testVisibilityBlockingSegmentStraightLineEast() {
         movingEast = true;
         movingSouth = false;
-        var origin = Coordinate3d.of(0, 0, Z);//randomCoordinate3dInNormalRange();
+        var origin = randomCoordinate3dInNormalRange();
         var rayLength = randomIntInRange(7, 10);
-        var blockingSegmentDist = 1; //randomIntInRange(2, 4);
-        var mockBlockingSegment = makeMockSegment(WallSegmentOrientation.VERTICAL,
+        var blockingSegmentDist = randomIntInRange(2, 4);
+        var mockBlockingSegment = makeMockSegment(VERTICAL,
                 addOffsets3d(origin, blockingSegmentDist + 1, 0, 0), true);
         segmentReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
         var expectedCursorHits = blockingSegmentDist + 1;
@@ -737,33 +721,85 @@ public class TileVisibilityRayCalculationImplTests {
                         result.segments().get(VERTICAL).size());
         for (var i = 0; i < expectedCursorHits; i++) {
             testTileHit(Coordinate2d.of(origin.X + i, origin.Y), i, result);
-            System.out.println("I passed a hit!");
         }
     }
 
     @Test
-    public void testCanSeeTileAboveSufficientlyLowLedge() {
+    public void testVisibilityBlockingSegmentStraightLineWest() {
+        movingEast = false;
+        movingSouth = false;
+        var origin = randomCoordinate3dInNormalRange();
+        var rayLength = randomIntInRange(7, 10);
+        var blockingSegmentDist = randomIntInRange(2, 4);
+        var mockBlockingSegment = makeMockSegment(VERTICAL,
+                addOffsets3d(origin, -blockingSegmentDist, 0, 0), true);
+        segmentReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
+        var expectedCursorHits = blockingSegmentDist + 1;
+        var destination = Coordinate2d.of(origin.X - rayLength, origin.Y);
 
+        var result = rayCalculation.castRay(origin, destination);
+
+        assertNotNull(result);
+        assertEquals(expectedCursorHits, result.tiles().size());
+        assertEquals(3, result.segments().size());
+        assertEquals(expectedCursorHits,
+                result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
+                        result.segments().get(VERTICAL).size());
+        for (var i = 0; i < expectedCursorHits; i++) {
+            testTileHit(Coordinate2d.of(origin.X - i, origin.Y), i, result);
+        }
     }
 
     @Test
-    public void testCannotSeeTileAboveSufficientlyHighLedge() {
+    public void testVisibilityBlockingSegmentStraightLineSouth() {
+        movingEast = false;
+        movingSouth = true;
+        var origin = randomCoordinate3dInNormalRange();
+        var rayLength = randomIntInRange(7, 10);
+        var blockingSegmentDist = randomIntInRange(2, 4);
+        var mockBlockingSegment = makeMockSegment(HORIZONTAL,
+                addOffsets3d(origin, 0, blockingSegmentDist + 1, 0), true);
+        segmentReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
+        var expectedCursorHits = blockingSegmentDist + 1;
+        var destination = Coordinate2d.of(origin.X, origin.Y + rayLength);
 
+        var result = rayCalculation.castRay(origin, destination);
+
+        assertNotNull(result);
+        assertEquals(expectedCursorHits, result.tiles().size());
+        assertEquals(3, result.segments().size());
+        assertEquals(expectedCursorHits,
+                result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
+                        result.segments().get(VERTICAL).size());
+        for (var i = 0; i < expectedCursorHits; i++) {
+            testTileHit(Coordinate2d.of(origin.X, origin.Y + i), i, result);
+        }
     }
 
     @Test
-    public void testCanSeeTileBeneathSufficientlyShallowCliff() {
+    public void testVisibilityBlockingSegmentStraightLineNorth() {
+        movingEast = false;
+        movingSouth = false;
+        var origin = randomCoordinate3dInNormalRange();
+        var rayLength = randomIntInRange(7, 10);
+        var blockingSegmentDist = randomIntInRange(2, 4);
+        var mockBlockingSegment = makeMockSegment(HORIZONTAL,
+                addOffsets3d(origin, 0, -blockingSegmentDist, 0), true);
+        segmentReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
+        var expectedCursorHits = blockingSegmentDist + 1;
+        var destination = Coordinate2d.of(origin.X, origin.Y - rayLength);
 
-    }
+        var result = rayCalculation.castRay(origin, destination);
 
-    @Test
-    public void testCannotSeeTileBeneathSufficientlyDeepCliff() {
-
-    }
-
-    @Test
-    public void testTargetAddendBelowDoesNotAdjustTargetAboveOrigin() {
-
+        assertNotNull(result);
+        assertEquals(expectedCursorHits, result.tiles().size());
+        assertEquals(3, result.segments().size());
+        assertEquals(expectedCursorHits,
+                result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
+                        result.segments().get(VERTICAL).size());
+        for (var i = 0; i < expectedCursorHits; i++) {
+            testTileHit(Coordinate2d.of(origin.X, origin.Y - i), i, result);
+        }
     }
 
     @Test
@@ -791,6 +827,17 @@ public class TileVisibilityRayCalculationImplTests {
         var expectedSegLoc =
                 addOffsets2d(expectedTarget, (movingEast ? 1 : 0), (movingSouth ? 1 : 0));
         assertEquals(expectedSegLoc, expectedSegReturned.location().to2d());
+    }
+
+    private Tile makeMockTile(Coordinate3d loc, boolean blocking) {
+        var mockTile = mock(Tile.class);
+        when(mockTile.location()).thenReturn(loc);
+        tilesReturned.add(pairOf(loc, mockTile));
+        return mockTile;
+    }
+
+    private Tile makeMockTile(Coordinate3d loc) {
+        return makeMockTile(loc, false);
     }
 
     private WallSegment makeMockSegment(WallSegmentOrientation orientation, Coordinate3d loc,

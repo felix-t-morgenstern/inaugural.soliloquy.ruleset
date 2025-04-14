@@ -26,15 +26,9 @@ import static soliloquy.specs.gamestate.entities.WallSegmentOrientation.*;
 
 public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalculation {
     private final Supplier<GameZone> GET_GAME_ZONE;
-    private final float TARGET_ADDEND_ABOVE;
-    private final float TARGET_ADDEND_BELOW;
 
-    public TileVisibilityRayCalculationImpl(Supplier<GameZone> getGameZone,
-                                            float targetAddendAbove, float targetAddendBelow) {
+    public TileVisibilityRayCalculationImpl(Supplier<GameZone> getGameZone) {
         GET_GAME_ZONE = Check.ifNull(getGameZone, "getGameZone");
-        TARGET_ADDEND_ABOVE = Check.throwOnLtValue(targetAddendAbove, 0f, "targetAddendAbove");
-        TARGET_ADDEND_BELOW =
-                Check.throwOnLtValue(targetAddendBelow, 0f, "targetAddendBelow");
     }
 
     @Override
@@ -111,15 +105,14 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             float halfIncX, float halfIncY) {
         if (slopeIsHorizontal(slope)) {
             var newCursor = addOffsets2d(cursor, incX, 0);
-            var segmentX = cursor.X + (incX > 0 ? 1 : 0);
-            return Triplet.with(newCursor, VERTICAL,
-                    Coordinate2d.of(segmentX, cursor.Y));
+            var segX = cursor.X + (incX > 0 ? 1 : 0);
+            return Triplet.with(newCursor, VERTICAL, Coordinate2d.of(segX, cursor.Y));
         }
-        if (slopeIsStraightDown(slope)) {
+        if (slopeIsStraightSouth(slope)) {
             return Triplet.with(addOffsets2d(cursor, 0, incY), HORIZONTAL,
                     addOffsets2d(cursor, 0, incY));
         }
-        if (slopeIsStraightUp(slope)) {
+        if (slopeIsStraightNorth(slope)) {
             return Triplet.with(addOffsets2d(cursor, 0, incY), HORIZONTAL, cursor);
         }
         if (slopeIsDiagonal(slope)) {
@@ -152,20 +145,24 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         return slope == 0;
     }
 
-    private boolean slopeIsStraightDown(float slope) {
-        return slope == Float.NEGATIVE_INFINITY;
+    private boolean slopeIsStraightSouth(float slope) {
+        return slope == Float.POSITIVE_INFINITY;
     }
 
-    private boolean slopeIsStraightUp(float slope) {
-        return slope == Float.POSITIVE_INFINITY;
+    private boolean slopeIsStraightNorth(float slope) {
+        return slope == Float.NEGATIVE_INFINITY;
     }
 
     private boolean slopeIsDiagonal(float slope) {
         return slope == 1 || slope == -1;
     }
 
+    private float slope3d (Coordinate3d c1, Coordinate3d c2) {
+        return slope3d(c1, c2.X, c2.Y, c2.Z);
+    }
+
     private float slope3d(Coordinate3d c1, float x2, float y2, float z2) {
-        return slope3d(z2, c1.Z, runInXYZSpace(c1.X, x2, c1.Y, y2));
+        return slope3d(c1.Z, z2, runInXYZSpace(c1.X, x2, c1.Y, y2));
     }
 
     private float runInXYZSpace(float x1, float x2, float y1, float y2) {
@@ -229,21 +226,14 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             // A z coordinate is at the 'center' of its height;
             var rangeStartWithHeight = rangeStartZ + 0.5f;
             var rangeEndWithHeight = rangeEndZ - 0.5f;
-            RANGES.add(pairOf(slope3d(origin.Z, rangeStartWithHeight, runInXYZSpace),
-                    slope3d(origin.Z, rangeEndWithHeight, runInXYZSpace)));
+            var rangeStart = slope3d(origin.Z, rangeStartWithHeight, runInXYZSpace);
+            var rangeEnd = slope3d(origin.Z, rangeEndWithHeight, runInXYZSpace);
+            System.out.println("RANGE: " + rangeStart + ", " + rangeEnd);
+            RANGES.add(pairOf(rangeStart, rangeEnd));
         }
 
         private boolean tileIsVisible(Coordinate3d origin, Tile tile) {
-            var loc = tile.location();
-            var adjZ = loc.Z;
-            var riseInXYZSpace = loc.Z - origin.Z;
-            if (riseInXYZSpace > 0) {
-                adjZ += TARGET_ADDEND_ABOVE;
-            }
-            if (riseInXYZSpace < 0) {
-                adjZ += TARGET_ADDEND_BELOW;
-            }
-            return !slopeIsBlocked(slope3d(origin, loc.X, loc.Y, adjZ));
+            return !slopeIsBlocked(slope3d(origin, tile.location()));
         }
 
         private boolean segmentIsVisible(Coordinate3d origin, WallSegmentOrientation orientation,
