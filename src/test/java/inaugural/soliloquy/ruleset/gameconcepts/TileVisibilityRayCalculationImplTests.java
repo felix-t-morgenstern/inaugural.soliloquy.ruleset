@@ -19,11 +19,11 @@ import soliloquy.specs.ruleset.gameconcepts.TileVisibilityRayCalculation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.*;
-import static inaugural.soliloquy.tools.random.Random.randomIntInRange;
-import static inaugural.soliloquy.tools.random.Random.randomIntWithInclusiveCeiling;
+import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate3d.addOffsets3d;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
@@ -48,8 +48,8 @@ public class TileVisibilityRayCalculationImplTests {
     private final float Z_ADDEND_BELOW = 10;
 
     @Mock private Supplier<GameZone> mockGetGameZone;
-    @Mock private Supplier<Integer> mockGetViewCeiling;
-    @Mock private Supplier<Integer> mockGetViewFloor;
+    @Mock private Function<Coordinate3d, Integer> mockGetViewCeiling;
+    @Mock private Function<Coordinate3d, Integer> mockGetViewFloor;
     @Mock private GameZone mockGameZone;
     @Mock private GroundType mockGroundTypeTransparent;
     @Mock private GroundType mockGroundTypeBlocking;
@@ -90,20 +90,11 @@ public class TileVisibilityRayCalculationImplTests {
             var orientation = mockSegment.getType().orientation();
             var loc = mockSegment.location();
             segmentsReturned.add(Triplet.with(orientation, loc, mockSegment));
-            Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> segmentsMap = mapOf();
-            // GameZone::getSegments is assumed to return a non-null map for each orientation
-            segmentsMap.put(HORIZONTAL, mapOf());
-            segmentsMap.put(CORNER, mapOf());
-            segmentsMap.put(VERTICAL, mapOf());
-            segmentsMap.get(orientation).put(loc, mockSegment);
-            return segmentsMap;
+            return populatedMap(mockSegment);
         });
         when(mockGameZone.tiles(any())).thenAnswer(invocation -> setOf(
                 makeMockTile(((Coordinate2d) invocation.getArgument(0)).to3d(Z), false)));
         when(mockGetGameZone.get()).thenReturn(mockGameZone);
-
-//        when(mockGetViewCeiling.get()).thenReturn(null);
-//        when(mockGetViewFloor.get()).thenReturn(null);
 
         when(mockGroundTypeBlocking.blocksSight()).thenReturn(true);
         when(mockGroundTypeTransparent.blocksSight()).thenReturn(false);
@@ -210,7 +201,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeBelowOneSoutheast_1() {
+    public void testGetVisibilityAtAnglePosSlopeBelowOneSoutheast() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), 5, 4);
 
@@ -237,24 +228,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeBelowOneSoutheast_2() {
+    public void testGetVisibilityAtAnglePosSlopeBelowOneSoutheastIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), 8, 2);
+        var destination = addOffsets2d(origin.to2d(), 6, 2);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), 1, 0),
-                addOffsets2d(origin.to2d(), 2, 0),
                 addOffsets2d(origin.to2d(), 2, 1),
                 addOffsets2d(origin.to2d(), 3, 1),
                 addOffsets2d(origin.to2d(), 4, 1),
-                addOffsets2d(origin.to2d(), 5, 1),
-                addOffsets2d(origin.to2d(), 6, 1),
-                addOffsets2d(origin.to2d(), 6, 2),
-                addOffsets2d(origin.to2d(), 7, 2),
-                addOffsets2d(origin.to2d(), 8, 2)
+                addOffsets2d(origin.to2d(), 5, 2),
+                addOffsets2d(origin.to2d(), 6, 2)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -282,7 +269,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeAboveOneSoutheast_1() {
+    public void testGetVisibilityAtAnglePosSlopeAboveOneSoutheast() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), 4, 6);
 
@@ -310,23 +297,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeAboveOneSoutheast_2() {
+    public void testGetVisibilityAtAnglePosSlopeAboveOneSoutheastIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), 2, 7);
+        var destination = addOffsets2d(origin.to2d(), 2, 6);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), 0, 1),
-                addOffsets2d(origin.to2d(), 0, 2),
                 addOffsets2d(origin.to2d(), 1, 2),
                 addOffsets2d(origin.to2d(), 1, 3),
                 addOffsets2d(origin.to2d(), 1, 4),
-                addOffsets2d(origin.to2d(), 1, 5),
                 addOffsets2d(origin.to2d(), 2, 5),
-                addOffsets2d(origin.to2d(), 2, 6),
-                addOffsets2d(origin.to2d(), 2, 7)
+                addOffsets2d(origin.to2d(), 2, 6)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -337,7 +321,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeBelowOneNorthwest_1() {
+    public void testGetVisibilityAtAnglePosSlopeBelowOneNorthwest() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), -5, -4);
 
@@ -364,24 +348,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeBelowOneNorthwest_2() {
+    public void testGetVisibilityAtAnglePosSlopeBelowOneNorthwestIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), -8, -2);
+        var destination = addOffsets2d(origin.to2d(), -6, -2);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), -1, 0),
-                addOffsets2d(origin.to2d(), -2, 0),
                 addOffsets2d(origin.to2d(), -2, -1),
                 addOffsets2d(origin.to2d(), -3, -1),
                 addOffsets2d(origin.to2d(), -4, -1),
-                addOffsets2d(origin.to2d(), -5, -1),
-                addOffsets2d(origin.to2d(), -6, -1),
-                addOffsets2d(origin.to2d(), -6, -2),
-                addOffsets2d(origin.to2d(), -7, -2),
-                addOffsets2d(origin.to2d(), -8, -2)
+                addOffsets2d(origin.to2d(), -5, -2),
+                addOffsets2d(origin.to2d(), -6, -2)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -409,7 +389,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeAboveOneNorthwest_1() {
+    public void testGetVisibilityAtAnglePosSlopeAboveOneNorthwest() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), -4, -6);
 
@@ -437,23 +417,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAnglePosSlopeAboveOneNorthwest_2() {
+    public void testGetVisibilityAtAnglePosSlopeAboveOneNorthwestIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), -2, -7);
+        var destination = addOffsets2d(origin.to2d(), -2, -6);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), 0, -1),
-                addOffsets2d(origin.to2d(), 0, -2),
                 addOffsets2d(origin.to2d(), -1, -2),
                 addOffsets2d(origin.to2d(), -1, -3),
                 addOffsets2d(origin.to2d(), -1, -4),
-                addOffsets2d(origin.to2d(), -1, -5),
                 addOffsets2d(origin.to2d(), -2, -5),
-                addOffsets2d(origin.to2d(), -2, -6),
-                addOffsets2d(origin.to2d(), -2, -7)
+                addOffsets2d(origin.to2d(), -2, -6)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -464,7 +441,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeBelowOneNortheast_1() {
+    public void testGetVisibilityAtAngleNegSlopeBelowOneNortheast() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), 5, -4);
 
@@ -491,24 +468,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeBelowOneNortheast_2() {
+    public void testGetVisibilityAtAngleNegSlopeBelowOneNortheastIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), 8, -2);
+        var destination = addOffsets2d(origin.to2d(), 6, -2);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), 1, 0),
-                addOffsets2d(origin.to2d(), 2, 0),
                 addOffsets2d(origin.to2d(), 2, -1),
                 addOffsets2d(origin.to2d(), 3, -1),
                 addOffsets2d(origin.to2d(), 4, -1),
-                addOffsets2d(origin.to2d(), 5, -1),
-                addOffsets2d(origin.to2d(), 6, -1),
-                addOffsets2d(origin.to2d(), 6, -2),
-                addOffsets2d(origin.to2d(), 7, -2),
-                addOffsets2d(origin.to2d(), 8, -2)
+                addOffsets2d(origin.to2d(), 5, -2),
+                addOffsets2d(origin.to2d(), 6, -2)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -536,7 +509,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeAboveOneNortheast_1() {
+    public void testGetVisibilityAtAngleNegSlopeAboveOneNortheast() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), 4, -6);
 
@@ -564,23 +537,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeAboveOneNortheast_2() {
+    public void testGetVisibilityAtAngleNegSlopeAboveOneNortheastIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), 2, -7);
+        var destination = addOffsets2d(origin.to2d(), 2, -6);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), 0, -1),
-                addOffsets2d(origin.to2d(), 0, -2),
                 addOffsets2d(origin.to2d(), 1, -2),
                 addOffsets2d(origin.to2d(), 1, -3),
                 addOffsets2d(origin.to2d(), 1, -4),
-                addOffsets2d(origin.to2d(), 1, -5),
                 addOffsets2d(origin.to2d(), 2, -5),
-                addOffsets2d(origin.to2d(), 2, -6),
-                addOffsets2d(origin.to2d(), 2, -7)
+                addOffsets2d(origin.to2d(), 2, -6)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -591,7 +561,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeBelowOneSouthwest_1() {
+    public void testGetVisibilityAtAngleNegSlopeBelowOneSouthwest() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), -5, 4);
 
@@ -618,24 +588,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeBelowOneSouthwest_2() {
+    public void testGetVisibilityAtAngleNegSlopeBelowOneSouthwestIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), -8, 2);
+        var destination = addOffsets2d(origin.to2d(), -6, 2);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
                 addOffsets2d(origin.to2d(), -1, 0),
-                addOffsets2d(origin.to2d(), -2, 0),
                 addOffsets2d(origin.to2d(), -2, 1),
                 addOffsets2d(origin.to2d(), -3, 1),
                 addOffsets2d(origin.to2d(), -4, 1),
-                addOffsets2d(origin.to2d(), -5, 1),
-                addOffsets2d(origin.to2d(), -6, 1),
-                addOffsets2d(origin.to2d(), -6, 2),
-                addOffsets2d(origin.to2d(), -7, 2),
-                addOffsets2d(origin.to2d(), -8, 2)
+                addOffsets2d(origin.to2d(), -5, 2),
+                addOffsets2d(origin.to2d(), -6, 2)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -663,7 +629,7 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeAboveOneSouthwest_1() {
+    public void testGetVisibilityAtAngleNegSlopeAboveOneSouthwest() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var destination = addOffsets2d(origin.to2d(), -4, 6);
 
@@ -691,23 +657,20 @@ public class TileVisibilityRayCalculationImplTests {
     }
 
     @Test
-    public void testGetVisibilityAtAngleNegSlopeAboveOneSouthwest_2() {
+    public void testGetVisibilityAtAngleNegSlopeAboveOneSouthwestIntersectingCornerVertices() {
         var origin = randomCoordinate3dInNormalRangeAtZ();
-        var destination = addOffsets2d(origin.to2d(), -2, -7);
+        var destination = addOffsets2d(origin.to2d(), -2, 6);
 
         var result = rayCalculation.castRay(origin, destination);
 
         var expectedTiles = listOf(
                 addOffsets2d(origin.to2d(), 0, 0),
-                addOffsets2d(origin.to2d(), 0, -1),
-                addOffsets2d(origin.to2d(), 0, -2),
-                addOffsets2d(origin.to2d(), -1, -2),
-                addOffsets2d(origin.to2d(), -1, -3),
-                addOffsets2d(origin.to2d(), -1, -4),
-                addOffsets2d(origin.to2d(), -1, -5),
-                addOffsets2d(origin.to2d(), -2, -5),
-                addOffsets2d(origin.to2d(), -2, -6),
-                addOffsets2d(origin.to2d(), -2, -7)
+                addOffsets2d(origin.to2d(), 0, 1),
+                addOffsets2d(origin.to2d(), -1, 2),
+                addOffsets2d(origin.to2d(), -1, 3),
+                addOffsets2d(origin.to2d(), -1, 4),
+                addOffsets2d(origin.to2d(), -2, 5),
+                addOffsets2d(origin.to2d(), -2, 6)
         );
         assertNotNull(result);
         assertEquals(expectedTiles.size(), result.tiles().size());
@@ -857,36 +820,21 @@ public class TileVisibilityRayCalculationImplTests {
 
     @Test
     public void testBlockingTileBlocksVisibilityDirectlyBeneathItself() {
-        var origin = randomCoordinate3dInNormalRangeAtZ();
-        var mockSegmentLoc2d = randomCoordinate3dInNormalRangeAtZ().to2d();
-        var mockSegmentLoc = mockSegmentLoc2d.to3d(randomIntWithInclusiveCeiling(Z - 1));
-        var mockSegment = makeMockSegment(VERTICAL, randomCoordinate3dInNormalRangeAtZ(), false);
-        reset(mockGameZone);
-        when(mockGameZone.getSegments(any())).thenReturn(mapOf(
-                pairOf(HORIZONTAL, mapOf()),
-                pairOf(CORNER, mapOf()),
-                pairOf(VERTICAL, mapOf(pairOf(mockSegmentLoc, mockSegment)))
-        ));
-        var mockTileFloor = makeMockTile(origin, true);
-        var mockTileBeneathFloor = makeMockTile(addOffsets3d(origin, 0, 0, -1), false);
-        when(mockGameZone.tiles(any())).thenReturn(setOf(mockTileFloor, mockTileBeneathFloor));
+        var mockBlockedAtOriginZ = randomIntWithInclusiveCeiling(Z - 1);
+        var blockedEntitiesDepth = -(int) Math.ceil(Z_ADDEND_BELOW + 2);
 
-        var result = rayCalculation.castRay(origin, origin.to2d());
-
-        assertEquals(1, result.tiles().size());
-        assertEquals(0, totalSegmentsInResult(result));
-    }
-
-    @Test
-    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItself() {
-        // This will also serve as an indirect test to see whether blocking slope ranges
-        // 'condense', since the visibility line to the Tile which should be blocked would
-        // otherwise slip through the blocking 'shadows' of both the tile and the segment.
+        runBlockingTileBlocksVisibilityTest(true, mockBlockedAtOriginZ, randomBoolean(),
+                blockedEntitiesDepth);
     }
 
     @Test
     public void testBlockingTileBlocksVisibilityAboveItself() {
-        // Including segments
+        // Keeping a restrained range to be sure we're avoiding rounding errors
+        var ceilingHeightOffset = randomIntInRange(1, 5);
+        var blockedEntitiesZOffset = ceilingHeightOffset + 10;
+
+        runBlockingTileBlocksVisibilityTest(randomBoolean(), ceilingHeightOffset, true,
+                blockedEntitiesZOffset);
     }
 
     @Test
@@ -897,6 +845,135 @@ public class TileVisibilityRayCalculationImplTests {
     @Test
     public void testViewFloorBlocksVisibility() {
 
+    }
+
+    private void runBlockingTileBlocksVisibilityTest(boolean originTileBlocks,
+                                                     int mockAtOriginZOffset,
+                                                     boolean mockAtOriginWithOffsetBlocks,
+                                                     int blockedAdjacentEntitiesZOffset) {
+        var origin = randomCoordinate3dInNormalRangeAtZ();
+        var atOriginWithZOffsetLoc = addOffsets3d(origin, 0, 0, mockAtOriginZOffset);
+        var mockSegmentsAtOriginWithOffset =
+                populatedMap(makeMockSegment(VERTICAL, atOriginWithZOffsetLoc, false));
+        var mockBlockedAdjacentLoc =
+                Coordinate3d.of(origin.X + 1, origin.Y, origin.Z + blockedAdjacentEntitiesZOffset);
+        var mockAdjacentSegments =
+                populatedMap(makeMockSegment(VERTICAL, mockBlockedAdjacentLoc, false));
+        reset(mockGameZone);
+        when(mockGameZone.getSegments(any()))
+                .thenReturn(mockSegmentsAtOriginWithOffset)
+                .thenReturn(mockAdjacentSegments);
+        var mockTileAtOrigin = makeMockTile(origin, originTileBlocks);
+        var mockTileAtOriginWithOffset =
+                makeMockTile(atOriginWithZOffsetLoc, mockAtOriginWithOffsetBlocks);
+        var mockAdjBlockedTile =
+                makeMockTile(addOffsets3d(origin, 1, 0, blockedAdjacentEntitiesZOffset), false);
+        when(mockGameZone.tiles(any()))
+                .thenReturn(setOf(mockTileAtOrigin, mockTileAtOriginWithOffset))
+                .thenReturn(setOf(mockAdjBlockedTile));
+
+        var result = rayCalculation.castRay(origin, addOffsets2d(origin.to2d(), 1, 0));
+
+        assertEquals(1, result.tiles().size());
+        assertEquals(0, totalSegmentsInResult(result));
+    }
+
+    // These will also serve as an indirect test to see whether blocking slope ranges 'condense',
+    // since the visibility line to the Tile which should be blocked would otherwise slip through
+    // the blocking 'shadows' of both the tile and the segment.
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfEast() {
+        runTileBlockingTest(VERTICAL, 1, 0, 1, 0, 2, 0);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfNortheast() {
+        runTileBlockingTest(CORNER, 1, 0, 1, -1, 2, -1);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfNorth() {
+        runTileBlockingTest(HORIZONTAL, 0, 0, 0, -1, 0, -2);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfNorthwest() {
+        runTileBlockingTest(CORNER, 0, 0, -1, -1, -1, -1);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfWest() {
+        runTileBlockingTest(VERTICAL, 0, 0, -1, 0, -1, 0);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfSouthwest() {
+        runTileBlockingTest(CORNER, 0, 1, -1, 1, -1, 2);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfSouth() {
+        runTileBlockingTest(HORIZONTAL, 0, 1, 0, 1, 0, 2);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfSoutheast() {
+        runTileBlockingTest(CORNER, 1, 1, 1, 1, 2, 2);
+    }
+
+    @Test
+    public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfNortheastNoncardinal() {
+        fail("Test and implement me!");
+    }
+
+    @Test
+    public void testRayStopsWhenCompletelyBlocked() {
+        fail("Test and implement me!");
+    }
+
+    private void runTileBlockingTest(WallSegmentOrientation orientation,
+                                     int blockingSegOffsetX, int blockingSegOffsetY,
+                                     int blockedTilesOffsetX, int blockedTilesOffsetY,
+                                     int blockedSegsOffsetX, int blockedSegsOffsetY) {
+        var origin = randomCoordinate3dInNormalRangeAtZ();
+        var mockBlockingSegment = makeMockSegment(orientation,
+                addOffsets3d(origin, blockingSegOffsetX, blockingSegOffsetY, 0), true);
+        var mockBlockingTile = makeMockTile(origin, true);
+        // This range of blocking to test ensures that the angles beneath the blocking tile, to
+        // the side of the blocking segment, and between them are all blocked
+        var blockedLocsToTest = (int) Z_ADDEND_BELOW + 3;
+        var mockBlockedTiles = new Tile[blockedLocsToTest];
+        var mockBlockedSegments = new WallSegment[blockedLocsToTest];
+        for (var i = 0; i < blockedLocsToTest; i++) {
+            var mockTile =
+                    makeMockTile(addOffsets3d(origin, blockedTilesOffsetX, blockedTilesOffsetY, -i),
+                            false);
+            var mockSegment = makeMockSegment(orientation,
+                    addOffsets3d(origin, blockedSegsOffsetX, blockedSegsOffsetY, -i), false);
+            mockBlockedTiles[i] = mockTile;
+            mockBlockedSegments[i] = mockSegment;
+        }
+        reset(mockGameZone);
+        when(mockGameZone.tiles(any()))
+                .thenReturn(setOf(mockBlockingTile))
+                .thenReturn(setOf(mockBlockedTiles))
+                .thenReturn(setOf());
+        var mockBlockingSegmentsMap = populatedMap(mockBlockingSegment);
+        var mockBlockedSegmentsMap = populatedMap(mockBlockedSegments);
+        when(mockGameZone.getSegments(any()))
+                .thenReturn(mockBlockingSegmentsMap)
+                .thenReturn(mockBlockedSegmentsMap)
+                .thenReturn(populatedMap());
+
+        var result = rayCalculation.castRay(origin,
+                addOffsets2d(origin.to2d(), blockedTilesOffsetX, blockedTilesOffsetY));
+
+        assertEquals(1, result.tiles().size());
+        //noinspection OptionalGetWithoutIsPresent
+        assertEquals(origin,
+                result.tiles().entrySet().stream().findFirst().get().getValue().location());
+        assertEquals(1, totalSegmentsInResult(result));
     }
 
     private void testTileHit(Coordinate2d expectedTarget, int index, Result result) {
@@ -943,6 +1020,19 @@ public class TileVisibilityRayCalculationImplTests {
         when(mockSegment.getType()).thenReturn(mockSegmentType);
         when(mockSegment.location()).thenReturn(loc);
         return mockSegment;
+    }
+
+    private Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> populatedMap(
+            WallSegment... segments) {
+        Map<WallSegmentOrientation, Map<Coordinate3d, WallSegment>> segmentsMap = mapOf();
+        // GameZone::getSegments is assumed to return a non-null map for each orientation
+        segmentsMap.put(HORIZONTAL, mapOf());
+        segmentsMap.put(CORNER, mapOf());
+        segmentsMap.put(VERTICAL, mapOf());
+        for (var segment : segments) {
+            segmentsMap.get(segment.getType().orientation()).put(segment.location(), segment);
+        }
+        return segmentsMap;
     }
 
     // NB: With excessively high or low values, the floating point calculations used to calculate
