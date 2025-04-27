@@ -87,28 +87,36 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             // (The ugly multiple nested assignments are to ensure the variables are effectively
             // final for lambdas below)
             Integer floor;
-            Integer ceiling;
-            if (floorBlockingTile.isPresent() || ceilingBlockingTile.isPresent()) {
-                if (floorBlockingTile.isPresent()) {
+            Integer floorFromZone = GET_VIEW_FLOOR.apply(cursor.to3d(origin.Z));
+            if (floorBlockingTile.isPresent()) {
+                if (floorFromZone != null) {
+                    floor = Math.max(floorFromZone, floorBlockingTile.get().location().Z);
+                }
+                else {
                     floor = floorBlockingTile.get().location().Z;
                 }
-                else {
-                    floor = null;
-                }
-                if (ceilingBlockingTile.isPresent()) {
-                    ceiling = ceilingBlockingTile.get().location().Z;
-                }
-                else {
-                    ceiling = null;
-                }
-                blockingSlopesInXYZSpace.addBlockingTiles(nextCursorInfo.rayEnterX,
-                        nextCursorInfo.rayEnterY, nextCursorInfo.rayExitX, nextCursorInfo.rayExitY,
-                        origin, floor, ceiling);
             }
             else {
-                floor = null;
-                ceiling = null;
+                floor = floorFromZone;
             }
+            Integer ceiling;
+            Integer ceilingFromZone = GET_VIEW_CEILING.apply(cursor.to3d(origin.Z));
+            if (ceilingBlockingTile.isPresent()) {
+                if (ceilingFromZone != null) {
+                    ceiling = Math.min(ceilingFromZone, ceilingBlockingTile.get().location().Z);
+                }
+                else {
+                    ceiling = ceilingBlockingTile.get().location().Z;
+                }
+            }
+            else {
+                ceiling = ceilingFromZone;
+            }
+
+            blockingSlopesInXYZSpace.addBlockingTiles(
+                    nextCursorInfo.rayEnterX, nextCursorInfo.rayEnterY,
+                    nextCursorInfo.rayExitX, nextCursorInfo.rayExitY,
+                    origin, floor, ceiling);
             var visibleTilesAtCursor = tilesAtCursor.stream()
                     .filter(t -> blockingSlopesInXYZSpace.tileIsVisible(origin, t));
             if (floor != null) {
@@ -164,7 +172,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             var newCursor = addOffsets2d(cursor, incX, 0);
             var rayXAdj = (isEast ? HALF_INC : -HALF_INC);
             var rayEnterX = cursor.X - rayXAdj;
-            rayEnterX = rayStartingAtOrigin(origin.X, isEast, rayEnterX);
+            rayEnterX = rayComponentStartingAtOrigin(origin.X, isEast, rayEnterX);
             var rayExitX = cursor.X + rayXAdj;
             var segX = cursor.X + (isEast ? 1 : 0);
             return new NextCursorInfo(newCursor, rayEnterX, cursor.Y, rayExitX, cursor.Y, VERTICAL,
@@ -173,7 +181,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         else if (slopeIsVertical(slope)) {
             var rayYAdj = (isSouth ? HALF_INC : -HALF_INC);
             var rayEnterY = cursor.Y - rayYAdj;
-            rayEnterY = rayStartingAtOrigin(origin.Y, isSouth, rayEnterY);
+            rayEnterY = rayComponentStartingAtOrigin(origin.Y, isSouth, rayEnterY);
             var rayExitY = cursor.Y + rayYAdj;
             var segY = cursor.Y + (isSouth ? 1 : 0);
             return new NextCursorInfo(addOffsets2d(cursor, 0, incY), cursor.X, rayEnterY,
@@ -183,22 +191,22 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             var segX = cursor.X + (isEast ? 1 : 0);
             var segY = cursor.Y + (isSouth ? 1 : 0);
             var rayEnterX = cursor.X + (isEast ? -HALF_INC : HALF_INC);
-            rayEnterX = rayStartingAtOrigin(origin.X, isEast, rayEnterX);
+            rayEnterX = rayComponentStartingAtOrigin(origin.X, isEast, rayEnterX);
             var rayExitX = cursor.X + (isEast ? HALF_INC : -HALF_INC);
             var rayEnterY = cursor.Y + (isSouth ? -HALF_INC : HALF_INC);
-            rayEnterY = rayStartingAtOrigin(origin.Y, isSouth, rayEnterY);
+            rayEnterY = rayComponentStartingAtOrigin(origin.Y, isSouth, rayEnterY);
             var rayExitY = cursor.Y + (isSouth ? HALF_INC : -HALF_INC);
             return new NextCursorInfo(addOffsets2d(cursor, incX, incY), rayEnterX, rayEnterY,
                     rayExitX, rayExitY, CORNER, Coordinate2d.of(segX, segY));
         }
 
         // (If incY == 0, then slope is also 0)
-        return noncardinalCrossingInfo(incX, incY, slope, origin, cursor, halfIncX,
-                halfIncY);
+        return noncardinalCrossingInfo(incX, incY, slope, origin, cursor, halfIncX, halfIncY,
+                isEast, isSouth);
     }
 
-    private static float rayStartingAtOrigin(int originComponent, boolean movingPositively,
-                                             float rayEnterComponent) {
+    private static float rayComponentStartingAtOrigin(int originComponent, boolean movingPositively,
+                                                      float rayEnterComponent) {
         if (movingPositively) {
             rayEnterComponent = Math.max(originComponent, rayEnterComponent);
         }
@@ -210,7 +218,8 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
 
     private static NextCursorInfo noncardinalCrossingInfo(int incX, int incY, float slope,
                                                           Coordinate2d origin, Coordinate2d cursor,
-                                                          float halfIncX, float halfIncY) {
+                                                          float halfIncX, float halfIncY,
+                                                          boolean isEast, boolean isSouth) {
         Coordinate2d nextCursor;
         WallSegmentOrientation crossingOrientation;
         int crossingSegX;
@@ -273,6 +282,9 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             cursorExitX = cursor.X + halfIncX;
             cursorExitY = cursor.Y + halfIncY;
         }
+
+        cursorEnterX = rayComponentStartingAtOrigin(origin.X, isEast, cursorEnterX);
+        cursorEnterY = rayComponentStartingAtOrigin(origin.Y, isSouth, cursorEnterY);
 
         return new NextCursorInfo(nextCursor, cursorEnterX, cursorEnterY, cursorExitX, cursorExitY,
                 crossingOrientation, Coordinate2d.of(crossingSegX, crossingSegY));
@@ -415,8 +427,8 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
 
                 if (valueIsInRange(upperBound, rangeUpperBound, rangeLowerBound) ||
                         valueIsInRange(lowerBound, rangeUpperBound, rangeLowerBound)) {
-                    upperBoundToPlace = Math.max(upperBound, rangeUpperBound);
-                    lowerBoundToPlace = Math.min(lowerBound, rangeLowerBound);
+                    upperBoundToPlace = Math.max(upperBoundToPlace, rangeUpperBound);
+                    lowerBoundToPlace = Math.min(lowerBoundToPlace, rangeLowerBound);
                     RANGES.remove(i);
                     i--;
                 }
