@@ -3,11 +3,11 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.entities.Action;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
@@ -24,11 +24,10 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StatusEffectTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
@@ -69,7 +68,7 @@ public class StatusEffectTypeFactoryTests {
 
     private Factory<StatusEffectTypeDefinition, StatusEffectType> statusEffectTypeFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockGetFunction = generateMockLookupFunction(
                 pairOf(NAME_AT_VALUE_FUNCTION_ID, mockNameAtValueFunction),
@@ -85,7 +84,7 @@ public class StatusEffectTypeFactoryTests {
 
         //noinspection unchecked,rawtypes
         mockGetAction = (Function<String, Action>) mock(Function.class);
-        when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
+        lenient().when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
 
         mockTurnStartEffectDefinition = mock(EffectsOnCharacterDefinition.class);
         mockTurnEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
@@ -96,9 +95,9 @@ public class StatusEffectTypeFactoryTests {
         //noinspection unchecked
         mockEffectsOnCharacterFactory =
                 (Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>) mock(Factory.class);
-        when(mockEffectsOnCharacterFactory.make(mockTurnStartEffectDefinition))
+        lenient().when(mockEffectsOnCharacterFactory.make(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
-        when(mockEffectsOnCharacterFactory.make(mockTurnEndEffectDefinition))
+        lenient().when(mockEffectsOnCharacterFactory.make(mockTurnEndEffectDefinition))
                 .thenReturn(mockTurnEndEffect);
 
         mockRoundEndEffectDefinition = mock(RoundEndEffectsOnCharacterDefinition.class);
@@ -108,7 +107,7 @@ public class StatusEffectTypeFactoryTests {
         mockRoundEndEffectsOnCharacterFactory =
                 (Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>) mock(
                         Factory.class);
-        when(mockRoundEndEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
+        lenient().when(mockRoundEndEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
                 .thenReturn(mockRoundEndEffect);
 
         definition =
@@ -127,7 +126,7 @@ public class StatusEffectTypeFactoryTests {
     }
 
     @Test
-    public void testConstructorWithInvalidParams() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new StatusEffectTypeFactory(null, mockGetAction,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory,
@@ -182,7 +181,7 @@ public class StatusEffectTypeFactoryTests {
     }
 
     @Test
-    public void testMakeWithInvalidParams() {
+    public void testMakeWithInvalidArgs() {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
         var invalidActionId = randomString();
@@ -330,7 +329,7 @@ public class StatusEffectTypeFactoryTests {
     }
 
     @Test
-    public void testAlterWithInvalidParams() {
+    public void testAlterWithInvalidArgs() {
         var output = statusEffectTypeFactory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.alterValue(null, randomInt()));
@@ -347,7 +346,7 @@ public class StatusEffectTypeFactoryTests {
     }
 
     @Test
-    public void testSetNameWithInvalidParams() {
+    public void testSetNameWithInvalidArgs() {
         var output = statusEffectTypeFactory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
@@ -355,7 +354,7 @@ public class StatusEffectTypeFactoryTests {
     }
 
     @Test
-    public void testGetIconWithInvalidParams() {
+    public void testGetIconWithInvalidArgs() {
         var output = statusEffectTypeFactory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.getIcon(null, mockCharacter));

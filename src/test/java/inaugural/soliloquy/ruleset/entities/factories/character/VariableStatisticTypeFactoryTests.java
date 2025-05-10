@@ -145,7 +145,7 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new VariableStatisticTypeFactory(null, mockGetImageAssetSet,
                         mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
@@ -199,7 +199,7 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidImageAssetSetId = randomString();
         when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
         var invalidFunctionId = randomString();
@@ -309,7 +309,7 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testAlterWithInvalidParams() {
+    void testAlterWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.alter(null, randomInt()));
@@ -326,7 +326,7 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidParams() {
+    void testSetNameWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
@@ -344,7 +344,7 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testSetPluralNameWithInvalidParams() {
+    void testSetPluralNameWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(null));

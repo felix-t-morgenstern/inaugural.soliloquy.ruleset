@@ -1,11 +1,10 @@
 package inaugural.soliloquy.ruleset.entities.actonroundendandcharacterturn.factories;
 
+import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.valueobjects.Pair;
-import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
@@ -14,7 +13,7 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.AmountType.PERCENT_OF_MAXIMUM;
@@ -61,7 +60,7 @@ class StatisticChangeMagnitudeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new StatisticChangeMagnitudeFactory(null, mockGetElement));
         assertThrows(IllegalArgumentException.class,
@@ -199,7 +198,7 @@ class StatisticChangeMagnitudeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var oneIntArray = new Integer[]{randomInt()};
         var threeIntArray = new Integer[]{randomInt(), randomInt(), randomInt()};
         var intArrayWith0Null = new Integer[]{null, randomInt()};

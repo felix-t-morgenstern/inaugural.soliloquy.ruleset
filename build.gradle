@@ -26,8 +26,10 @@ dependencies {
     implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.20"
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
     testImplementation 'org.mockito:mockito-core:5.1.1'
-    // https://mvnrepository.com/artifact/junit/junit
-    implementation 'junit:junit:4.13.2'
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.13.0-M3")
+    // https://central.sonatype.com/artifact/org.mockito/mockito-junit-jupiter
+    testImplementation("org.mockito:mockito-junit-jupiter:5.17.0")
     // https://mvnrepository.com/artifact/org.javatuples/javatuples
     implementation("org.javatuples:javatuples:1.2")
 }

@@ -127,7 +127,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             }
             visibleTilesAtCursor.forEach(t -> tilesInRay.put(t.location(), t));
 
-            var segmentsAtCursor = gameZone.getSegments(cursor);
+            var segmentsAtCursor = gameZone.segments(cursor);
             segmentsAtCursor.forEach((o, segs) -> segs.entrySet().stream()
                     .filter(s -> blockingSlopesInXYZSpace.segmentIsVisible(origin, o, s.getKey()))
                     .filter(s -> floor == null || s.getKey().Z >= floor)

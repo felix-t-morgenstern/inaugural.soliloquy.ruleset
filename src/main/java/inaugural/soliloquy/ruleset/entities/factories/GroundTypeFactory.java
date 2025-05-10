@@ -2,6 +2,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.ruleset.definitions.GroundTypeDefinition;
 import inaugural.soliloquy.tools.Check;
+import inaugural.soliloquy.tools.collections.Collections;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
@@ -64,9 +65,17 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
                         definition.heightMovementPenaltyMitigationFunctionId,
                         "definition.heightMovementPenaltyMitigationFunctionId");
 
+        var escalations = Collections.<Direction, Integer>mapOf();
+        if (definition.escalations != null) {
+            for (var escalation : definition.escalations) {
+                escalations.put(escalation.direction, escalation.escalation);
+            }
+        }
+
         return new GroundType() {
+            private final boolean BLOCKS_SIGHT = definition.blocksSight;
+
             private String name = definition.name;
-            private boolean blocksSight = definition.blocksSight;
 
             @Override
             public String id() throws IllegalStateException {
@@ -104,6 +113,11 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
             }
 
             @Override
+            public int escalation(Direction direction) {
+                return escalations.getOrDefault(Check.ifNull(direction, "direction"), 0);
+            }
+
+            @Override
             public int heightMovementPenaltyMitigation(Tile tile, Character character,
                                                        Direction direction) {
                 return heightMovementPenaltyMitigationFunction.apply(
@@ -112,7 +126,7 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
 
             @Override
             public boolean blocksSight() {
-                return false;
+                return BLOCKS_SIGHT;
             }
 
             @Override

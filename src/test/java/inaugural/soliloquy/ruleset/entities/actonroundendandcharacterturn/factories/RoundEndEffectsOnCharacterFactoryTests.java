@@ -19,7 +19,7 @@ import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -89,7 +89,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndEffectsOnCharacterFactory(null, mockMagnitudeFactory));
         assertThrows(IllegalArgumentException.class,
@@ -145,7 +145,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testAccompanyEffectWithInvalidParams() {
+    void testAccompanyEffectWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class,
@@ -155,7 +155,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testOtherEffectsWithInvalidParams() {
+    void testOtherEffectsWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class,
@@ -165,7 +165,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testAccompanyAllEffectsWithInvalidParams() {
+    void testAccompanyAllEffectsWithInvalidArgs() {
         var inputMagnitudes = new int[]{randomInt()};
         var output = factory.make(definition);
 
@@ -179,7 +179,7 @@ class RoundEndEffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidActionId = randomString();
         when(mockGetAction.apply(invalidActionId)).thenReturn(null);
 

@@ -7,7 +7,7 @@ import inaugural.soliloquy.ruleset.definitions.EquipmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 
 import static inaugural.soliloquy.tools.random.Random.randomString;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EquipmentTypeFactoryTests {
     private final String ID = randomString();
@@ -43,7 +43,7 @@ class EquipmentTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class, () -> equipmentTypeFactory.make(null));
         assertThrows(IllegalArgumentException.class, () -> equipmentTypeFactory.make(
                 new EquipmentTypeDefinition(null, NAME, PLURAL_NAME, EQUIPABLE_SLOT_TYPES)));
@@ -75,7 +75,7 @@ class EquipmentTypeFactoryTests {
     }
 
     @Test
-    void testMutatePropertiesOnCreatedEquipmentTypeWithInvalidParams() {
+    void testMutatePropertiesOnCreatedEquipmentTypeWithInvalidArgs() {
         var equipmentType = equipmentTypeFactory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> equipmentType.setName(null));
@@ -85,7 +85,7 @@ class EquipmentTypeFactoryTests {
     }
 
     @Test
-    void testCanEquipToSlotTypeWithInvalidParams() {
+    void testCanEquipToSlotTypeWithInvalidArgs() {
         var equipmentType = equipmentTypeFactory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> equipmentType.canEquipToSlotType(null));

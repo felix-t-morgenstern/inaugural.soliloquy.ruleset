@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockEntityAndHandler;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -63,7 +63,7 @@ class PassiveAbilityFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new PassiveAbilityFactory(null, MOCK_DATA_HANDLER));
         assertThrows(IllegalArgumentException.class,
@@ -85,7 +85,7 @@ class PassiveAbilityFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
 
@@ -144,7 +144,7 @@ class PassiveAbilityFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidParams() {
+    void testSetNameWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
@@ -163,7 +163,7 @@ class PassiveAbilityFactoryTests {
     }
 
     @Test
-    void testCharacterDescriptionWithInvalidParams() {
+    void testCharacterDescriptionWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Character) null));
@@ -181,7 +181,7 @@ class PassiveAbilityFactoryTests {
     }
 
     @Test
-    void testItemDescriptionWithInvalidParams() {
+    void testItemDescriptionWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Item) null));

@@ -1,11 +1,11 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.ruleset.definitions.ElementDefinition;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.ruleset.entities.Element;
@@ -16,10 +16,10 @@ import java.util.function.Function;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ElementFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
@@ -37,7 +37,7 @@ public class ElementFactoryTests {
 
     private Factory<ElementDefinition, Element> elementFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockGetImageAssetSet =
                 generateMockLookupFunction(pairOf(IMAGE_ASSET_SET_ID, mockImageAssetSet));
@@ -49,7 +49,7 @@ public class ElementFactoryTests {
     }
 
     @Test
-    public void testConstructorWithInvalidParams() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ElementFactory(null, mockGetStaticStatType));
         assertThrows(IllegalArgumentException.class,
@@ -74,7 +74,7 @@ public class ElementFactoryTests {
     }
 
     @Test
-    public void testMakeWithInvalidParams() {
+    public void testMakeWithInvalidArgs() {
         var invalidId = randomString();
         assertThrows(IllegalArgumentException.class, () -> elementFactory.make(null));
         assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
@@ -119,7 +119,7 @@ public class ElementFactoryTests {
     }
 
     @Test
-    public void testSetNameOnCreatedElementWithInvalidParams() {
+    public void testSetNameOnCreatedElementWithInvalidArgs() {
         var element = elementFactory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> element.setName(null));
@@ -137,7 +137,7 @@ public class ElementFactoryTests {
     }
 
     @Test
-    public void testSetDescriptionOnCreatedElementWithInvalidParams() {
+    public void testSetDescriptionOnCreatedElementWithInvalidArgs() {
         var element = elementFactory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> element.setDescription(null));

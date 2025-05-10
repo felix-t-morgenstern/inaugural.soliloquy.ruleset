@@ -1,11 +1,11 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import soliloquy.specs.common.valueobjects.Pair;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
 import soliloquy.specs.ruleset.entities.Element;
@@ -23,12 +23,12 @@ import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StatisticMagnitudeEffectCalculationImplTests {
     // The numbers used here are totally arbitrary, I'm just restraining the ranges to make test
     // cases more reasonable, and in some cases, not wholly ridiculous.
@@ -94,40 +94,44 @@ public class StatisticMagnitudeEffectCalculationImplTests {
 
     private StatisticMagnitudeEffectCalculation statisticMagnitudeEffectCalculation;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        when(mockDamageResistanceCalculation.calculateEffectiveChange(any(), anyInt(), any()))
+        lenient().when(
+                        mockDamageResistanceCalculation.calculateEffectiveChange(any(), anyInt(),
+                                any()))
                 .thenReturn(DAMAGE_RESISTANCE_CALCULATION_OUTPUT);
 
-        when(mockRandomDoubleProvider.get())
+        lenient().when(mockRandomDoubleProvider.get())
                 .thenReturn(RANDOM_DOUBLE_1)
                 .thenReturn(RANDOM_DOUBLE_2)
                 .thenReturn(RANDOM_DOUBLE_3)
                 .thenReturn(RANDOM_DOUBLE_4);
 
-        when(mockValueMagnitude.element()).thenReturn(mockElement);
-        when(mockValueMagnitude.perLevelRange())
+        lenient().when(mockValueMagnitude.element()).thenReturn(mockElement);
+        lenient().when(mockValueMagnitude.perLevelRange())
                 .thenReturn(pairOf(VALUE_MAGNITUDE_PER_LEVEL_MIN, VALUE_MAGNITUDE_PER_LEVEL_MAX));
-        when(mockValueMagnitude.absoluteRange())
+        lenient().when(mockValueMagnitude.absoluteRange())
                 .thenReturn(pairOf(VALUE_MAGNITUDE_ABSOLUTE_MIN, VALUE_MAGNITUDE_ABSOLUTE_MAX));
-        when(mockValueMagnitude.amountType()).thenReturn(AmountType.VALUE);
+        lenient().when(mockValueMagnitude.amountType()).thenReturn(AmountType.VALUE);
 
-        when(mockPercentMagnitude.element()).thenReturn(mockElement);
-        when(mockPercentMagnitude.absoluteRange()).thenReturn(
+        lenient().when(mockPercentMagnitude.element()).thenReturn(mockElement);
+        lenient().when(mockPercentMagnitude.absoluteRange()).thenReturn(
                 pairOf(PERCENT_MAGNITUDE_ABSOLUTE_MIN, PERCENT_MAGNITUDE_ABSOLUTE_MAX));
-        when(mockPercentMagnitude.perLevelRange()).thenReturn(
+        lenient().when(mockPercentMagnitude.perLevelRange()).thenReturn(
                 pairOf(PERCENT_MAGNITUDE_PER_LEVEL_MIN, PERCENT_MAGNITUDE_PER_LEVEL_MAX));
-        when(mockPercentMagnitude.effectedStatisticType()).thenReturn(mockEffectedVariableStatType);
+        lenient().when(mockPercentMagnitude.effectedStatisticType())
+                .thenReturn(mockEffectedVariableStatType);
 
-        when(mockStatisticCalculation.calculate(any(), any())).thenReturn(EFFECT_ENTITY_LEVEL);
-        when(mockStatisticCalculation.calculate(any(),
+        lenient().when(mockStatisticCalculation.calculate(any(), any()))
+                .thenReturn(EFFECT_ENTITY_LEVEL);
+        lenient().when(mockStatisticCalculation.calculate(any(),
                 same(mockEffectedVariableStatType))).thenReturn(EFFECTED_VARIABLE_STAT_MAX_VALUE);
 
-        when(mockCharacterStatusEffects.getStatusEffectLevel(any()))
+        lenient().when(mockCharacterStatusEffects.getStatusEffectLevel(any()))
                 .thenReturn(EFFECT_ENTITY_LEVEL);
 
-        when(mockCharacter.statusEffects()).thenReturn(mockCharacterStatusEffects);
-        when(mockCharacter.getVariableStatisticCurrentValue(any()))
+        lenient().when(mockCharacter.statusEffects()).thenReturn(mockCharacterStatusEffects);
+        lenient().when(mockCharacter.getVariableStatisticCurrentValue(any()))
                 .thenReturn(EFFECTED_VARIABLE_STAT_CURRENT_VALUE);
 
         statisticMagnitudeEffectCalculation =
@@ -136,7 +140,7 @@ public class StatisticMagnitudeEffectCalculationImplTests {
     }
 
     @Test
-    public void testConstructorWithInvalidParams() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new StatisticMagnitudeEffectCalculationImpl(null, mockStatisticCalculation,
                         mockRandomDoubleProvider));
@@ -235,7 +239,7 @@ public class StatisticMagnitudeEffectCalculationImplTests {
     }
 
     @Test
-    public void testGetEffectForStatisticWithInvalidParams() {
+    public void testGetEffectForStatisticWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> statisticMagnitudeEffectCalculation.getEffect((StaticStatisticType) null,
                         mockValueMagnitude, mockCharacter));
@@ -358,7 +362,7 @@ public class StatisticMagnitudeEffectCalculationImplTests {
     }
 
     @Test
-    public void testGetEffectForStatusEffectTypeWithInvalidParams() {
+    public void testGetEffectForStatusEffectTypeWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> statisticMagnitudeEffectCalculation.getEffect((StaticStatisticType) null,
                         mockValueMagnitude, mockCharacter));

@@ -1,16 +1,15 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
 import inaugural.soliloquy.ruleset.definitions.concepts.CalculationByComponentsDefinition;
-import inaugural.soliloquy.ruleset.definitions.concepts.CalculationByComponentsDefinition.TypeDefinition;
 import inaugural.soliloquy.ruleset.definitions.concepts.CalculationByComponentsDefinition.TypeComponentDefinition;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import inaugural.soliloquy.ruleset.definitions.concepts.CalculationByComponentsDefinition.TypeDefinition;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.infrastructure.VariableCache;
-import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterEquipmentSlots;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
@@ -28,15 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static inaugural.soliloquy.tools.collections.Collections.*;
+import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
+import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.*;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StatisticCalculationImplTests {
     private final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
     private final int DECIMAL_PLACES_FOR_MODIFIERS = 2;
@@ -99,7 +99,7 @@ public class StatisticCalculationImplTests {
 
     private StatisticCalculation statisticCalculation;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockGetPassiveAbility = generateMockLookupFunction(
                 pairOf(SOURCE_PASSIVE_ABILITY_ID, mockSourcePassiveAbility));
@@ -107,21 +107,22 @@ public class StatisticCalculationImplTests {
         mockGetStatusEffectType =
                 generateMockLookupFunction(pairOf(STATUS_EFFECT_TYPE_ID, mockStatusEffectType));
 
-        when(mockItemData.getVariable(ITEM_DATA_PARAM)).thenReturn(ITEM_DATA_PARAM_VALUE);
+        lenient().when(mockItemData.getVariable(ITEM_DATA_PARAM)).thenReturn(ITEM_DATA_PARAM_VALUE);
 
-        when(mockItem.data()).thenReturn(mockItemData);
+        lenient().when(mockItem.data()).thenReturn(mockItemData);
 
         mockEquipmentSlots = mock(CharacterEquipmentSlots.class);
-        when(mockEquipmentSlots.representation())
+        lenient().when(mockEquipmentSlots.representation())
                 .thenReturn(mapOf(pairOf(randomString(), mockItem)));
 
-        when(mockStatusEffects.getStatusEffectLevel(any())).thenReturn(STATUS_EFFECT_LEVEL);
+        lenient().when(mockStatusEffects.getStatusEffectLevel(any()))
+                .thenReturn(STATUS_EFFECT_LEVEL);
 
         mockPassiveAbilities = generateMockList(mockSourcePassiveAbility);
 
-        when(mockCharacter.equipmentSlots()).thenReturn(mockEquipmentSlots);
-        when(mockCharacter.statusEffects()).thenReturn(mockStatusEffects);
-        when(mockCharacter.passiveAbilities()).thenReturn(mockPassiveAbilities);
+        lenient().when(mockCharacter.equipmentSlots()).thenReturn(mockEquipmentSlots);
+        lenient().when(mockCharacter.statusEffects()).thenReturn(mockStatusEffects);
+        lenient().when(mockCharacter.passiveAbilities()).thenReturn(mockPassiveAbilities);
 
         mockStaticStatTypesToCalculate = generateMockMap(
                 pairOf(CALCULATED_STATIC_STAT_TYPE_ID, mockSourceStaticStatType));
@@ -161,7 +162,7 @@ public class StatisticCalculationImplTests {
     }
 
     @Test
-    public void testConstructorWithInvalidParams() {
+    public void testConstructorWithInvalidArgs() {
         // NB: There is a condition in which the number of static and variable stats combined
         // must match the number of type definitions. Having this object return a size of zero
         // sidesteps that for this test, except for the last case, see below.
@@ -415,7 +416,7 @@ public class StatisticCalculationImplTests {
     }
 
     @Test
-    public void testCalculateWithDescriptorsWithInvalidParams() {
+    public void testCalculateWithDescriptorsWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> statisticCalculation.calculateWithDescriptors(null,
                         mockVariableStatTypeToCalculate));
@@ -462,14 +463,15 @@ public class StatisticCalculationImplTests {
     }
 
     @Test
-    public void testCalculateWithInvalidParams() {
+    public void testCalculateWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> statisticCalculation.calculate(null, mockVariableStatTypeToCalculate));
         assertThrows(IllegalArgumentException.class,
                 () -> statisticCalculation.calculate(mockCharacter, null));
         when(mockCharacter.isDeleted()).thenReturn(true);
         assertThrows(IllegalArgumentException.class,
-                () -> statisticCalculation.calculate(mockCharacter, mockVariableStatTypeToCalculate));
+                () -> statisticCalculation.calculate(mockCharacter,
+                        mockVariableStatTypeToCalculate));
     }
 
     @Test

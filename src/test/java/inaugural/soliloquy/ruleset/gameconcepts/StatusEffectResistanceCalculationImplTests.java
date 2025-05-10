@@ -1,10 +1,10 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
 import soliloquy.specs.ruleset.entities.Element;
@@ -14,14 +14,13 @@ import soliloquy.specs.ruleset.gameconcepts.StatisticCalculation;
 import soliloquy.specs.ruleset.gameconcepts.StatusEffectResistanceCalculation;
 
 import static inaugural.soliloquy.tools.random.Random.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StatusEffectResistanceCalculationImplTests {
     @Mock private StaticStatisticType mockStatusEffectTypeResistStat;
     @Mock private StaticStatisticType mockElementResistStat;
@@ -33,20 +32,20 @@ public class StatusEffectResistanceCalculationImplTests {
 
     private StatusEffectResistanceCalculation statusEffectResistanceCalculation;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        when(mockElement.resistanceStatisticType()).thenReturn(mockElementResistStat);
-        when(mockStatusEffectType.resistanceStatisticType()).thenReturn(
+        lenient().when(mockElement.resistanceStatisticType()).thenReturn(mockElementResistStat);
+        lenient().when(mockStatusEffectType.resistanceStatisticType()).thenReturn(
                 mockStatusEffectTypeResistStat);
 
-        when(mockCharacter.statusEffects()).thenReturn(mockCharacterStatusEffects);
+        lenient().when(mockCharacter.statusEffects()).thenReturn(mockCharacterStatusEffects);
 
         statusEffectResistanceCalculation =
                 new StatusEffectResistanceCalculationImpl(mockStatisticCalculation);
     }
 
     @Test
-    public void testConstructorWithInvalidParams() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new StatusEffectResistanceCalculationImpl(null));
     }
@@ -136,7 +135,7 @@ public class StatusEffectResistanceCalculationImplTests {
     }
 
     @Test
-    public void testCalculateEffectiveChangeWithInvalidParams() {
+    public void testCalculateEffectiveChangeWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> statusEffectResistanceCalculation.calculateEffectiveChange(null,
                         mockStatusEffectType, randomInt(), randomBoolean(), mockElement));

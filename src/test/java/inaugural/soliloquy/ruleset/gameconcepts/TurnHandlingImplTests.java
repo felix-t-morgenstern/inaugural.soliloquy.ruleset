@@ -26,8 +26,8 @@ import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomIntWithInclusiveCeiling;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockList;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class TurnHandlingImplTests {
@@ -170,7 +170,7 @@ class TurnHandlingImplTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new TurnHandlingImpl(null, mockPassControlToPlayer, mockVariableStatTypes,
                         mockStaticStatTypes));

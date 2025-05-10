@@ -19,7 +19,7 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.randomBoolean;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockEntityAndHandler;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ReactiveAbilityFactoryTests {
@@ -104,7 +104,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ReactiveAbilityFactory(null, DATA_HANDLER));
         assertThrows(IllegalArgumentException.class,
@@ -130,7 +130,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
 
@@ -260,7 +260,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidParams() {
+    void testSetNameWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
@@ -278,7 +278,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testDescriptionWithCharacterSourceWithInvalidParams() {
+    void testDescriptionWithCharacterSourceWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Character) null));
@@ -296,7 +296,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testDescriptionWithItemSourceWithInvalidParams() {
+    void testDescriptionWithItemSourceWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Item) null));
@@ -313,7 +313,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testFiresAgainstEventWithInvalidParams() {
+    void testFiresAgainstEventWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.firesAgainstEvent(null, DATA));
@@ -332,7 +332,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testFiresAgainstAbilityWithInvalidParams() {
+    void testFiresAgainstAbilityWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.firesAgainstAbility(null));
@@ -348,7 +348,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testReactToAbilityWithInvalidParams() {
+    void testReactToAbilityWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.reactToAbility(null, mockAbilitySource));
@@ -365,7 +365,7 @@ class ReactiveAbilityFactoryTests {
     }
 
     @Test
-    void testReactToEventWithInvalidParams() {
+    void testReactToEventWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(null, EVENT, DATA));

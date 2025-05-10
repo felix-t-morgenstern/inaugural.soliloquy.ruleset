@@ -17,7 +17,7 @@ import java.util.function.Function;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -79,7 +79,7 @@ class EffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new EffectsOnCharacterFactory(null, mockMagnitudeFactory));
         assertThrows(IllegalArgumentException.class,
@@ -128,7 +128,7 @@ class EffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testAccompanyEffectWithInvalidParams() {
+    void testAccompanyEffectWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class,
@@ -138,7 +138,7 @@ class EffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testOtherEffectsWithInvalidParams() {
+    void testOtherEffectsWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.otherEffects(null, mockCharacter, true));
@@ -146,7 +146,7 @@ class EffectsOnCharacterFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidActionId = randomString();
         when(mockGetAction.apply(invalidActionId)).thenReturn(null);
 

@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -141,7 +141,7 @@ class ActiveCharactersProviderImplTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ActiveCharactersProviderImpl(null, mockStatisticCalculation,
                         mockGetRandomFloat, mockCharacterRoundDataFactory, STATISTIC_COMBAT_ORDER,
@@ -401,7 +401,7 @@ class ActiveCharactersProviderImplTests {
     }
 
     @Test
-    void testGenerateInTurnOrderWithInvalidParams() {
+    void testGenerateInTurnOrderWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> activeCharactersProvider.generateInTurnOrder(null));
     }

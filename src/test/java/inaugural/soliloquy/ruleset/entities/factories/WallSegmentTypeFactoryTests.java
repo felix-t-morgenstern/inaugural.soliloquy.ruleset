@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 class WallSegmentTypeFactoryTests {
@@ -48,7 +48,7 @@ class WallSegmentTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new WallSegmentTypeFactory(null, GLOBAL_LOOPING_ANIMATIONS::get));
         assertThrows(IllegalArgumentException.class,
@@ -92,7 +92,7 @@ class WallSegmentTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(null));
         assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
                 new WallSegmentTypeDefinition(null, NAME, DIRECTION,
@@ -149,7 +149,7 @@ class WallSegmentTypeFactoryTests {
     }
 
     @Test
-    void testSetNameOnCreatedElementWithInvalidParams() {
+    void testSetNameOnCreatedElementWithInvalidArgs() {
         var definition =
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT);

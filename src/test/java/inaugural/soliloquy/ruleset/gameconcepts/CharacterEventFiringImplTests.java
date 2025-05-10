@@ -1,10 +1,11 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterEvents;
@@ -15,14 +16,13 @@ import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring;
 
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.randomString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("ALL")
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CharacterEventFiringImplTests {
     private final static String EVENT = randomString();
     private final static String ABILITY_ID = randomString();
@@ -37,14 +37,14 @@ public class CharacterEventFiringImplTests {
 
     private CharacterEventFiring characterEventFiring;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        when(mockCharacterEvents.eventsForTrigger(anyString())).thenReturn(
+        lenient().when(mockCharacterEvents.eventsForTrigger(anyString())).thenReturn(
                 arrayOf(mockCharacterEvent1, mockCharacterEvent2));
 
-        when(mockCharacter.events()).thenReturn(mockCharacterEvents);
+        lenient().when(mockCharacter.events()).thenReturn(mockCharacterEvents);
 
-        when(mockAbility.id()).thenReturn(ABILITY_ID);
+        lenient().when(mockAbility.id()).thenReturn(ABILITY_ID);
 
         abilitySource = AbilitySource.of(mockCharacter, mockAbility, mockData);
 
@@ -62,7 +62,7 @@ public class CharacterEventFiringImplTests {
     }
 
     @Test
-    public void testFireEventWithInvalidParams() {
+    public void testFireEventWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireEvent(null, EVENT, mockData));
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireEvent(mockCharacter, null, mockData));
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireEvent(mockCharacter, "", mockData));
@@ -81,7 +81,7 @@ public class CharacterEventFiringImplTests {
     }
 
     @Test
-    public void testFireAbilityWithInvalidParams() {
+    public void testFireAbilityWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireAbility(null, abilitySource));
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireAbility(mockCharacter, null));
     }

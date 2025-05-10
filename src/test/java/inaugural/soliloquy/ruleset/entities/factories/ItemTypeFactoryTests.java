@@ -117,7 +117,7 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ItemTypeFactory(null, mockGetEquipmentType, mockGetImageAssetSet,
                         mockGetDescriptionFunction, mockGetActiveAbility, mockGetReactiveAbility,
@@ -224,7 +224,7 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidParams() {
+    void testSetNameWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
@@ -242,7 +242,7 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testSetPluralNameWithInvalidParams() {
+    void testSetPluralNameWithInvalidArgs() {
         var output = factory.make(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(null));
@@ -250,7 +250,7 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidEquipmentTypeId = randomString();
         when(mockGetEquipmentType.apply(invalidEquipmentTypeId)).thenReturn(null);
         var invalidImageAssetSetId = randomString();

@@ -100,7 +100,7 @@ class StaticStatisticTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidParams() {
+    void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new StaticStatisticTypeFactory(null, mockGetImageAssetSet,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory));
@@ -137,7 +137,7 @@ class StaticStatisticTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidParams() {
+    void testMakeWithInvalidArgs() {
         var invalidImageAssetSetId = randomString();
         when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
 
@@ -196,7 +196,7 @@ class StaticStatisticTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidParams() {
+    void testSetNameWithInvalidArgs() {
         var output = factory.make(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));

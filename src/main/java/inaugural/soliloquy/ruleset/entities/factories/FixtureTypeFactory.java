@@ -2,6 +2,7 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.ruleset.definitions.FixtureTypeDefinition;
 import inaugural.soliloquy.tools.Check;
+import inaugural.soliloquy.tools.collections.Collections;
 import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
@@ -64,6 +65,13 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
                         definition.heightMovementPenaltyMitigationFunctionId,
                         "definition.heightMovementPenaltyMitigationFunctionId");
 
+        var escalations = Collections.<Direction, Integer>mapOf();
+        if (definition.escalations != null) {
+            for (var escalation : definition.escalations) {
+                escalations.put(escalation.direction, escalation.escalation);
+            }
+        }
+
         return new FixtureType() {
             private String name = definition.name;
 
@@ -121,6 +129,11 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             @Override
             public int additionalMovementCost() {
                 return definition.additionalMovementCost;
+            }
+
+            @Override
+            public int escalation(Direction direction) {
+                return escalations.getOrDefault(Check.ifNull(direction, "direction"), 0);
             }
 
             @Override

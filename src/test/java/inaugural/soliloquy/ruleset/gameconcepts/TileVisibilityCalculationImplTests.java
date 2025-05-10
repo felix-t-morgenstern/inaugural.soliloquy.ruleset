@@ -1,10 +1,10 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.valueobjects.Coordinate2d;
 import soliloquy.specs.common.valueobjects.Coordinate3d;
 import soliloquy.specs.gamestate.entities.Tile;
@@ -21,10 +21,10 @@ import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.collections.Collections.setOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class TileVisibilityCalculationImplTests {
     @Mock private Tile mockTile;
     @Mock private TileVisibilityRayCalculation mockTileVisibilityRayCalculation;
@@ -39,9 +39,9 @@ public class TileVisibilityCalculationImplTests {
 
     private TileVisibilityCalculation tileVisibilityCalculation;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        when(mockTile.location()).thenReturn(LOCATION);
+        lenient().when(mockTile.location()).thenReturn(LOCATION);
 
         tileVisibilityCalculationOrigins = setOf();
         tilesVisible = mapOf();
@@ -50,7 +50,7 @@ public class TileVisibilityCalculationImplTests {
                 pairOf(WallSegmentOrientation.CORNER, mapOf()),
                 pairOf(WallSegmentOrientation.HORIZONTAL, mapOf()));
 
-        when(mockTileVisibilityRayCalculation.castRay(any(), any())).thenAnswer(invocation -> {
+        lenient().when(mockTileVisibilityRayCalculation.castRay(any(), any())).thenAnswer(invocation -> {
             var mockTile = mock(Tile.class);
             var mockTileLocation = randomCoordinate3d();
             tilesVisible.put(mockTileLocation, mockTile);
@@ -97,12 +97,12 @@ public class TileVisibilityCalculationImplTests {
     }
 
     @Test
-    public void testConstructorWithInvalidParams() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class, () -> new TileVisibilityCalculationImpl(null));
     }
 
     @Test
-    public void testAtPointWithInvalidParams() {
+    public void testAtPointWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> tileVisibilityCalculation.atPoint(null, 0));
         assertThrows(IllegalArgumentException.class,
