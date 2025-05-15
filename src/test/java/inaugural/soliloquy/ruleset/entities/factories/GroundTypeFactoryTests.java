@@ -3,8 +3,9 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.ruleset.definitions.GroundTypeDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import soliloquy.specs.common.factories.Factory;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
 import soliloquy.specs.gamestate.entities.Character;
@@ -27,7 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static soliloquy.specs.common.shared.Direction.SOUTHWEST;
 
-class GroundTypeFactoryTests {
+@ExtendWith(MockitoExtension.class)
+public class GroundTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final int ADDITIONAL_MOVEMENT_COST = randomInt();
@@ -69,34 +71,20 @@ class GroundTypeFactoryTests {
 
     private GroundTypeDefinition definition;
 
-    private Factory<GroundTypeDefinition, GroundType> groundTypeFactory;
+    private Function<GroundTypeDefinition, GroundType> groundTypeFactory;
 
     @BeforeEach
-    void setUp() {
-        mockSprite = mock(Sprite.class);
+    public void setUp() {
         SPRITES.put(SPRITE_ID, mockSprite);
-        mockLoopingAnimation = mock(GlobalLoopingAnimation.class);
         GLOBAL_LOOPING_ANIMATIONS.put(GLOBAL_LOOPING_ANIMATION_ID, mockLoopingAnimation);
-        //noinspection unchecked
-        mockOnStepFunction = mock(Function.class);
-        when(mockOnStepFunction.apply(any())).thenReturn(true);
-        //noinspection unchecked
-        mockCanStepFunction = mock(Function.class);
-        when(mockCanStepFunction.apply(any())).thenReturn(true);
-        //noinspection unchecked
-        mockHeightMovementPenaltyMitigationFunction =
-                (Function<Object[], Integer>) mock(Function.class);
-        when(mockHeightMovementPenaltyMitigationFunction.apply(any()))
+        lenient().when(mockOnStepFunction.apply(any())).thenReturn(true);
+        lenient().when(mockCanStepFunction.apply(any())).thenReturn(true);
+        lenient().when(mockHeightMovementPenaltyMitigationFunction.apply(any()))
                 .thenReturn(HEIGHT_MOVEMENT_PENALTY_MITIGATION);
         FUNCTIONS.put(ON_STEP_FUNCTION_ID, mockOnStepFunction);
         FUNCTIONS.put(CAN_STEP_FUNCTION_ID, mockCanStepFunction);
         FUNCTIONS.put(HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                 mockHeightMovementPenaltyMitigationFunction);
-
-        mockCharacter1 = mock(Character.class);
-        mockCharacter2 = mock(Character.class);
-
-        mockTile = mock(Tile.class);
 
         definition =
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
@@ -109,7 +97,7 @@ class GroundTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidArgs() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new GroundTypeFactory(null, FUNCTIONS::get, SPRITES::get,
                         GLOBAL_LOOPING_ANIMATIONS::get));
@@ -125,14 +113,14 @@ class GroundTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithSprite() {
+    public void testMakeWithSprite() {
         var definitionWithSprite =
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE});
 
-        var output = groundTypeFactory.make(definitionWithSprite);
+        var output = groundTypeFactory.apply(definitionWithSprite);
         output.onStep(mockCharacter1);
         output.canStep(mockCharacter2);
         var additionalMovementCost = output.additionalMovementCost();
@@ -140,7 +128,6 @@ class GroundTypeFactoryTests {
                 output.heightMovementPenaltyMitigation(mockTile, mockCharacter1, DIRECTION);
 
         assertNotNull(definitionWithSprite);
-        assertEquals(GroundType.class.getCanonicalName(), output.getInterfaceName());
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
         assertSame(mockSprite, output.imageAsset());
@@ -164,14 +151,14 @@ class GroundTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithLoopingAnimation() {
+    public void testMakeWithLoopingAnimation() {
         var definitionWithLoopingAnimation =
                 new GroundTypeDefinition(ID, NAME, 3, GLOBAL_LOOPING_ANIMATION_ID,
                         ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE});
 
-        var output = groundTypeFactory.make(definitionWithLoopingAnimation);
+        var output = groundTypeFactory.apply(definitionWithLoopingAnimation);
         output.onStep(mockCharacter1);
         output.canStep(mockCharacter2);
         var additionalMovementCost = output.additionalMovementCost();
@@ -179,7 +166,6 @@ class GroundTypeFactoryTests {
                 output.heightMovementPenaltyMitigation(mockTile, mockCharacter1, DIRECTION);
 
         assertNotNull(definitionWithLoopingAnimation);
-        assertEquals(GroundType.class.getCanonicalName(), output.getInterfaceName());
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
         assertSame(mockLoopingAnimation, output.imageAsset());
@@ -203,96 +189,96 @@ class GroundTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidArgs() {
+    public void testMakeWithInvalidArgs() {
         var invalidFunctionId = randomString();
 
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(null, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition("", NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, null, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, "", 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 0, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 2, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 4, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, null, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, "", ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, invalidFunctionId, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 3, invalidFunctionId, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, null, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, "", CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, invalidFunctionId,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID, null,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID, "",
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         invalidFunctionId, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID, BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS, null,
                         BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS, "",
                         BLOCKS_SIGHT, null)));
-        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> groundTypeFactory.apply(
                 new GroundTypeDefinition(ID, NAME, 1, SPRITE_ID, ON_STEP_FUNCTION_ID,
                         CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         invalidFunctionId, BLOCKS_SIGHT, null)));
     }
 
     @Test
-    void testSetName() {
+    public void testSetName() {
         var newName = randomString();
-        var output = groundTypeFactory.make(definition);
+        var output = groundTypeFactory.apply(definition);
 
         output.setName(newName);
 
@@ -301,32 +287,25 @@ class GroundTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidArgs() {
-        var output = groundTypeFactory.make(definition);
+    public void testSetNameWithInvalidArgs() {
+        var output = groundTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
     }
 
     @Test
-    void testStepFunctionsWithInvalidArgs() {
-        var output = groundTypeFactory.make(definition);
+    public void testStepFunctionsWithInvalidArgs() {
+        var output = groundTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.onStep(null));
         assertThrows(IllegalArgumentException.class, () -> output.canStep(null));
     }
 
     @Test
-    void testEscalationWithInvalidArgs() {
-        var output = groundTypeFactory.make(definition);
+    public void testEscalationWithInvalidArgs() {
+        var output = groundTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.escalation(null));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                GroundTypeDefinition.class.getCanonicalName() + "," +
-                GroundType.class.getCanonicalName() + ">", groundTypeFactory.getInterfaceName());
     }
 }

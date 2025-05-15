@@ -3,7 +3,6 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
 import soliloquy.specs.graphics.assets.ImageAsset;
@@ -12,13 +11,14 @@ import inaugural.soliloquy.ruleset.definitions.WallSegmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.WallSegmentType;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-class WallSegmentTypeFactoryTests {
+public class WallSegmentTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final int DIRECTION = randomIntInRange(1, 3);
@@ -34,7 +34,7 @@ class WallSegmentTypeFactoryTests {
     @Mock
     private GlobalLoopingAnimation mockGlobalLoopingAnimation;
 
-    private Factory<WallSegmentTypeDefinition, WallSegmentType> wallSegmentTypeFactory;
+    private Function<WallSegmentTypeDefinition, WallSegmentType> wallSegmentTypeFactory;
 
     @BeforeEach
     void setUp() {
@@ -61,7 +61,7 @@ class WallSegmentTypeFactoryTests {
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT);
 
-        var output = wallSegmentTypeFactory.make(definition);
+        var output = wallSegmentTypeFactory.apply(definition);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -70,7 +70,6 @@ class WallSegmentTypeFactoryTests {
         assertSame(mockSprite, output.imageAsset());
         assertEquals(BLOCKS_MOVEMENT, output.blocksMovement());
         assertEquals(BLOCKS_SIGHT, output.blocksSight());
-        assertEquals(WallSegmentType.class.getCanonicalName(), output.getInterfaceName());
     }
 
     @Test
@@ -79,7 +78,7 @@ class WallSegmentTypeFactoryTests {
                 ImageAsset.ImageAssetType.GLOBAL_LOOPING_ANIMATION, GLOBAL_LOOPING_ANIMATION_ID,
                 BLOCKS_MOVEMENT, BLOCKS_SIGHT);
 
-        var output = wallSegmentTypeFactory.make(definition);
+        var output = wallSegmentTypeFactory.apply(definition);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -88,48 +87,47 @@ class WallSegmentTypeFactoryTests {
         assertSame(mockGlobalLoopingAnimation, output.imageAsset());
         assertEquals(BLOCKS_MOVEMENT, output.blocksMovement());
         assertEquals(BLOCKS_SIGHT, output.blocksSight());
-        assertEquals(WallSegmentType.class.getCanonicalName(), output.getInterfaceName());
     }
 
     @Test
     void testMakeWithInvalidArgs() {
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(null, NAME, DIRECTION,
                         ImageAsset.ImageAssetType.SPRITE, SPRITE_ID, BLOCKS_MOVEMENT,
                         BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition("", NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, null, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, "", DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, 0, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, 4, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, null, SPRITE_ID, BLOCKS_MOVEMENT,
                         BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION,
                         ImageAsset.ImageAssetType.ANIMATION, SPRITE_ID, BLOCKS_MOVEMENT,
                         BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         null, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         "", BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         GLOBAL_LOOPING_ANIMATION_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
-        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> wallSegmentTypeFactory.apply(
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION,
                         ImageAsset.ImageAssetType.GLOBAL_LOOPING_ANIMATION, SPRITE_ID,
                         BLOCKS_MOVEMENT, BLOCKS_SIGHT)));
@@ -140,7 +138,7 @@ class WallSegmentTypeFactoryTests {
         var definition =
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT);
-        var output = wallSegmentTypeFactory.make(definition);
+        var output = wallSegmentTypeFactory.apply(definition);
         var newName = randomString();
 
         output.setName(newName);
@@ -153,17 +151,9 @@ class WallSegmentTypeFactoryTests {
         var definition =
                 new WallSegmentTypeDefinition(ID, NAME, DIRECTION, ImageAsset.ImageAssetType.SPRITE,
                         SPRITE_ID, BLOCKS_MOVEMENT, BLOCKS_SIGHT);
-        var wallSegmentType = wallSegmentTypeFactory.make(definition);
+        var wallSegmentType = wallSegmentTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> wallSegmentType.setName(null));
         assertThrows(IllegalArgumentException.class, () -> wallSegmentType.setName(""));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                        WallSegmentTypeDefinition.class.getCanonicalName() + "," +
-                        WallSegmentType.class.getCanonicalName() + ">",
-                wallSegmentTypeFactory.getInterfaceName());
     }
 }

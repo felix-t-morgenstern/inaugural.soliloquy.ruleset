@@ -5,7 +5,6 @@ import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinit
 import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.entities.Action;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
@@ -24,20 +23,20 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 
 public class StatusEffectTypeFactory implements
-        Factory<StatusEffectTypeDefinition, StatusEffectType> {
+        Function<StatusEffectTypeDefinition, StatusEffectType> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
     @SuppressWarnings("rawtypes") private final Function<String, Action> GET_ACTION;
     private final Function<String, StaticStatisticType> GET_STATIC_STAT_TYPE;
-    private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+    private final Function<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
-    private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+    private final Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     @SuppressWarnings("rawtypes")
     public StatusEffectTypeFactory(Function<String, Function> getFunction,
                                    Function<String, Action> getAction,
-                                   Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
-                                   Factory<RoundEndEffectsOnCharacterDefinition,
+                                   Function<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
+                                   Function<RoundEndEffectsOnCharacterDefinition,
                                            RoundEndEffectsOnCharacter>
                                            roundEndEffectsOnCharacterFactory,
                                    Function<String, StaticStatisticType> getStaticStatType) {
@@ -51,7 +50,7 @@ public class StatusEffectTypeFactory implements
     }
 
     @Override
-    public StatusEffectType make(StatusEffectTypeDefinition definition)
+    public StatusEffectType apply(StatusEffectTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -85,14 +84,14 @@ public class StatusEffectTypeFactory implements
                 getNonNullableAction(GET_ACTION, definition.alterValueActionId,
                         "definition.alterValueActionId");
 
-        var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
-        var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
-        var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+        var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnRoundEnd);
+        var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnStart);
+        var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnEnd);
 
         var staticStatType = GET_STATIC_STAT_TYPE.apply(definition.resistanceStatisticTypeId);
         if (staticStatType == null) {
             throw new IllegalArgumentException(
-                    "StatusEffectTypeFactory.make: definition.resistanceStatisticTypeId (" +
+                    "StatusEffectTypefactory.apply: definition.resistanceStatisticTypeId (" +
                             definition.resistanceStatisticTypeId +
                             ") does not correspond to a valid StaticStatisticType");
         }
@@ -171,18 +170,6 @@ public class StatusEffectTypeFactory implements
             public EffectsOnCharacter onTurnEnd() {
                 return onTurnEnd;
             }
-
-            @Override
-            public String getInterfaceName() {
-                return StatusEffectType.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                StatusEffectTypeDefinition.class.getCanonicalName() + "," +
-                StatusEffectType.class.getCanonicalName() + ">";
     }
 }

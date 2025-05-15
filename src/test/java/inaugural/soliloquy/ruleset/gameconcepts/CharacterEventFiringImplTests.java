@@ -4,9 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
-import soliloquy.specs.common.infrastructure.VariableCache;
+import soliloquy.specs.common.infrastructure.ImmutableMap;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterEvents;
 import soliloquy.specs.gamestate.entities.CharacterEvents.CharacterEvent;
@@ -16,10 +15,10 @@ import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring;
 
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.randomString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 
 @SuppressWarnings("ALL")
 @ExtendWith(MockitoExtension.class)
@@ -31,7 +30,7 @@ public class CharacterEventFiringImplTests {
     @Mock private CharacterEvent mockCharacterEvent2;
     @Mock private CharacterEvents mockCharacterEvents;
     @Mock private Character mockCharacter;
-    @Mock private VariableCache mockData;
+    @Mock private ImmutableMap<String, Object> mockData;
     @Mock private Ability mockAbility;
     private AbilitySource abilitySource;
 
@@ -84,11 +83,5 @@ public class CharacterEventFiringImplTests {
     public void testFireAbilityWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireAbility(null, abilitySource));
         assertThrows(IllegalArgumentException.class, () -> characterEventFiring.fireAbility(mockCharacter, null));
-    }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(CharacterEventFiring.class.getCanonicalName(),
-                characterEventFiring.getInterfaceName());
     }
 }

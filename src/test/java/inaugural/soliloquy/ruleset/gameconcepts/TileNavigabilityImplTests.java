@@ -20,11 +20,11 @@ import static inaugural.soliloquy.tools.collections.Collections.setOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate3d.addOffsets3d;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static soliloquy.specs.common.shared.Direction.*;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 import static soliloquy.specs.gamestate.entities.WallSegmentOrientation.*;
 
 @ExtendWith(MockitoExtension.class)

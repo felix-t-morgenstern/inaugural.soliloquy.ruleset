@@ -2,11 +2,10 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.persistence.TypeHandler;
-import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import inaugural.soliloquy.ruleset.definitions.ItemTypeDefinition;
@@ -16,15 +15,19 @@ import soliloquy.specs.ruleset.entities.abilities.ActiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.PassiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.ReactiveAbility;
 
+import java.util.Map;
 import java.util.function.Function;
 
-import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static inaugural.soliloquy.tools.collections.Collections.*;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
+import static soliloquy.specs.common.valueobjects.Vertex.vertexOf;
 
-class ItemTypeFactoryTests {
+@ExtendWith(MockitoExtension.class)
+public class ItemTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String PLURAL_NAME = randomString();
@@ -47,8 +50,7 @@ class ItemTypeFactoryTests {
                     new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                     new String[]{PASSIVE_ABILITY_ID});
 
-    @Mock private VariableCache mockVariableCache;
-    @Mock private TypeHandler<VariableCache> mockVariableCacheHandler;
+    @SuppressWarnings("rawtypes") @Mock private TypeHandler<Map> mockMapHandler;
     @Mock private EquipmentType mockEquipmentType;
     @Mock private Function<String, EquipmentType> mockGetEquipmentType;
     @Mock private ImageAssetSet mockImageAssetSet;
@@ -62,95 +64,68 @@ class ItemTypeFactoryTests {
     @Mock private PassiveAbility mockPassiveAbility;
     @Mock private Function<String, PassiveAbility> mockGetPassiveAbility;
 
-    private Factory<ItemTypeDefinition, ItemType> factory;
+    private Map<String, Object> data;
+
+    private Function<ItemTypeDefinition, ItemType> factory;
 
     @BeforeEach
-    void setUp() {
-        mockVariableCache = mock(VariableCache.class);
+    public void setUp() {
+        data = mapOf(pairOf(randomString(), randomInt()));
+        lenient().when(mockMapHandler.read(anyString())).thenReturn(data);
 
-        //noinspection unchecked
-        mockVariableCacheHandler = (TypeHandler<VariableCache>) mock(TypeHandler.class);
-        when(mockVariableCacheHandler.read(anyString())).thenReturn(mockVariableCache);
+        lenient().when(mockGetEquipmentType.apply(anyString())).thenReturn(mockEquipmentType);
 
-        mockEquipmentType = mock(EquipmentType.class);
+        lenient().when(mockGetImageAssetSet.apply(anyString())).thenReturn(mockImageAssetSet);
 
-        //noinspection unchecked
-        mockGetEquipmentType = (Function<String, EquipmentType>) mock( Function.class);
-        when(mockGetEquipmentType.apply(anyString())).thenReturn(mockEquipmentType);
+        lenient().when(mockGetDescriptionFunction.apply(anyString()))
+                .thenReturn(mockDescriptionFunction);
 
-        mockImageAssetSet = mock(ImageAssetSet.class);
+        lenient().when(mockGetActiveAbility.apply(anyString())).thenReturn(mockActiveAbility);
 
-        //noinspection unchecked
-        mockGetImageAssetSet = (Function<String, ImageAssetSet>) mock(Function.class);
-        when(mockGetImageAssetSet.apply(anyString())).thenReturn(mockImageAssetSet);
+        lenient().when(mockGetReactiveAbility.apply(anyString())).thenReturn(mockReactiveAbility);
 
-        //noinspection unchecked
-        mockDescriptionFunction = (Function<Character, String>) mock(Function.class);
+        lenient().when(mockGetPassiveAbility.apply(anyString())).thenReturn(mockPassiveAbility);
 
-        //noinspection unchecked
-        mockGetDescriptionFunction =
-                (Function<String, Function<Character, String>>) mock(
-                        Function.class);
-        when(mockGetDescriptionFunction.apply(anyString())).thenReturn(mockDescriptionFunction);
-
-        mockActiveAbility = mock(ActiveAbility.class);
-
-        //noinspection unchecked
-        mockGetActiveAbility = (Function<String, ActiveAbility>) mock(Function.class);
-        when(mockGetActiveAbility.apply(anyString())).thenReturn(mockActiveAbility);
-
-        mockReactiveAbility = mock(ReactiveAbility.class);
-
-        //noinspection unchecked
-        mockGetReactiveAbility = (Function<String, ReactiveAbility>) mock(Function.class);
-        when(mockGetReactiveAbility.apply(anyString())).thenReturn(mockReactiveAbility);
-
-        mockPassiveAbility = mock(PassiveAbility.class);
-
-        //noinspection unchecked
-        mockGetPassiveAbility = (Function<String, PassiveAbility>) mock(Function.class);
-        when(mockGetPassiveAbility.apply(anyString())).thenReturn(mockPassiveAbility);
-
-        factory = new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType,
+        factory = new ItemTypeFactory(mockMapHandler, mockGetEquipmentType,
                 mockGetImageAssetSet, mockGetDescriptionFunction, mockGetActiveAbility,
                 mockGetReactiveAbility, mockGetPassiveAbility);
     }
 
     @Test
-    void testConstructorWithInvalidArgs() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ItemTypeFactory(null, mockGetEquipmentType, mockGetImageAssetSet,
                         mockGetDescriptionFunction, mockGetActiveAbility, mockGetReactiveAbility,
                         mockGetPassiveAbility));
         assertThrows(IllegalArgumentException.class,
-                () -> new ItemTypeFactory(mockVariableCacheHandler, null, mockGetImageAssetSet,
+                () -> new ItemTypeFactory(mockMapHandler, null, mockGetImageAssetSet,
                         mockGetDescriptionFunction, mockGetActiveAbility, mockGetReactiveAbility,
                         mockGetPassiveAbility));
         assertThrows(IllegalArgumentException.class,
-                () -> new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType, null,
+                () -> new ItemTypeFactory(mockMapHandler, mockGetEquipmentType, null,
                         mockGetDescriptionFunction, mockGetActiveAbility, mockGetReactiveAbility,
                         mockGetPassiveAbility));
         assertThrows(IllegalArgumentException.class,
-                () -> new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType,
+                () -> new ItemTypeFactory(mockMapHandler, mockGetEquipmentType,
                         mockGetImageAssetSet, null, mockGetActiveAbility, mockGetReactiveAbility,
                         mockGetPassiveAbility));
         assertThrows(IllegalArgumentException.class,
-                () -> new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType,
+                () -> new ItemTypeFactory(mockMapHandler, mockGetEquipmentType,
                         mockGetImageAssetSet, mockGetDescriptionFunction, null,
                         mockGetReactiveAbility, mockGetPassiveAbility));
         assertThrows(IllegalArgumentException.class,
-                () -> new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType,
+                () -> new ItemTypeFactory(mockMapHandler, mockGetEquipmentType,
                         mockGetImageAssetSet, mockGetDescriptionFunction, mockGetActiveAbility,
                         null, mockGetPassiveAbility));
         assertThrows(IllegalArgumentException.class,
-                () -> new ItemTypeFactory(mockVariableCacheHandler, mockGetEquipmentType,
+                () -> new ItemTypeFactory(mockMapHandler, mockGetEquipmentType,
                         mockGetImageAssetSet, mockGetDescriptionFunction, mockGetActiveAbility,
                         mockGetReactiveAbility, null));
     }
 
     @Test
-    void testMake() {
-        var output = factory.make(DEFINITION);
+    public void testMake() {
+        var output = factory.apply(DEFINITION);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
@@ -158,10 +133,10 @@ class ItemTypeFactoryTests {
         assertEquals(PLURAL_NAME, output.getPluralName());
         assertSame(mockEquipmentType, output.equipmentType());
         assertSame(mockImageAssetSet, output.imageAssetSet());
-        assertEquals(Vertex.of(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
+        assertEquals(vertexOf(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
                 output.defaultTileOffset());
         assertSame(mockDescriptionFunction, output.descriptionFunction());
-        assertSame(mockVariableCache, output.traits());
+        assertEquals(immutable(data), output.traits());
         assertFalse(output.isStackable());
         assertThrows(UnsupportedOperationException.class, output::defaultNumberInStack);
         assertFalse(output.hasCharges());
@@ -169,18 +144,17 @@ class ItemTypeFactoryTests {
         assertEquals(listOf(mockActiveAbility), output.defaultActiveAbilities());
         assertEquals(listOf(mockReactiveAbility), output.defaultReactiveAbilities());
         assertEquals(listOf(mockPassiveAbility), output.defaultPassiveAbilities());
-        assertEquals(ItemType.class.getCanonicalName(), output.getInterfaceName());
         verify(mockGetEquipmentType).apply(EQUIPMENT_TYPE_ID);
         verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
         verify(mockGetDescriptionFunction).apply(DESCRIPTION_FUNCTION_ID);
-        verify(mockVariableCacheHandler).read(TRAITS);
+        verify(mockMapHandler).read(TRAITS);
         verify(mockGetActiveAbility).apply(ACTIVE_ABILITY_ID);
         verify(mockGetReactiveAbility).apply(REACTIVE_ABILITY_ID);
         verify(mockGetPassiveAbility).apply(PASSIVE_ABILITY_ID);
     }
 
     @Test
-    void testMakeStackable() {
+    public void testMakeStackable() {
         var stackableDefinition =
                 new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
@@ -188,7 +162,7 @@ class ItemTypeFactoryTests {
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID});
 
-        var output = factory.make(stackableDefinition);
+        var output = factory.apply(stackableDefinition);
 
         assertTrue(output.isStackable());
         assertEquals(DEFAULT_NUMBER_IN_STACK, output.defaultNumberInStack());
@@ -197,7 +171,7 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithCharges() {
+    public void testMakeWithCharges() {
         var definitionWithCharges =
                 new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
@@ -205,7 +179,7 @@ class ItemTypeFactoryTests {
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID});
 
-        var output = factory.make(definitionWithCharges);
+        var output = factory.apply(definitionWithCharges);
 
         assertTrue(output.hasCharges());
         assertEquals(DEFAULT_CHARGES, output.defaultCharges());
@@ -214,9 +188,9 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testSetAndGetName() {
+    public void testSetAndGetName() {
         var newName = randomString();
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         output.setName(newName);
 
@@ -224,17 +198,17 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+    public void testSetNameWithInvalidArgs() {
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
     }
 
     @Test
-    void testSetAndGetPluralName() {
+    public void testSetAndGetPluralName() {
         var newPluralName = randomString();
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         output.setPluralName(newPluralName);
 
@@ -242,15 +216,15 @@ class ItemTypeFactoryTests {
     }
 
     @Test
-    void testSetPluralNameWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+    public void testSetPluralNameWithInvalidArgs() {
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(""));
     }
 
     @Test
-    void testMakeWithInvalidArgs() {
+    public void testMakeWithInvalidArgs() {
         var invalidEquipmentTypeId = randomString();
         when(mockGetEquipmentType.apply(invalidEquipmentTypeId)).thenReturn(null);
         var invalidImageAssetSetId = randomString();
@@ -264,213 +238,206 @@ class ItemTypeFactoryTests {
         var invalidPassiveAbilityId = randomString();
         when(mockGetPassiveAbility.apply(invalidPassiveAbilityId)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> factory.make(null));
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(null));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(null, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(null, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition("", NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition("", NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, null, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, null, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, "", PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, "", PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, null, EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, null, EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, "", EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, "", EQUIPMENT_TYPE_ID, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, null, IMAGE_ASSET_SET_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, null, IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, "", IMAGE_ASSET_SET_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, "", IMAGE_ASSET_SET_ID,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, invalidEquipmentTypeId,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, invalidEquipmentTypeId,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, null,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, null,
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, "",
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID, "",
                         DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET,
                         DESCRIPTION_FUNCTION_ID, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         invalidImageAssetSetId, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, null, TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, "", TRAITS, false, null, false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, invalidDescriptionFunctionId, TRAITS, false,
                         null, false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, null, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, "", false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, true, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false,
                         DEFAULT_NUMBER_IN_STACK, false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, true,
                         randomIntWithInclusiveCeiling(0), false, null,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         true, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, DEFAULT_CHARGES, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         true, randomIntWithInclusiveCeiling(0), new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, true,
                         DEFAULT_NUMBER_IN_STACK, true, DEFAULT_CHARGES,
                         new String[]{ACTIVE_ABILITY_ID}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{null}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{""}, new String[]{REACTIVE_ABILITY_ID},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{invalidActiveAbilityId},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID}, new String[]{null},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID}, new String[]{""},
                         new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{invalidReactiveAbilityId}, new String[]{PASSIVE_ABILITY_ID})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{null})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{""})));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
+                .apply(new ItemTypeDefinition(ID, NAME, PLURAL_NAME, EQUIPMENT_TYPE_ID,
                         IMAGE_ASSET_SET_ID, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET, DESCRIPTION_FUNCTION_ID, TRAITS, false, null,
                         false, null, new String[]{ACTIVE_ABILITY_ID},
                         new String[]{REACTIVE_ABILITY_ID}, new String[]{invalidPassiveAbilityId})));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                ItemTypeDefinition.class.getCanonicalName() + "," +
-                ItemType.class.getCanonicalName() + ">", factory.getInterfaceName());
     }
 }

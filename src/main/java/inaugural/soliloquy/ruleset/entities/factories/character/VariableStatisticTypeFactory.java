@@ -3,7 +3,6 @@ package inaugural.soliloquy.ruleset.entities.factories.character;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.entities.Action;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
@@ -25,18 +24,18 @@ import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableAction;
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 /** @noinspection rawtypes */
 public class VariableStatisticTypeFactory implements
-        Factory<VariableStatisticTypeDefinition, VariableStatisticType> {
+        Function<VariableStatisticTypeDefinition, VariableStatisticType> {
     private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Function<String, Function> GET_FUNCTION;
     private final Function<String, Action> GET_ACTION;
-    private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+    private final Function<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
-    private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+    private final Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     public VariableStatisticTypeFactory(
@@ -44,8 +43,8 @@ public class VariableStatisticTypeFactory implements
             Function<String, ImageAssetSet> getImageAssetSet,
             Function<String, Function> getFunction,
             Function<String, Action> getAction,
-            Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
-            Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
+            Function<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
+            Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
         COLOR_SHIFT_PROVIDER_HANDLER =
                 Check.ifNull(colorShiftProviderHandler, "colorShiftProviderHandler");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
@@ -57,7 +56,7 @@ public class VariableStatisticTypeFactory implements
     }
 
     @Override
-    public VariableStatisticType make(VariableStatisticTypeDefinition definition)
+    public VariableStatisticType apply(VariableStatisticTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -71,7 +70,7 @@ public class VariableStatisticTypeFactory implements
         var imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "VariableStatisticTypeFactory.make: definition.imageAssetSetId does " +
+                    "VariableStatisticTypefactory.apply: definition.imageAssetSetId does " +
                             "not correspond to a valid ImageAssetSet");
         }
 
@@ -88,9 +87,9 @@ public class VariableStatisticTypeFactory implements
             colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
         }
 
-        var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
-        var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
-        var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+        var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnRoundEnd);
+        var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnStart);
+        var onTurnEnd = EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnEnd);
 
         return new VariableStatisticType() {
             @Override
@@ -150,11 +149,6 @@ public class VariableStatisticTypeFactory implements
             }
 
             @Override
-            public String getInterfaceName() {
-                return VariableStatisticType.class.getCanonicalName();
-            }
-
-            @Override
             public Pair<ImageAsset, Integer> getIcon(String iconType, Character character)
                     throws IllegalArgumentException {
                 return iconForCharacterFunction.apply(pairOf(iconType, character));
@@ -175,12 +169,5 @@ public class VariableStatisticTypeFactory implements
                 return onTurnEnd;
             }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                VariableStatisticTypeDefinition.class.getCanonicalName() + "," +
-                VariableStatisticType.class.getCanonicalName() + ">";
     }
 }

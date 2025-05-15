@@ -40,7 +40,7 @@ class ImageAssetRetrieval {
             }
             case ANIMATION -> throw new IllegalArgumentException(className + ".make: " +
                     "WallSegmentTypes cannot have an ImageAssetType of ANIMATION");
-            default -> throw new IllegalArgumentException("WallSegmentTypeFactory.make: " +
+            default -> throw new IllegalArgumentException("WallSegmentTypefactory.apply: " +
                     "unexpected ImageAssetType");
         }
 

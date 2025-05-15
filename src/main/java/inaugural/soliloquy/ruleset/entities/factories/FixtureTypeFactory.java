@@ -3,7 +3,6 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.ruleset.definitions.FixtureTypeDefinition;
 import inaugural.soliloquy.tools.Check;
 import inaugural.soliloquy.tools.collections.Collections;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
 import soliloquy.specs.common.valueobjects.Vertex;
@@ -20,8 +19,9 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static soliloquy.specs.common.valueobjects.Vertex.vertexOf;
 
-public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, FixtureType> {
+public class FixtureTypeFactory implements Function<FixtureTypeDefinition, FixtureType> {
     private final TypeHandler<ColorShift> COLOR_SHIFT_HANDLER;
     @SuppressWarnings("rawtypes")
     private final Function<String, Function> GET_FUNCTION;
@@ -37,7 +37,7 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
     }
 
     @Override
-    public FixtureType make(FixtureTypeDefinition definition)
+    public FixtureType apply(FixtureTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -96,18 +96,13 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
             }
 
             @Override
-            public String getInterfaceName() {
-                return FixtureType.class.getCanonicalName();
-            }
-
-            @Override
             public List<ColorShift> defaultColorShifts() {
                 return defaultColorShifts;
             }
 
             @Override
             public Vertex defaultTileOffset() {
-                return Vertex.of(definition.defaultXTileWidthOffset,
+                return vertexOf(definition.defaultXTileWidthOffset,
                         definition.defaultYTileHeightOffset);
             }
 
@@ -143,12 +138,5 @@ public class FixtureTypeFactory implements Factory<FixtureTypeDefinition, Fixtur
                         new Object[]{tile, character, direction});
             }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                FixtureTypeDefinition.class.getCanonicalName() + "," +
-                FixtureType.class.getCanonicalName() + ">";
     }
 }

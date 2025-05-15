@@ -2,15 +2,15 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.ruleset.definitions.EquipmentTypeDefinition;
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.function.Function;
 
-public class EquipmentTypeFactory implements Factory<EquipmentTypeDefinition, EquipmentType> {
+public class EquipmentTypeFactory implements Function<EquipmentTypeDefinition, EquipmentType> {
     @Override
-    public EquipmentType make(EquipmentTypeDefinition equipmentTypeDefinition)
+    public EquipmentType apply(EquipmentTypeDefinition equipmentTypeDefinition)
             throws IllegalArgumentException {
         Check.ifNull(equipmentTypeDefinition, "equipmentTypeDefinition");
 
@@ -57,18 +57,6 @@ public class EquipmentTypeFactory implements Factory<EquipmentTypeDefinition, Eq
             public void setName(String name) {
                 this.name = Check.ifNullOrEmpty(name, "name");
             }
-
-            @Override
-            public String getInterfaceName() {
-                return EquipmentType.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                EquipmentTypeDefinition.class.getCanonicalName() + "," +
-                EquipmentType.class.getCanonicalName() + ">";
     }
 }

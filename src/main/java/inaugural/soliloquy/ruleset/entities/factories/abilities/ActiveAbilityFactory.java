@@ -2,8 +2,6 @@ package inaugural.soliloquy.ruleset.entities.factories.abilities;
 
 import inaugural.soliloquy.ruleset.definitions.abilities.ActiveAbilityDefinition;
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Item;
@@ -12,30 +10,33 @@ import soliloquy.specs.ruleset.entities.abilities.ActiveAbility;
 import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 
-public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, ActiveAbility> {
+public class ActiveAbilityFactory implements Function<ActiveAbilityDefinition, ActiveAbility> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
     @SuppressWarnings("rawtypes") private final Function<String, Consumer> GET_CONSUMER;
-    private final TypeHandler<VariableCache> DATA_HANDLER;
+    /** @noinspection rawtypes */
+    private final TypeHandler<Map> MAP_HANDLER;
     private final CharacterEventFiring CHARACTER_EVENT_FIRING;
 
+    /** @noinspection rawtypes */
     public ActiveAbilityFactory(
             @SuppressWarnings("rawtypes") Function<String, Function> getFunction,
             @SuppressWarnings("rawtypes") Function<String, Consumer> getConsumer,
-            TypeHandler<VariableCache> dataHandler,
+            TypeHandler<Map> dataHandler,
             CharacterEventFiring characterEventFiring) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
         GET_CONSUMER = Check.ifNull(getConsumer, "getConsumer");
-        DATA_HANDLER = Check.ifNull(dataHandler, "dataHandler");
+        MAP_HANDLER = Check.ifNull(dataHandler, "dataHandler");
         CHARACTER_EVENT_FIRING = Check.ifNull(characterEventFiring, "characterEventFiring");
     }
 
     @Override
-    public ActiveAbility make(ActiveAbilityDefinition definition)
+    public ActiveAbility apply(ActiveAbilityDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
 
@@ -55,7 +56,7 @@ public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, Ac
         var useFunction = GET_CONSUMER.apply(definition.useFunctionId);
         if (useFunction == null) {
             throw new IllegalArgumentException(
-                    "ActiveAbilityFactory.make: definition.useFunctionId (" +
+                    "ActiveAbilityfactory.apply: definition.useFunctionId (" +
                             definition.useFunctionId + ") does not correspond to a valid function");
         }
 
@@ -63,14 +64,15 @@ public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, Ac
         for (var targetType : definition.targetTypes) {
             if (targetType == null) {
                 throw new IllegalArgumentException(
-                        "ActiveAbilityFactory.make: definition.targetTypes cannot contain any " +
+                        "ActiveAbilityfactory.apply: definition.targetTypes cannot contain any " +
                                 "null entries");
             }
         }
         var copiedTargetTypes =
                 Arrays.copyOf(definition.targetTypes, definition.targetTypes.length);
 
-        var data = DATA_HANDLER.read(Check.ifNullOrEmpty(definition.data, "definition.data"));
+        var data = MAP_HANDLER.<Map<String, Object>>read(
+                Check.ifNullOrEmpty(definition.data, "definition.data"));
 
         return new ActiveAbility() {
             private String name = definition.name;
@@ -123,21 +125,9 @@ public class ActiveAbilityFactory implements Factory<ActiveAbilityDefinition, Ac
             }
 
             @Override
-            public VariableCache data() throws IllegalStateException {
+            public Map<String, Object> data() throws IllegalStateException {
                 return data;
             }
-
-            @Override
-            public String getInterfaceName() {
-                return ActiveAbility.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                ActiveAbilityDefinition.class.getCanonicalName() + "," +
-                ActiveAbility.class.getCanonicalName() + ">";
     }
 }

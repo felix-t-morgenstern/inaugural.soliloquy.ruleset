@@ -22,8 +22,9 @@ import java.util.stream.Collectors;
 
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static java.util.Comparator.comparing;
+import static soliloquy.specs.common.valueobjects.Coordinate2d.coordinate2dOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 import static soliloquy.specs.gamestate.entities.WallSegmentOrientation.*;
 
 // This class contains a great deal of central logic to the ruleset. I can't think of a cleavage
@@ -137,7 +138,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             if (nextCursorInfo.crossingSegmentsOrientation != null) {
                 var blockingSegments = segmentsAtCursor.entrySet().stream()
                         .filter(e -> e.getKey() == nextCursorInfo.crossingSegmentsOrientation)
-                        .map(Map.Entry::getValue).toList().get(0).entrySet().stream().filter(e ->
+                        .map(Map.Entry::getValue).toList().getFirst().entrySet().stream().filter(e ->
                                 e.getKey().to2d().equals(nextCursorInfo.crossingSegmentsLoc2d) &&
                                         e.getValue().getType().blocksSight())
                         .map(Map.Entry::getValue).collect(Collectors.toSet());
@@ -176,7 +177,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             var rayExitX = cursor.X + rayXAdj;
             var segX = cursor.X + (isEast ? 1 : 0);
             return new NextCursorInfo(newCursor, rayEnterX, cursor.Y, rayExitX, cursor.Y, VERTICAL,
-                    Coordinate2d.of(segX, cursor.Y));
+                    coordinate2dOf(segX, cursor.Y));
         }
         else if (slopeIsVertical(slope)) {
             var rayYAdj = (isSouth ? HALF_INC : -HALF_INC);
@@ -185,7 +186,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             var rayExitY = cursor.Y + rayYAdj;
             var segY = cursor.Y + (isSouth ? 1 : 0);
             return new NextCursorInfo(addOffsets2d(cursor, 0, incY), cursor.X, rayEnterY,
-                    cursor.X, rayExitY, HORIZONTAL, Coordinate2d.of(cursor.X, segY));
+                    cursor.X, rayExitY, HORIZONTAL, coordinate2dOf(cursor.X, segY));
         }
         else if (slopeIsDiagonal(slope)) {
             var segX = cursor.X + (isEast ? 1 : 0);
@@ -197,7 +198,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             rayEnterY = rayComponentStartingAtOrigin(origin.Y, isSouth, rayEnterY);
             var rayExitY = cursor.Y + (isSouth ? HALF_INC : -HALF_INC);
             return new NextCursorInfo(addOffsets2d(cursor, incX, incY), rayEnterX, rayEnterY,
-                    rayExitX, rayExitY, CORNER, Coordinate2d.of(segX, segY));
+                    rayExitX, rayExitY, CORNER, coordinate2dOf(segX, segY));
         }
 
         // (If incY == 0, then slope is also 0)
@@ -287,7 +288,7 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         cursorEnterY = rayComponentStartingAtOrigin(origin.Y, isSouth, cursorEnterY);
 
         return new NextCursorInfo(nextCursor, cursorEnterX, cursorEnterY, cursorExitX, cursorExitY,
-                crossingOrientation, Coordinate2d.of(crossingSegX, crossingSegY));
+                crossingOrientation, coordinate2dOf(crossingSegX, crossingSegY));
     }
 
     private static class NextCursorInfo {
@@ -340,11 +341,6 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         return riseInXYZSpace / runInXYZSpace;
     }
 
-    @Override
-    public String getInterfaceName() {
-        return TileVisibilityRayCalculation.class.getCanonicalName();
-    }
-
     protected class BlockingSlopesInXYZSpace {
         // Each of the RANGES are top-down; i.e., item1 > item2
         private final ArrayList<Pair<Float, Float>> RANGES = new ArrayList<>();
@@ -380,8 +376,8 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             }
             // this is an adjustment, since segments are half a tile's distance away its center
             var segmentLocOnTileGrid = segmentLocOnTileGrid(orientation, segmentsLoc);
-            var segmentX = segmentLocOnTileGrid.item1();
-            var segmentY = segmentLocOnTileGrid.item2();
+            var segmentX = segmentLocOnTileGrid.FIRST;
+            var segmentY = segmentLocOnTileGrid.SECOND;
             var runInXYZSpace = runInXYZSpace(origin.X, segmentX, origin.Y, segmentY);
 
             var blockingZs = segments.stream().map(s -> s.location().Z);
@@ -422,8 +418,8 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             var upperBoundToPlace = upperBound;
             var lowerBoundToPlace = lowerBound;
             for (var i = 0; i < RANGES.size(); i++) {
-                var rangeUpperBound = RANGES.get(i).item1();
-                var rangeLowerBound = RANGES.get(i).item2();
+                var rangeUpperBound = RANGES.get(i).FIRST;
+                var rangeLowerBound = RANGES.get(i).SECOND;
 
                 if (valueIsInRange(upperBound, rangeUpperBound, rangeLowerBound) ||
                         valueIsInRange(lowerBound, rangeUpperBound, rangeLowerBound)) {
@@ -449,14 +445,14 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
         private boolean segmentIsVisible(Coordinate3d origin, WallSegmentOrientation orientation,
                                          Coordinate3d segmentLoc) {
             var segmentLocOnTileGrid = segmentLocOnTileGrid(orientation, segmentLoc.to2d());
-            var slope = slope3d(origin, segmentLocOnTileGrid.item1(), segmentLocOnTileGrid.item2(),
+            var slope = slope3d(origin, segmentLocOnTileGrid.FIRST, segmentLocOnTileGrid.SECOND,
                     viewBottomAdjustedZ(origin.Z, segmentLoc.Z));
             return !slopeIsBlocked(slope);
         }
 
         private boolean rayIsCompletelyBlocked() {
             return RANGES.stream().anyMatch(r ->
-                    r.item1() == Float.POSITIVE_INFINITY && r.item2() == Float.NEGATIVE_INFINITY);
+                    r.FIRST == Float.POSITIVE_INFINITY && r.SECOND == Float.NEGATIVE_INFINITY);
         }
 
         private Triplet<Integer, Integer, Float> viewBottomAdjustedLoc(int originZ,
@@ -484,8 +480,8 @@ public class TileVisibilityRayCalculationImpl implements TileVisibilityRayCalcul
             if (Float.isNaN(slope)) {
                 return false;
             }
-            return RANGES.stream().anyMatch(r -> r.item1() > slope &&
-                    r.item2() < slope);
+            return RANGES.stream().anyMatch(r -> r.FIRST > slope &&
+                    r.SECOND < slope);
         }
     }
 }

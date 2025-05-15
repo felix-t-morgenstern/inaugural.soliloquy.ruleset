@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
@@ -15,9 +14,9 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 @ExtendWith(MockitoExtension.class)
 public class ElementFactoryTests {
@@ -35,7 +34,7 @@ public class ElementFactoryTests {
     @Mock private StaticStatisticType mockResistanceStatType;
     private Function<String, StaticStatisticType> mockGetStaticStatType;
 
-    private Factory<ElementDefinition, Element> elementFactory;
+    private Function<ElementDefinition, Element> elementFactory;
 
     @BeforeEach
     public void setUp() {
@@ -58,7 +57,7 @@ public class ElementFactoryTests {
 
     @Test
     public void testMake() {
-        var element = elementFactory.make(
+        var element = elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, IMAGE_ASSET_SET_ID,
                         RESISTANCE_STAT_TYPE_ID));
 
@@ -68,7 +67,6 @@ public class ElementFactoryTests {
         assertEquals(DESCRIPTION, element.getDescription());
         assertSame(mockImageAssetSet, element.imageAssetSet());
         assertSame(mockResistanceStatType, element.resistanceStatisticType());
-        assertEquals(Element.class.getCanonicalName(), element.getInterfaceName());
         verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
         verify(mockGetStaticStatType).apply(RESISTANCE_STAT_TYPE_ID);
     }
@@ -76,41 +74,41 @@ public class ElementFactoryTests {
     @Test
     public void testMakeWithInvalidArgs() {
         var invalidId = randomString();
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(null, NAME, DESCRIPTION, IMAGE_ASSET_SET_ID,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition("", NAME, DESCRIPTION, IMAGE_ASSET_SET_ID,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, null, DESCRIPTION, IMAGE_ASSET_SET_ID,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, "", DESCRIPTION, IMAGE_ASSET_SET_ID,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, null, IMAGE_ASSET_SET_ID,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, "", IMAGE_ASSET_SET_ID, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, null, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, "", RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, invalidId, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, IMAGE_ASSET_SET_ID, null)));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, IMAGE_ASSET_SET_ID, "")));
-        assertThrows(IllegalArgumentException.class, () -> elementFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> elementFactory.apply(
                 new ElementDefinition(ID, NAME, DESCRIPTION, IMAGE_ASSET_SET_ID, invalidId)));
     }
 
     @Test
     public void testSetNameOnCreatedElement() {
-        var element = elementFactory.make(DEFINITION);
+        var element = elementFactory.apply(DEFINITION);
         var newName = randomString();
 
         element.setName(newName);
@@ -120,7 +118,7 @@ public class ElementFactoryTests {
 
     @Test
     public void testSetNameOnCreatedElementWithInvalidArgs() {
-        var element = elementFactory.make(DEFINITION);
+        var element = elementFactory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> element.setName(null));
         assertThrows(IllegalArgumentException.class, () -> element.setName(""));
@@ -128,7 +126,7 @@ public class ElementFactoryTests {
 
     @Test
     public void testSetDescriptionOnCreatedElement() {
-        var element = elementFactory.make(DEFINITION);
+        var element = elementFactory.apply(DEFINITION);
         var newDescription = randomString();
 
         element.setDescription(newDescription);
@@ -138,16 +136,9 @@ public class ElementFactoryTests {
 
     @Test
     public void testSetDescriptionOnCreatedElementWithInvalidArgs() {
-        var element = elementFactory.make(DEFINITION);
+        var element = elementFactory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> element.setDescription(null));
         assertThrows(IllegalArgumentException.class, () -> element.setDescription(""));
-    }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                ElementDefinition.class.getCanonicalName() + "," +
-                Element.class.getCanonicalName() + ">", elementFactory.getInterfaceName());
     }
 }

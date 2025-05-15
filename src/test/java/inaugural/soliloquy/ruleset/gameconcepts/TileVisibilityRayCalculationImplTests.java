@@ -26,10 +26,12 @@ import static inaugural.soliloquy.tools.collections.Collections.*;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate2d.addOffsets2d;
 import static inaugural.soliloquy.tools.valueobjects.Coordinate3d.addOffsets3d;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static soliloquy.specs.common.valueobjects.Coordinate2d.coordinate2dOf;
+import static soliloquy.specs.common.valueobjects.Coordinate3d.coordinate3dOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 import static soliloquy.specs.gamestate.entities.WallSegmentOrientation.*;
 import static soliloquy.specs.ruleset.gameconcepts.TileVisibilityCalculation.Result;
 
@@ -89,7 +91,7 @@ public class TileVisibilityRayCalculationImplTests {
                 var segLocX = segLoc.X + (movingEast ? 1 : 0);
                 var segLocY = segLoc.Y + (movingSouth ? 1 : 0);
                 mockSegment =
-                        makeMockSegment(orientation, Coordinate3d.of(segLocX, segLocY, Z), false);
+                        makeMockSegment(orientation, coordinate3dOf(segLocX, segLocY, Z), false);
             }
             var orientation = mockSegment.getType().orientation();
             var loc = mockSegment.location();
@@ -150,7 +152,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X + rayLength, origin.Y);
+        var destination = coordinate2dOf(origin.X + rayLength, origin.Y);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -158,7 +160,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X + i, origin.Y), i, result);
+            testTileHit(coordinate2dOf(origin.X + i, origin.Y), i, result);
         }
     }
 
@@ -167,7 +169,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X - rayLength, origin.Y);
+        var destination = coordinate2dOf(origin.X - rayLength, origin.Y);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -175,7 +177,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X - i, origin.Y), i, result);
+            testTileHit(coordinate2dOf(origin.X - i, origin.Y), i, result);
         }
     }
 
@@ -184,7 +186,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X, origin.Y + rayLength);
+        var destination = coordinate2dOf(origin.X, origin.Y + rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -192,7 +194,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X, origin.Y + i), i, result);
+            testTileHit(coordinate2dOf(origin.X, origin.Y + i), i, result);
         }
     }
 
@@ -201,7 +203,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X, origin.Y - rayLength);
+        var destination = coordinate2dOf(origin.X, origin.Y - rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -209,7 +211,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X, origin.Y - i), i, result);
+            testTileHit(coordinate2dOf(origin.X, origin.Y - i), i, result);
         }
     }
 
@@ -269,7 +271,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X + rayLength, origin.Y + rayLength);
+        var destination = coordinate2dOf(origin.X + rayLength, origin.Y + rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -277,7 +279,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X + i, origin.Y + i), i, result);
+            testTileHit(coordinate2dOf(origin.X + i, origin.Y + i), i, result);
         }
     }
 
@@ -389,7 +391,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X - rayLength, origin.Y - rayLength);
+        var destination = coordinate2dOf(origin.X - rayLength, origin.Y - rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -397,7 +399,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X - i, origin.Y - i), i, result);
+            testTileHit(coordinate2dOf(origin.X - i, origin.Y - i), i, result);
         }
     }
 
@@ -509,7 +511,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X + rayLength, origin.Y - rayLength);
+        var destination = coordinate2dOf(origin.X + rayLength, origin.Y - rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -517,7 +519,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X + i, origin.Y - i), i, result);
+            testTileHit(coordinate2dOf(origin.X + i, origin.Y - i), i, result);
         }
     }
 
@@ -629,7 +631,7 @@ public class TileVisibilityRayCalculationImplTests {
         var origin = randomCoordinate3dInNormalRangeAtZ();
         var rayLength = randomIntInRange(2, 10);
         var expectedCursorHits = rayLength + 1;
-        var destination = Coordinate2d.of(origin.X - rayLength, origin.Y + rayLength);
+        var destination = coordinate2dOf(origin.X - rayLength, origin.Y + rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -637,7 +639,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(expectedCursorHits, result.tiles().size());
         assertEquals(expectedCursorHits, segmentsReturned.size());
         for (var i = 0; i <= rayLength; i++) {
-            testTileHit(Coordinate2d.of(origin.X - i, origin.Y + i), i, result);
+            testTileHit(coordinate2dOf(origin.X - i, origin.Y + i), i, result);
         }
     }
 
@@ -707,7 +709,7 @@ public class TileVisibilityRayCalculationImplTests {
                 addOffsets3d(origin, blockingSegmentDist + 1, 0, 0), true);
         segmentGameZoneReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
         var expectedCursorHits = blockingSegmentDist + 1;
-        var destination = Coordinate2d.of(origin.X + rayLength, origin.Y);
+        var destination = coordinate2dOf(origin.X + rayLength, origin.Y);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -718,7 +720,7 @@ public class TileVisibilityRayCalculationImplTests {
                 result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
                         result.segments().get(VERTICAL).size());
         for (var i = 0; i < expectedCursorHits; i++) {
-            testTileHit(Coordinate2d.of(origin.X + i, origin.Y), i, result);
+            testTileHit(coordinate2dOf(origin.X + i, origin.Y), i, result);
         }
     }
 
@@ -733,7 +735,7 @@ public class TileVisibilityRayCalculationImplTests {
                 addOffsets3d(origin, -blockingSegmentDist, 0, 0), true);
         segmentGameZoneReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
         var expectedCursorHits = blockingSegmentDist + 1;
-        var destination = Coordinate2d.of(origin.X - rayLength, origin.Y);
+        var destination = coordinate2dOf(origin.X - rayLength, origin.Y);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -744,7 +746,7 @@ public class TileVisibilityRayCalculationImplTests {
                 result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
                         result.segments().get(VERTICAL).size());
         for (var i = 0; i < expectedCursorHits; i++) {
-            testTileHit(Coordinate2d.of(origin.X - i, origin.Y), i, result);
+            testTileHit(coordinate2dOf(origin.X - i, origin.Y), i, result);
         }
     }
 
@@ -759,7 +761,7 @@ public class TileVisibilityRayCalculationImplTests {
                 addOffsets3d(origin, 0, blockingSegmentDist + 1, 0), true);
         segmentGameZoneReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
         var expectedCursorHits = blockingSegmentDist + 1;
-        var destination = Coordinate2d.of(origin.X, origin.Y + rayLength);
+        var destination = coordinate2dOf(origin.X, origin.Y + rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -770,7 +772,7 @@ public class TileVisibilityRayCalculationImplTests {
                 result.segments().get(HORIZONTAL).size() + result.segments().get(CORNER).size() +
                         result.segments().get(VERTICAL).size());
         for (var i = 0; i < expectedCursorHits; i++) {
-            testTileHit(Coordinate2d.of(origin.X, origin.Y + i), i, result);
+            testTileHit(coordinate2dOf(origin.X, origin.Y + i), i, result);
         }
     }
 
@@ -785,7 +787,7 @@ public class TileVisibilityRayCalculationImplTests {
                 addOffsets3d(origin, 0, -blockingSegmentDist, 0), true);
         segmentGameZoneReturnOverrides.put(blockingSegmentDist, mockBlockingSegment);
         var expectedCursorHits = blockingSegmentDist + 1;
-        var destination = Coordinate2d.of(origin.X, origin.Y - rayLength);
+        var destination = coordinate2dOf(origin.X, origin.Y - rayLength);
 
         var result = rayCalculation.castRay(origin, destination);
 
@@ -794,7 +796,7 @@ public class TileVisibilityRayCalculationImplTests {
         assertEquals(3, result.segments().size());
         assertEquals(expectedCursorHits, totalSegmentsInResult(result));
         for (var i = 0; i < expectedCursorHits; i++) {
-            testTileHit(Coordinate2d.of(origin.X, origin.Y - i), i, result);
+            testTileHit(coordinate2dOf(origin.X, origin.Y - i), i, result);
         }
     }
 
@@ -885,7 +887,7 @@ public class TileVisibilityRayCalculationImplTests {
         var mockSegmentsAtOriginWithOffset =
                 populatedMap(makeMockSegment(VERTICAL, atOriginWithZOffsetLoc, false));
         var mockBlockedAdjacentLoc =
-                Coordinate3d.of(origin.X + 1, origin.Y, origin.Z + blockedAdjacentEntitiesZOffset);
+                coordinate3dOf(origin.X + 1, origin.Y, origin.Z + blockedAdjacentEntitiesZOffset);
         var mockAdjacentSegments =
                 populatedMap(makeMockSegment(VERTICAL, mockBlockedAdjacentLoc, false));
         reset(mockGameZone);
@@ -956,7 +958,7 @@ public class TileVisibilityRayCalculationImplTests {
     @Test
     public void testBlockingTileCastsShadowBlockingVisibilityBeneathItselfNortheastNoncardinal() {
         var elevatedZ = Z + 50;
-        var elevatedOrigin = Coordinate3d.of(0, 0, elevatedZ);//randomCoordinate3dInNormalRangeAtZ().to2d().to3d(Z + 50);
+        var elevatedOrigin = coordinate3dOf(0, 0, elevatedZ);//randomCoordinate3dInNormalRangeAtZ().to2d().to3d(Z + 50);
         var mockBlockingTiles = new Tile[5];
         mockBlockingTiles[0] = makeMockTile(addOffsets3d(elevatedOrigin, 0, 0, 0), true);
         mockBlockingTiles[1] = makeMockTile(addOffsets3d(elevatedOrigin, 1, 0, 0), true);
@@ -1004,7 +1006,7 @@ public class TileVisibilityRayCalculationImplTests {
         when(mockGameZone.segments(any())).thenReturn(mockSegments);
         when(mockGameZone.tiles(any())).thenReturn(setOf());
 
-        rayCalculation.castRay(origin, Coordinate2d.of(origin.X + 1, origin.Y));
+        rayCalculation.castRay(origin, coordinate2dOf(origin.X + 1, origin.Y));
 
         verify(mockGameZone, times(1)).tiles(any());
     }
@@ -1057,7 +1059,7 @@ public class TileVisibilityRayCalculationImplTests {
         verify(mockGameZone).tiles(expectedTarget);
         assertTrue(result.tiles().keySet().stream()
                 .anyMatch(loc -> loc.to2d().equals(expectedTarget)));
-        assertEquals(expectedTarget, tilesReturned.get(index).item1().to2d());
+        assertEquals(expectedTarget, tilesReturned.get(index).FIRST.to2d());
 
         verify(mockGameZone).segments(expectedTarget);
         var expectedOrientation = segmentsReturned.get(index).getValue0();
@@ -1117,16 +1119,10 @@ public class TileVisibilityRayCalculationImplTests {
     // rounding issues. This isn't an issue in practice, since no GameZone should need more than
     // 100,000,000 tiles, so this range should be adequate for testing.
     private Coordinate3d randomCoordinate3dInNormalRangeAtZ() {
-        return Coordinate3d.of(
+        return coordinate3dOf(
                 randomIntInRange(-10000, 10000),
                 randomIntInRange(-10000, 10000),
                 Z
         );
-    }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(TileVisibilityRayCalculation.class.getCanonicalName(),
-                rayCalculation.getInterfaceName());
     }
 }

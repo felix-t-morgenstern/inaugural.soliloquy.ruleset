@@ -4,8 +4,6 @@ import inaugural.soliloquy.ruleset.definitions.abilities.ReactiveAbilityDefiniti
 import inaugural.soliloquy.tools.testing.Mock.HandlerAndEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Item;
@@ -13,16 +11,18 @@ import soliloquy.specs.gamestate.entities.abilities.AbilitySource;
 import soliloquy.specs.ruleset.entities.abilities.ReactiveAbility;
 import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring.FiringResponse;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
+import static inaugural.soliloquy.tools.collections.Collections.immutable;
 import static inaugural.soliloquy.tools.random.Random.randomBoolean;
 import static inaugural.soliloquy.tools.random.Random.randomString;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockEntityAndHandler;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ReactiveAbilityFactoryTests {
+public class ReactiveAbilityFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String CHARACTER_DESCRIPTION_FUNCTION_ID = randomString();
@@ -41,10 +41,12 @@ class ReactiveAbilityFactoryTests {
                     FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                     REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN);
 
-    private final HandlerAndEntity<VariableCache> DATA_AND_HANDLER =
-            generateMockEntityAndHandler(VariableCache.class, DATA_WRITTEN);
-    private final TypeHandler<VariableCache> DATA_HANDLER = DATA_AND_HANDLER.handler;
-    private final VariableCache DATA = DATA_AND_HANDLER.entity;
+    @SuppressWarnings("rawtypes") private final HandlerAndEntity<Map> DATA_AND_HANDLER =
+            generateMockEntityAndHandler(Map.class, DATA_WRITTEN);
+    @SuppressWarnings("rawtypes")
+    private final TypeHandler<Map> MAP_HANDLER = DATA_AND_HANDLER.handler;
+    @SuppressWarnings("unchecked")
+    private final Map<String, Object> DATA = DATA_AND_HANDLER.entity;
 
     private Function<Character, String> mockCharacterDescription;
     private Function<Item, String> mockItemDescription;
@@ -55,19 +57,18 @@ class ReactiveAbilityFactoryTests {
 
     private Character mockCharacter;
     private AbilitySource mockAbilitySource;
-    private FiringResponse mockFiringResponse;
 
     private ReactiveAbility output;
 
     @SuppressWarnings("rawtypes") private Function<String, Function> mockGetFunction;
 
-    private Factory<ReactiveAbilityDefinition, ReactiveAbility> factory;
+    private Function<ReactiveAbilityDefinition, ReactiveAbility> factory;
 
     @BeforeEach
     void setUp() {
         mockCharacter = mock(Character.class);
         mockAbilitySource = mock(AbilitySource.class);
-        mockFiringResponse = mock(FiringResponse.class);
+        var mockFiringResponse = mock(FiringResponse.class);
 
         //noinspection unchecked
         mockCharacterDescription = (Function<Character, String>) mock(Function.class);
@@ -100,33 +101,32 @@ class ReactiveAbilityFactoryTests {
         when(mockGetFunction.apply(REACT_TO_EVENT_FUNCTION_ID)).thenReturn(mockReactToEvent);
         when(mockGetFunction.apply(REACT_TO_ABILITY_FUNCTION_ID)).thenReturn(mockReactToAbility);
 
-        factory = new ReactiveAbilityFactory(mockGetFunction, DATA_HANDLER);
+        factory = new ReactiveAbilityFactory(mockGetFunction, MAP_HANDLER);
     }
 
     @Test
     void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
-                () -> new ReactiveAbilityFactory(null, DATA_HANDLER));
+                () -> new ReactiveAbilityFactory(null, MAP_HANDLER));
         assertThrows(IllegalArgumentException.class,
                 () -> new ReactiveAbilityFactory(mockGetFunction, null));
     }
 
     @Test
     void testMake() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
         assertSame(DATA, output.data());
-        assertEquals(ReactiveAbility.class.getCanonicalName(), output.getInterfaceName());
         verify(mockGetFunction).apply(CHARACTER_DESCRIPTION_FUNCTION_ID);
         verify(mockGetFunction).apply(ITEM_DESCRIPTION_FUNCTION_ID);
         verify(mockGetFunction).apply(FIRES_AGAINST_ABILITY_FUNCTION_ID);
         verify(mockGetFunction).apply(FIRES_AGAINST_EVENT_FUNCTION_ID);
         verify(mockGetFunction).apply(REACT_TO_ABILITY_FUNCTION_ID);
         verify(mockGetFunction).apply(REACT_TO_EVENT_FUNCTION_ID);
-        verify(DATA_HANDLER).read(DATA_WRITTEN);
+        verify(MAP_HANDLER).read(DATA_WRITTEN);
     }
 
     @Test
@@ -134,115 +134,115 @@ class ReactiveAbilityFactoryTests {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> factory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(null, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition("", NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, null, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, "", CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, null, ITEM_DESCRIPTION_FUNCTION_ID,
                         FIRES_AGAINST_EVENT_FUNCTION_ID, FIRES_AGAINST_ABILITY_FUNCTION_ID,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, "", ITEM_DESCRIPTION_FUNCTION_ID,
                         FIRES_AGAINST_EVENT_FUNCTION_ID, FIRES_AGAINST_ABILITY_FUNCTION_ID,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, invalidFunctionId,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID, null,
                         FIRES_AGAINST_EVENT_FUNCTION_ID, FIRES_AGAINST_ABILITY_FUNCTION_ID,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID, "",
                         FIRES_AGAINST_EVENT_FUNCTION_ID, FIRES_AGAINST_ABILITY_FUNCTION_ID,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         invalidFunctionId, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, null, FIRES_AGAINST_ABILITY_FUNCTION_ID,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, "", FIRES_AGAINST_ABILITY_FUNCTION_ID,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, invalidFunctionId,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID, null,
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID, "",
                         REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         invalidFunctionId, REACT_TO_EVENT_FUNCTION_ID, REACT_TO_ABILITY_FUNCTION_ID,
                         DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, null, REACT_TO_ABILITY_FUNCTION_ID,
                         DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, "", REACT_TO_ABILITY_FUNCTION_ID,
                         DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, invalidFunctionId,
                         REACT_TO_ABILITY_FUNCTION_ID, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID, null,
                         DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID, "",
                         DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         invalidFunctionId, DATA_WRITTEN)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
                         REACT_TO_ABILITY_FUNCTION_ID, null)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new ReactiveAbilityDefinition(ID, NAME, CHARACTER_DESCRIPTION_FUNCTION_ID,
                         ITEM_DESCRIPTION_FUNCTION_ID, FIRES_AGAINST_EVENT_FUNCTION_ID,
                         FIRES_AGAINST_ABILITY_FUNCTION_ID, REACT_TO_EVENT_FUNCTION_ID,
@@ -251,7 +251,7 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testSetName() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
         var newName = randomString();
 
         output.setName(newName);
@@ -261,7 +261,7 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testSetNameWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -269,7 +269,7 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testDescriptionWithCharacterSource() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         var description = output.description(mockCharacter);
 
@@ -279,14 +279,14 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testDescriptionWithCharacterSourceWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Character) null));
     }
 
     @Test
     void testDescriptionWithItemSource() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
         var mockItem = mock(Item.class);
 
         var description = output.description(mockItem);
@@ -297,33 +297,33 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testDescriptionWithItemSourceWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Item) null));
     }
 
     @Test
     void testFiresAgainstEvent() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
-        var firesAgainstEvent = output.firesAgainstEvent(EVENT, DATA);
+        var firesAgainstEvent = output.firesAgainstEvent(EVENT, immutable(DATA));
 
         assertEquals(FIRES_AGAINST, firesAgainstEvent);
-        verify(mockFiresAgainstEvent).apply(eq(arrayOf(EVENT, DATA)));
+        verify(mockFiresAgainstEvent).apply(eq(arrayOf(EVENT, immutable(DATA))));
     }
 
     @Test
     void testFiresAgainstEventWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
-        assertThrows(IllegalArgumentException.class, () -> output.firesAgainstEvent(null, DATA));
-        assertThrows(IllegalArgumentException.class, () -> output.firesAgainstEvent("", DATA));
+        assertThrows(IllegalArgumentException.class, () -> output.firesAgainstEvent(null, immutable(DATA)));
+        assertThrows(IllegalArgumentException.class, () -> output.firesAgainstEvent("", immutable(DATA)));
         assertThrows(IllegalArgumentException.class, () -> output.firesAgainstEvent(EVENT, null));
     }
 
     @Test
     void testFiresAgainstAbility() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         var firesAgainstAbility = output.firesAgainstAbility(mockAbilitySource);
 
@@ -333,14 +333,14 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testFiresAgainstAbilityWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.firesAgainstAbility(null));
     }
 
     @Test
     void testReactToAbility() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         output.reactToAbility(mockCharacter, mockAbilitySource);
 
@@ -349,7 +349,7 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testReactToAbilityWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.reactToAbility(null, mockAbilitySource));
         assertThrows(IllegalArgumentException.class, () -> output.reactToAbility(mockCharacter, null));
@@ -357,27 +357,20 @@ class ReactiveAbilityFactoryTests {
 
     @Test
     void testReactToEvent() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
-        output.reactToEvent(mockCharacter, EVENT, DATA);
+        output.reactToEvent(mockCharacter, EVENT, immutable(DATA));
 
-        verify(mockReactToEvent).apply(arrayOf(mockCharacter, EVENT, DATA));
+        verify(mockReactToEvent).apply(arrayOf(mockCharacter, EVENT, immutable(DATA)));
     }
 
     @Test
     void testReactToEventWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
-        assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(null, EVENT, DATA));
-        assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(mockCharacter, null, DATA));
-        assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(mockCharacter, "", DATA));
+        assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(null, EVENT, immutable(DATA)));
+        assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(mockCharacter, null, immutable(DATA)));
+        assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(mockCharacter, "", immutable(DATA)));
         assertThrows(IllegalArgumentException.class, () -> output.reactToEvent(mockCharacter, EVENT, null));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                ReactiveAbilityDefinition.class.getCanonicalName() + "," +
-                ReactiveAbility.class.getCanonicalName() + ">", factory.getInterfaceName());
     }
 }

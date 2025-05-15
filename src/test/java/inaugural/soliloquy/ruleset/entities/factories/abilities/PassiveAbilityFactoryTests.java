@@ -4,13 +4,12 @@ import inaugural.soliloquy.ruleset.definitions.abilities.PassiveAbilityDefinitio
 import inaugural.soliloquy.tools.testing.Mock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Item;
 import soliloquy.specs.ruleset.entities.abilities.PassiveAbility;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.random.Random.randomString;
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class PassiveAbilityFactoryTests {
+public class PassiveAbilityFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String DATA_WRITTEN = randomString();
@@ -27,10 +26,12 @@ class PassiveAbilityFactoryTests {
     private final String ITEM_SOURCE_DESCRIPTION_FUNCTION_ID = randomString();
     private final String DESCRIPTION = randomString();
 
-    private final Mock.HandlerAndEntity<VariableCache> MOCK_DATA_AND_HANDLER =
-            generateMockEntityAndHandler(VariableCache.class, DATA_WRITTEN);
-    private final TypeHandler<VariableCache> MOCK_DATA_HANDLER = MOCK_DATA_AND_HANDLER.handler;
-    private final VariableCache MOCK_DATA = MOCK_DATA_AND_HANDLER.entity;
+    @SuppressWarnings("rawtypes") private final Mock.HandlerAndEntity<Map> MOCK_DATA_AND_HANDLER =
+            generateMockEntityAndHandler(Map.class, DATA_WRITTEN);
+    @SuppressWarnings("rawtypes")
+    private final TypeHandler<Map> MOCK_MAP_HANDLER = MOCK_DATA_AND_HANDLER.handler;
+    @SuppressWarnings("unchecked")
+    private final Map<String, Object> MOCK_DATA = MOCK_DATA_AND_HANDLER.entity;
 
     private Function<Character, String> mockCharacterSourceDescriptionFunction;
     private Function<Item, String> mockItemSourceDescriptionFunction;
@@ -40,7 +41,7 @@ class PassiveAbilityFactoryTests {
             new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN,
                     CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID, ITEM_SOURCE_DESCRIPTION_FUNCTION_ID);
 
-    private Factory<PassiveAbilityDefinition, PassiveAbility> factory;
+    private Function<PassiveAbilityDefinition, PassiveAbility> factory;
 
     @BeforeEach
     void setUp() {
@@ -59,29 +60,28 @@ class PassiveAbilityFactoryTests {
         when(mockGetFunction.apply(ITEM_SOURCE_DESCRIPTION_FUNCTION_ID))
                 .thenReturn(mockItemSourceDescriptionFunction);
 
-        factory = new PassiveAbilityFactory(mockGetFunction, MOCK_DATA_HANDLER);
+        factory = new PassiveAbilityFactory(mockGetFunction, MOCK_MAP_HANDLER);
     }
 
     @Test
     void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
-                () -> new PassiveAbilityFactory(null, MOCK_DATA_HANDLER));
+                () -> new PassiveAbilityFactory(null, MOCK_MAP_HANDLER));
         assertThrows(IllegalArgumentException.class,
                 () -> new PassiveAbilityFactory(mockGetFunction, null));
     }
 
     @Test
     void testMake() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertNotNull(output);
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
         assertSame(MOCK_DATA, output.data());
-        assertEquals(PassiveAbility.class.getCanonicalName(), output.getInterfaceName());
         verify(mockGetFunction).apply(CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID);
         verify(mockGetFunction).apply(ITEM_SOURCE_DESCRIPTION_FUNCTION_ID);
-        verify(MOCK_DATA_HANDLER).read(DATA_WRITTEN);
+        verify(MOCK_MAP_HANDLER).read(DATA_WRITTEN);
     }
 
     @Test
@@ -89,46 +89,46 @@ class PassiveAbilityFactoryTests {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> factory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(null, NAME, DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition("", NAME, DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, null, DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, "", DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, null,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, "", CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN, null,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN, "",
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN, invalidFunctionId,
                         ITEM_SOURCE_DESCRIPTION_FUNCTION_ID)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID, null)));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID, "")));
-        assertThrows(IllegalArgumentException.class, () -> factory.make(
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(
                 new PassiveAbilityDefinition(ID, NAME, DATA_WRITTEN,
                         CHARACTER_SOURCE_DESCRIPTION_FUNCTION_ID, invalidFunctionId)));
     }
@@ -136,7 +136,7 @@ class PassiveAbilityFactoryTests {
     @Test
     void testSetName() {
         var newName = randomString();
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         output.setName(newName);
 
@@ -145,7 +145,7 @@ class PassiveAbilityFactoryTests {
 
     @Test
     void testSetNameWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -154,7 +154,7 @@ class PassiveAbilityFactoryTests {
     @Test
     void testCharacterDescription() {
         var mockCharacter = mock(Character.class);
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         var description = output.description(mockCharacter);
 
@@ -164,7 +164,7 @@ class PassiveAbilityFactoryTests {
 
     @Test
     void testCharacterDescriptionWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Character) null));
     }
@@ -172,7 +172,7 @@ class PassiveAbilityFactoryTests {
     @Test
     void testItemDescription() {
         var mockItem = mock(Item.class);
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         var description = output.description(mockItem);
 
@@ -182,15 +182,8 @@ class PassiveAbilityFactoryTests {
 
     @Test
     void testItemDescriptionWithInvalidArgs() {
-        var output = factory.make(DEFINITION);
+        var output = factory.apply(DEFINITION);
 
         assertThrows(IllegalArgumentException.class, () -> output.description((Item) null));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                PassiveAbilityDefinition.class.getCanonicalName() + "," +
-                PassiveAbility.class.getCanonicalName(), factory.getInterfaceName());
     }
 }

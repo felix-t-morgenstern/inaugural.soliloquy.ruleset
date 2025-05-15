@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 public class StatisticCalculationImpl implements StatisticCalculation {
     private final MathContext MATH_CONTEXT;
@@ -140,14 +140,9 @@ public class StatisticCalculationImpl implements StatisticCalculation {
     }
 
     @Override
-    public String getInterfaceName() {
-        return StatisticCalculation.class.getCanonicalName();
-    }
-
-    @Override
     public int calculate(Character character, StatisticType statisticType)
             throws IllegalArgumentException, IllegalStateException {
-        return calculateWithDescriptors(character, statisticType).item1();
+        return calculateWithDescriptors(character, statisticType).FIRST;
     }
 
     @Override
@@ -183,7 +178,7 @@ public class StatisticCalculationImpl implements StatisticCalculation {
         }
         for (var itemDataComponent : typeDefinition.itemDataComponents) {
             character.equipmentSlots().representation().values().forEach(item -> {
-                Integer dataValue = item.data().getVariable(itemDataComponent.typeId);
+                Integer dataValue = (Integer) item.data().get(itemDataComponent.typeId);
                 if (dataValue != null) {
                     var itemDataModifier =
                             new BigDecimal(dataValue * itemDataComponent.multiplicationFactor)

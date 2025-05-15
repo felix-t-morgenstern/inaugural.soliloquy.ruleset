@@ -2,8 +2,7 @@ package inaugural.soliloquy.ruleset.entities.factories.abilities;
 
 import inaugural.soliloquy.ruleset.definitions.abilities.ReactiveAbilityDefinition;
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
+import soliloquy.specs.common.infrastructure.ImmutableMap;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Item;
@@ -12,24 +11,27 @@ import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.ruleset.entities.abilities.ReactiveAbility;
 import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring.FiringResponse;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 
-public class ReactiveAbilityFactory implements Factory<ReactiveAbilityDefinition, ReactiveAbility> {
+public class ReactiveAbilityFactory implements Function<ReactiveAbilityDefinition, ReactiveAbility> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
-    private final TypeHandler<VariableCache> DATA_HANDLER;
+    /** @noinspection rawtypes*/
+    private final TypeHandler<Map> MAP_HANDLER;
 
+    /** @noinspection rawtypes*/
     public ReactiveAbilityFactory(
             @SuppressWarnings("rawtypes") Function<String, Function> getFunction,
-            TypeHandler<VariableCache> dataHandler) {
+            TypeHandler<Map> dataHandler) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
-        DATA_HANDLER = Check.ifNull(dataHandler, "dataHandler");
+        MAP_HANDLER = Check.ifNull(dataHandler, "dataHandler");
     }
 
     @Override
-    public ReactiveAbility make(ReactiveAbilityDefinition definition)
+    public ReactiveAbility apply(ReactiveAbilityDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -55,7 +57,7 @@ public class ReactiveAbilityFactory implements Factory<ReactiveAbilityDefinition
         Function<Object[], FiringResponse> reactToAbilityFunction =
                 getNonNullableFunction(GET_FUNCTION, definition.reactToAbilityFunctionId,
                         "definition.reactToAbilityFunctionId");
-        var data = DATA_HANDLER.read(definition.data);
+        var data = MAP_HANDLER.<Map<String, Object>>read(definition.data);
 
         return new ReactiveAbility() {
             private String name = definition.name;
@@ -76,7 +78,7 @@ public class ReactiveAbilityFactory implements Factory<ReactiveAbilityDefinition
             }
 
             @Override
-            public VariableCache data() throws IllegalStateException {
+            public Map<String, Object> data() throws IllegalStateException {
                 return data;
             }
 
@@ -92,7 +94,7 @@ public class ReactiveAbilityFactory implements Factory<ReactiveAbilityDefinition
             }
 
             @Override
-            public boolean firesAgainstEvent(String event, VariableCache params)
+            public boolean firesAgainstEvent(String event, ImmutableMap<String, Object> params)
                     throws IllegalArgumentException {
                 return firesAgainstEventFunction.apply(arrayOf(
                         Check.ifNullOrEmpty(event, "event"),
@@ -116,25 +118,13 @@ public class ReactiveAbilityFactory implements Factory<ReactiveAbilityDefinition
 
             @Override
             public FiringResponse reactToEvent(Character target, String event,
-                                               VariableCache params)
+                                               ImmutableMap<String, Object> params)
                     throws IllegalArgumentException, EntityDeletedException {
                 return reactToEventFunction.apply(arrayOf(
                         Check.ifNull(target, "target"),
                         Check.ifNullOrEmpty(event, "event"),
                         Check.ifNull(params, "params")));
             }
-
-            @Override
-            public String getInterfaceName() {
-                return ReactiveAbility.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                ReactiveAbilityDefinition.class.getCanonicalName() + "," +
-                ReactiveAbility.class.getCanonicalName() + ">";
     }
 }

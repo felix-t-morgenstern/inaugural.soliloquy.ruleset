@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterEquipmentSlots;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
@@ -31,10 +30,10 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.*;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 @ExtendWith(MockitoExtension.class)
 public class StatisticCalculationImplTests {
@@ -86,7 +85,7 @@ public class StatisticCalculationImplTests {
     private Function<String, PassiveAbility> mockGetPassiveAbility;
     @Mock private StatusEffectType mockStatusEffectType;
     private Function<String, StatusEffectType> mockGetStatusEffectType;
-    @Mock private VariableCache mockItemData;
+    @Mock private Map<String, Object> mockItemData;
     @Mock private Item mockItem;
     @Mock private CharacterEquipmentSlots mockEquipmentSlots;
     @Mock private CharacterStatusEffects mockStatusEffects;
@@ -107,7 +106,7 @@ public class StatisticCalculationImplTests {
         mockGetStatusEffectType =
                 generateMockLookupFunction(pairOf(STATUS_EFFECT_TYPE_ID, mockStatusEffectType));
 
-        lenient().when(mockItemData.getVariable(ITEM_DATA_PARAM)).thenReturn(ITEM_DATA_PARAM_VALUE);
+        lenient().when(mockItemData.get(ITEM_DATA_PARAM)).thenReturn(ITEM_DATA_PARAM_VALUE);
 
         lenient().when(mockItem.data()).thenReturn(mockItemData);
 
@@ -447,7 +446,7 @@ public class StatisticCalculationImplTests {
         inOrder.verify(mockCharacter).equipmentSlots();
         inOrder.verify(mockEquipmentSlots).representation();
         inOrder.verify(mockItem).data();
-        inOrder.verify(mockItemData).getVariable(ITEM_DATA_PARAM);
+        inOrder.verify(mockItemData).get(ITEM_DATA_PARAM);
         inOrder.verify(mockGetStatusEffectType).apply(STATUS_EFFECT_TYPE_ID);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffects).getStatusEffectLevel(mockStatusEffectType);
@@ -456,7 +455,7 @@ public class StatisticCalculationImplTests {
         inOrder.verify(mockCharacter).equipmentSlots();
         inOrder.verify(mockEquipmentSlots).representation();
         inOrder.verify(mockItem).data();
-        inOrder.verify(mockItemData).getVariable(ITEM_DATA_PARAM);
+        inOrder.verify(mockItemData).get(ITEM_DATA_PARAM);
         inOrder.verify(mockGetStatusEffectType).apply(STATUS_EFFECT_TYPE_ID);
         inOrder.verify(mockCharacter).statusEffects();
         inOrder.verify(mockStatusEffects).getStatusEffectLevel(mockStatusEffectType);
@@ -472,11 +471,5 @@ public class StatisticCalculationImplTests {
         assertThrows(IllegalArgumentException.class,
                 () -> statisticCalculation.calculate(mockCharacter,
                         mockVariableStatTypeToCalculate));
-    }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(StatisticCalculation.class.getCanonicalName(),
-                statisticCalculation.getInterfaceName());
     }
 }

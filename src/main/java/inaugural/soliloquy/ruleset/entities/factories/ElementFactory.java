@@ -1,7 +1,6 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import inaugural.soliloquy.ruleset.definitions.ElementDefinition;
 import soliloquy.specs.ruleset.entities.Element;
@@ -9,7 +8,7 @@ import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
 
 import java.util.function.Function;
 
-public class ElementFactory implements Factory<ElementDefinition, Element> {
+public class ElementFactory implements Function<ElementDefinition, Element> {
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Function<String, StaticStatisticType> GET_STATIC_STAT_TYPE;
 
@@ -20,7 +19,7 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
     }
 
     @Override
-    public Element make(ElementDefinition definition) throws IllegalArgumentException {
+    public Element apply(ElementDefinition definition) throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
@@ -28,7 +27,7 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
         Check.ifNullOrEmpty(definition.imageAssetSetId, "definition.imageAssetSetId");
         var imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
-            throw new IllegalArgumentException("ElementFactory.make: definition.imageAssetSetId (" +
+            throw new IllegalArgumentException("Elementfactory.apply: definition.imageAssetSetId (" +
                     definition.imageAssetSetId + ") does not correspond to a valid ImageAssetSet");
         }
         Check.ifNullOrEmpty(definition.resistanceStatisticTypeId,
@@ -36,7 +35,7 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
         var staticStatType = GET_STATIC_STAT_TYPE.apply(definition.resistanceStatisticTypeId);
         if (staticStatType == null) {
             throw new IllegalArgumentException(
-                    "ElementFactory.make: definition.resistanceStatisticTypeId (" +
+                    "Elementfactory.apply: definition.resistanceStatisticTypeId (" +
                             definition.resistanceStatisticTypeId +
                             ") does not correspond to a valid StaticStatisticType");
         }
@@ -79,17 +78,6 @@ public class ElementFactory implements Factory<ElementDefinition, Element> {
             public ImageAssetSet imageAssetSet() {
                 return imageAssetSet;
             }
-
-            @Override
-            public String getInterfaceName() {
-                return Element.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" + ElementDefinition.class.getCanonicalName() +
-                "," + Element.class.getCanonicalName() + ">";
     }
 }

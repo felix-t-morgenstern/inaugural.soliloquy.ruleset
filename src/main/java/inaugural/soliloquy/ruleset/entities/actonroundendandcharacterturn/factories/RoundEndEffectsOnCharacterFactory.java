@@ -5,7 +5,6 @@ import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinit
 import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.common.entities.Action;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
@@ -20,20 +19,20 @@ import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 @SuppressWarnings("rawtypes")
 public class RoundEndEffectsOnCharacterFactory
-        implements Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> {
+        implements Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> {
     @SuppressWarnings("rawtypes") private final Function<String, Action> GET_ACTION;
-    private final Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude>
+    private final Function<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude>
             MAGNITUDE_FACTORY;
 
     public RoundEndEffectsOnCharacterFactory(
             @SuppressWarnings("rawtypes") Function<String, Action> getAction,
-            Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> magnitudeFactory) {
+            Function<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> magnitudeFactory) {
         GET_ACTION = Check.ifNull(getAction, "getAction");
         MAGNITUDE_FACTORY = Check.ifNull(magnitudeFactory, "magnitudeFactory");
     }
 
     @Override
-    public RoundEndEffectsOnCharacter make(RoundEndEffectsOnCharacterDefinition definition)
+    public RoundEndEffectsOnCharacter apply(RoundEndEffectsOnCharacterDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNull(definition.magnitudeForStatisticDefinitions,
@@ -76,7 +75,7 @@ public class RoundEndEffectsOnCharacterFactory
                     magnitudes = listOf();
                     for (EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition definition
                             : MAGNITUDE_DEFINITIONS) {
-                        magnitudes.add(MAGNITUDE_FACTORY.make(definition.magnitudeDefinition));
+                        magnitudes.add(MAGNITUDE_FACTORY.apply(definition.magnitudeDefinition));
                     }
                 }
                 return listOf(magnitudes);
@@ -113,8 +112,8 @@ public class RoundEndEffectsOnCharacterFactory
                 Check.ifNull(list, "list");
                 for (var pair : list) {
                     Check.ifNull(pair, "pair within list");
-                    Check.ifNull(pair.item1(), "magnitudes within pair within list");
-                    Check.ifNull(pair.item2(), "character within pair within list");
+                    Check.ifNull(pair.FIRST, "magnitudes within pair within list");
+                    Check.ifNull(pair.SECOND, "character within pair within list");
                 }
                 if (accompanyAllEffectsAction == null) {
                     return;
@@ -122,12 +121,5 @@ public class RoundEndEffectsOnCharacterFactory
                 accompanyAllEffectsAction.run(arrayOf(list, advancingRounds));
             }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                RoundEndEffectsOnCharacterDefinition.class.getCanonicalName() + "," +
-                RoundEndEffectsOnCharacter.class.getCanonicalName() + ">";
     }
 }

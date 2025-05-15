@@ -2,30 +2,31 @@ package inaugural.soliloquy.ruleset.entities.factories.abilities;
 
 import inaugural.soliloquy.ruleset.definitions.abilities.PassiveAbilityDefinition;
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Item;
 import soliloquy.specs.ruleset.entities.abilities.PassiveAbility;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 
-public class PassiveAbilityFactory implements Factory<PassiveAbilityDefinition, PassiveAbility> {
+public class PassiveAbilityFactory implements Function<PassiveAbilityDefinition, PassiveAbility> {
     @SuppressWarnings("rawtypes") private final Function<String, Function> GET_FUNCTION;
-    private final TypeHandler<VariableCache> DATA_HANDLER;
+    /** @noinspection rawtypes */
+    private final TypeHandler<Map> MAP_HANDLER;
 
+    /** @noinspection rawtypes */
     public PassiveAbilityFactory(
             @SuppressWarnings("rawtypes") Function<String, Function> getFunction,
-            TypeHandler<VariableCache> dataHandler) {
+            TypeHandler<Map> dataHandler) {
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
-        DATA_HANDLER = Check.ifNull(dataHandler, "dataHandler");
+        MAP_HANDLER = Check.ifNull(dataHandler, "dataHandler");
     }
 
     @Override
-    public PassiveAbility make(PassiveAbilityDefinition definition)
+    public PassiveAbility apply(PassiveAbilityDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
 
@@ -41,7 +42,8 @@ public class PassiveAbilityFactory implements Factory<PassiveAbilityDefinition, 
                 getNonNullableFunction(GET_FUNCTION, definition.itemSourceDescriptionFunctionId,
                         "definition.itemSourceDescriptionFunctionId");
 
-        var data = DATA_HANDLER.read(Check.ifNullOrEmpty(definition.data, "definition.data"));
+        var data = MAP_HANDLER.<Map<String, Object>>read(
+                Check.ifNullOrEmpty(definition.data, "definition.data"));
 
         return new PassiveAbility() {
             private String name = definition.name;
@@ -73,21 +75,9 @@ public class PassiveAbilityFactory implements Factory<PassiveAbilityDefinition, 
             }
 
             @Override
-            public VariableCache data() throws IllegalStateException {
+            public Map<String, Object> data() throws IllegalStateException {
                 return data;
             }
-
-            @Override
-            public String getInterfaceName() {
-                return PassiveAbility.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                PassiveAbilityDefinition.class.getCanonicalName() + "," +
-                PassiveAbility.class.getCanonicalName();
     }
 }

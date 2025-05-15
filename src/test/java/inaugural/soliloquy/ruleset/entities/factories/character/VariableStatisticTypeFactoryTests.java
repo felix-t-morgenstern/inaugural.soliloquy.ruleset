@@ -5,9 +5,10 @@ import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.entities.Action;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
@@ -25,13 +26,14 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
-class VariableStatisticTypeFactoryTests {
+@ExtendWith(MockitoExtension.class)
+public class VariableStatisticTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final String PLURAL_NAME = randomString();
@@ -61,75 +63,37 @@ class VariableStatisticTypeFactoryTests {
     @Mock private RoundEndEffectsOnCharacter mockRoundEndEffect;
     @Mock private EffectsOnCharacter mockTurnStartEffect;
     @Mock private EffectsOnCharacter mockTurnEndEffect;
-    @Mock private Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+    @Mock private Function<EffectsOnCharacterDefinition, EffectsOnCharacter>
             mockEffectsOnCharacterFactory;
-    @Mock private Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+    @Mock private Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             mockRoundEndEffectsOnCharacterFactory;
 
     private VariableStatisticTypeDefinition definition;
 
-    private Factory<VariableStatisticTypeDefinition, VariableStatisticType>
+    private Function<VariableStatisticTypeDefinition, VariableStatisticType>
             factory;
 
     @BeforeEach
-    void setUp() {
-        mockImageAssetSet = mock(ImageAssetSet.class);
+    public void setUp() {
+        lenient().when(mockGetImageAssetSet.apply(anyString())).thenReturn(mockImageAssetSet);
 
-        //noinspection unchecked
-        mockGetImageAssetSet = (Function<String, ImageAssetSet>) mock(Function.class);
-        when(mockGetImageAssetSet.apply(anyString())).thenReturn(mockImageAssetSet);
+        lenient().when(mockColorShiftProviderHandler.read(anyString())).thenReturn(mockColorShiftProvider);
 
-        //noinspection unchecked
-        mockColorShiftProvider = (ProviderAtTime<ColorShift>) mock(ProviderAtTime.class);
+        lenient().when(mockIconForCharacterFunction.apply(any())).thenReturn(mockIconForCharacter);
 
-        //noinspection unchecked
-        mockColorShiftProviderHandler =
-                (TypeHandler<ProviderAtTime<ColorShift>>) mock(TypeHandler.class);
-        when(mockColorShiftProviderHandler.read(anyString())).thenReturn(mockColorShiftProvider);
-
-        //noinspection unchecked
-        mockIconForCharacter = (Pair<ImageAsset, Integer>) mock(Pair.class);
-
-        //noinspection unchecked
-        mockIconForCharacterFunction =
-                (Function<Pair<String, Character>, Pair<ImageAsset, Integer>>) mock(Function.class);
-        when(mockIconForCharacterFunction.apply(any())).thenReturn(mockIconForCharacter);
-
-        //noinspection unchecked,rawtypes
-        mockGetFunction = (Function<String, Function>) mock(
-                Function.class);
-        when(mockGetFunction.apply(anyString()))
+        lenient().when(mockGetFunction.apply(anyString()))
                 .thenReturn(mockIconForCharacterFunction);
 
-        //noinspection unchecked
-        mockAlterAction = (Action<Object[]>) mock(Action.class);
-
-        //noinspection unchecked,rawtypes
-        mockGetAction = (Function<String, Action>) mock(Function.class);
-        when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
-
-        mockTurnStartEffectDefinition = mock(EffectsOnCharacterDefinition.class);
-        mockTurnEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
-
-        mockTurnStartEffect = mock(EffectsOnCharacter.class);
-        mockTurnEndEffect = mock(EffectsOnCharacter.class);
-
-        //noinspection unchecked
-        mockEffectsOnCharacterFactory =
-                (Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>) mock(Factory.class);
-        when(mockEffectsOnCharacterFactory.make(mockTurnStartEffectDefinition))
+        lenient().when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
+        lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
-        when(mockEffectsOnCharacterFactory.make(mockTurnEndEffectDefinition))
+        lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnEndEffectDefinition))
                 .thenReturn(mockTurnEndEffect);
 
         mockRoundEndEffectDefinition = mock(RoundEndEffectsOnCharacterDefinition.class);
         mockRoundEndEffect = mock(RoundEndEffectsOnCharacter.class);
 
-        //noinspection unchecked
-        mockRoundEndEffectsOnCharacterFactory =
-                (Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>) mock(
-                        Factory.class);
-        when(mockRoundEndEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
+        lenient().when(mockRoundEndEffectsOnCharacterFactory.apply(mockRoundEndEffectDefinition))
                 .thenReturn(mockRoundEndEffect);
 
         definition =
@@ -145,7 +109,7 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidArgs() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new VariableStatisticTypeFactory(null, mockGetImageAssetSet,
                         mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
@@ -169,11 +133,11 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testMake() {
+    public void testMake() {
         var mockCharacter = mock(Character.class);
         var amount = randomInt();
 
-        var output = factory.make(definition);
+        var output = factory.apply(definition);
         output.alter(mockCharacter, amount);
 
         assertNotNull(output);
@@ -183,23 +147,21 @@ class VariableStatisticTypeFactoryTests {
         assertEquals(DESCRIPTION, output.getDescription());
         assertSame(mockImageAssetSet, output.imageAssetSet());
         assertEquals(listOf(mockColorShiftProvider), output.colorShiftProviders());
-        assertEquals(VariableStatisticType.class.getCanonicalName(),
-                output.getInterfaceName());
         verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
         verify(mockColorShiftProviderHandler).read(WRITTEN_COLOR_SHIFT_PROVIDER);
         verify(mockGetFunction).apply(ICON_FOR_CHARACTER_FUNCTION_ID);
         verify(mockGetAction).apply(ALTER_ACTION_ID);
         verify(mockAlterAction).run(eq(arrayOf(mockCharacter, amount, output)));
         assertSame(mockRoundEndEffect, output.onRoundEnd());
-        verify(mockRoundEndEffectsOnCharacterFactory).make(mockRoundEndEffectDefinition);
+        verify(mockRoundEndEffectsOnCharacterFactory).apply(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
-        verify(mockEffectsOnCharacterFactory).make(mockTurnStartEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).apply(mockTurnStartEffectDefinition);
         assertSame(mockTurnEndEffect, output.onTurnEnd());
-        verify(mockEffectsOnCharacterFactory).make(mockTurnEndEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).apply(mockTurnEndEffectDefinition);
     }
 
     @Test
-    void testMakeWithInvalidArgs() {
+    public void testMakeWithInvalidArgs() {
         var invalidImageAssetSetId = randomString();
         when(mockGetImageAssetSet.apply(invalidImageAssetSetId)).thenReturn(null);
         var invalidFunctionId = randomString();
@@ -207,117 +169,117 @@ class VariableStatisticTypeFactoryTests {
         var invalidActionId = randomString();
         when(mockGetAction.apply(invalidActionId)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> factory.make(null));
+        assertThrows(IllegalArgumentException.class, () -> factory.apply(null));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(null, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(null, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition("", NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition("", NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, null, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, null, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, "", PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, "", PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, null, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, null, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, "", DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, "", DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION, null,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION, null,
                         arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), ICON_FOR_CHARACTER_FUNCTION_ID,
                         ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION, "",
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION, "",
                         arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), ICON_FOR_CHARACTER_FUNCTION_ID,
                         ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         invalidImageAssetSetId, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), null,
                         ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER), "",
                         ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         invalidFunctionId, ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, null, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, "", mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, invalidActionId,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID, null,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, null, mockTurnEndEffectDefinition)));
         assertThrows(IllegalArgumentException.class, () -> factory
-                .make(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
+                .apply(new VariableStatisticTypeDefinition(ID, NAME, PLURAL_NAME, DESCRIPTION,
                         IMAGE_ASSET_SET_ID, arrayOf(WRITTEN_COLOR_SHIFT_PROVIDER),
                         ICON_FOR_CHARACTER_FUNCTION_ID, ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition, null)));
     }
 
     @Test
-    void testAlterWithInvalidArgs() {
-        var output = factory.make(definition);
+    public void testAlterWithInvalidArgs() {
+        var output = factory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.alter(null, randomInt()));
     }
 
     @Test
-    void testSetName() {
-        var output = factory.make(definition);
+    public void testSetName() {
+        var output = factory.apply(definition);
         var newName = randomString();
 
         output.setName(newName);
@@ -326,16 +288,16 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidArgs() {
-        var output = factory.make(definition);
+    public void testSetNameWithInvalidArgs() {
+        var output = factory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
     }
 
     @Test
-    void testSetPluralName() {
-        var output = factory.make(definition);
+    public void testSetPluralName() {
+        var output = factory.apply(definition);
         var newPluralName = randomString();
 
         output.setPluralName(newPluralName);
@@ -344,16 +306,16 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testSetPluralNameWithInvalidArgs() {
-        var output = factory.make(definition);
+    public void testSetPluralNameWithInvalidArgs() {
+        var output = factory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setPluralName(""));
     }
 
     @Test
-    void testSetDescription() {
-        var output = factory.make(definition);
+    public void testSetDescription() {
+        var output = factory.apply(definition);
         var newDescription = randomString();
 
         output.setDescription(newDescription);
@@ -362,22 +324,14 @@ class VariableStatisticTypeFactoryTests {
     }
 
     @Test
-    void testGetIcon() {
+    public void testGetIcon() {
         var iconType = randomString();
         var character = mock(Character.class);
-        var output = factory.make(definition);
+        var output = factory.apply(definition);
 
         Pair<ImageAsset, Integer> iconForCharacter = output.getIcon(iconType, character);
 
         assertSame(mockIconForCharacter, iconForCharacter);
         verify(mockIconForCharacterFunction).apply(pairOf(iconType, character));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                        VariableStatisticTypeDefinition.class.getCanonicalName() + "," +
-                        VariableStatisticType.class.getCanonicalName() + ">",
-                factory.getInterfaceName());
     }
 }

@@ -26,9 +26,4 @@ public class DamageResistanceCalculationImpl implements DamageResistanceCalculat
                 STAT_CALCULATION.calculate(character, element.resistanceStatisticType());
         return (int) (baseAmount * ((100f - calculatedResistStat) / 100f));
     }
-
-    @Override
-    public String getInterfaceName() {
-        return DamageResistanceCalculation.class.getCanonicalName();
-    }
 }

@@ -4,7 +4,6 @@ import inaugural.soliloquy.ruleset.definitions.StaticStatisticTypeDefinition;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.graphics.assets.ImageAssetSet;
 import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
@@ -19,19 +18,19 @@ import java.util.function.Function;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 public class StaticStatisticTypeFactory implements
-        Factory<StaticStatisticTypeDefinition, StaticStatisticType> {
+        Function<StaticStatisticTypeDefinition, StaticStatisticType> {
     private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
-    private final Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+    private final Function<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
-    private final Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+    private final Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     public StaticStatisticTypeFactory(
             TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
             Function<String, ImageAssetSet> getImageAssetSet,
-            Factory<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
-            Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
+            Function<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
+            Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
         COLOR_SHIFT_PROVIDER_HANDLER =
                 Check.ifNull(colorShiftProviderHandler, "colorShiftProviderHandler");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
@@ -42,7 +41,7 @@ public class StaticStatisticTypeFactory implements
     }
 
     @Override
-    public StaticStatisticType make(StaticStatisticTypeDefinition definition)
+    public StaticStatisticType apply(StaticStatisticTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -55,7 +54,7 @@ public class StaticStatisticTypeFactory implements
         ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "StaticStatisticTypeFactory.make: definition.imageAssetSetId does " +
+                    "StaticStatisticTypefactory.apply: definition.imageAssetSetId does " +
                             "not correspond to a valid ImageAssetSet");
         }
 
@@ -65,11 +64,11 @@ public class StaticStatisticTypeFactory implements
         }
 
         RoundEndEffectsOnCharacter onRoundEnd =
-                ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnRoundEnd);
+                ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnRoundEnd);
         EffectsOnCharacter onTurnStart =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnStart);
+                EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnStart);
         EffectsOnCharacter onTurnEnd =
-                EFFECTS_ON_CHARACTER_FACTORY.make(definition.effectsOnTurnEnd);
+                EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnEnd);
 
         return new StaticStatisticType() {
             private String name = definition.name;
@@ -124,18 +123,6 @@ public class StaticStatisticTypeFactory implements
             public EffectsOnCharacter onTurnEnd() {
                 return onTurnEnd;
             }
-
-            @Override
-            public String getInterfaceName() {
-                return StaticStatisticType.class.getCanonicalName();
-            }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                StaticStatisticTypeDefinition.class.getCanonicalName() + "," +
-                StaticStatisticType.class.getCanonicalName() + ">";
     }
 }

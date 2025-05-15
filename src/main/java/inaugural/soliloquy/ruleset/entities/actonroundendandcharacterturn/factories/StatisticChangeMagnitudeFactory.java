@@ -1,9 +1,8 @@
 package inaugural.soliloquy.ruleset.entities.actonroundendandcharacterturn.factories;
 
-import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.valueobjects.Pair;
 import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
+import inaugural.soliloquy.tools.Check;
+import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude.AmountType;
@@ -12,11 +11,11 @@ import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 
 import java.util.function.Function;
 
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 @SuppressWarnings("rawtypes")
 public class StatisticChangeMagnitudeFactory
-        implements Factory<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> {
+        implements Function<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude> {
     private final Function<String, VariableStatisticType> GET_VARIABLE_STAT_TYPE;
     private final Function<String, Element> GET_ELEMENT;
 
@@ -28,7 +27,7 @@ public class StatisticChangeMagnitudeFactory
     }
 
     @Override
-    public StatisticChangeMagnitude make(StatisticChangeMagnitudeDefinition definition)
+    public StatisticChangeMagnitude apply(StatisticChangeMagnitudeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNull(definition.amountType, "definition.amountType");
@@ -48,7 +47,7 @@ public class StatisticChangeMagnitudeFactory
         }
         if (element == null) {
             throw new IllegalArgumentException(
-                    "StatisticChangeMagnitudeFactory.make: elementId (" + definition.elementId +
+                    "StatisticChangeMagnitudefactory.apply: elementId (" + definition.elementId +
                             ") does not correspond to a valid Element");
         }
 
@@ -70,7 +69,7 @@ public class StatisticChangeMagnitudeFactory
         }
         if (array.length != 2) {
             throw new IllegalArgumentException(
-                    "StatisticChangeMagnitudeFactory.make: " + paramName +
+                    "StatisticChangeMagnitudefactory.apply: " + paramName +
                             " must have length of 2, but was provided with length of " +
                             array.length);
         }
@@ -78,7 +77,7 @@ public class StatisticChangeMagnitudeFactory
         Check.ifNull(array[1], "second item in " + paramName);
         if (array[0].floatValue() > array[1].floatValue()) {
             throw new IllegalArgumentException(
-                    "StatisticChangeMagnitudeFactory.make: " + paramName +
+                    "StatisticChangeMagnitudefactory.apply: " + paramName +
                             " cannot have a first item (" + array[0] +
                             ") with a higher value than the second (" + array[1] + ")");
         }
@@ -108,12 +107,6 @@ public class StatisticChangeMagnitudeFactory
         }
 
         return new StatisticChangeMagnitude<Integer>() {
-            @Override
-            public String getInterfaceName() {
-                return StatisticChangeMagnitude.class.getCanonicalName() + "<" +
-                        Integer.class.getCanonicalName() + ">";
-            }
-
             @Override
             public VariableStatisticType effectedStatisticType() {
                 return variableStatType;
@@ -171,12 +164,6 @@ public class StatisticChangeMagnitudeFactory
 
         return new StatisticChangeMagnitude<Float>() {
             @Override
-            public String getInterfaceName() {
-                return StatisticChangeMagnitude.class.getCanonicalName() + "<" +
-                        Float.class.getCanonicalName() + ">";
-            }
-
-            @Override
             public VariableStatisticType effectedStatisticType() {
                 return variableStatType;
             }
@@ -206,12 +193,5 @@ public class StatisticChangeMagnitudeFactory
                 return absoluteRange;
             }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                StatisticChangeMagnitudeDefinition.class.getCanonicalName() + "," +
-                StatisticChangeMagnitude.class.getCanonicalName() + ">";
     }
 }

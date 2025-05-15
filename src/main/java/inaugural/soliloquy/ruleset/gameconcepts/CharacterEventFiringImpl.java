@@ -1,18 +1,20 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.infrastructure.VariableCache;
+import soliloquy.specs.common.infrastructure.ImmutableMap;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.abilities.AbilitySource;
 import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.ruleset.gameconcepts.CharacterEventFiring;
+
+import java.util.Map;
 
 public class CharacterEventFiringImpl implements CharacterEventFiring {
     public CharacterEventFiringImpl() {
     }
 
     @Override
-    public void fireEvent(Character target, String event, VariableCache data)
+    public void fireEvent(Character target, String event, ImmutableMap<String, Object> data)
             throws IllegalArgumentException, EntityDeletedException {
         Check.ifNull(target, "target");
         Check.ifNullOrEmpty(event, "event");
@@ -31,10 +33,5 @@ public class CharacterEventFiringImpl implements CharacterEventFiring {
         for (var characterEvent : target.events().eventsForTrigger(abilityId)) {
             characterEvent.reactToAbility(target, source);
         }
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return CharacterEventFiring.class.getCanonicalName();
     }
 }

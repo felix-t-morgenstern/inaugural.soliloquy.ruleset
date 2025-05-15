@@ -2,11 +2,11 @@ package inaugural.soliloquy.ruleset.entities.factories;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import soliloquy.specs.common.factories.Factory;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
-import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Tile;
 import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
@@ -28,8 +28,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static soliloquy.specs.common.shared.Direction.SOUTHWEST;
+import static soliloquy.specs.common.valueobjects.Vertex.vertexOf;
 
-class FixtureTypeFactoryTests {
+@ExtendWith(MockitoExtension.class)
+public class FixtureTypeFactoryTests {
     private final String ID = randomString();
     private final String NAME = randomString();
     private final boolean IS_CONTAINER = randomBoolean();
@@ -73,24 +75,24 @@ class FixtureTypeFactoryTests {
 
     private FixtureTypeDefinition definition;
 
-    private Factory<FixtureTypeDefinition, FixtureType> fixtureTypeFactory;
+    private Function<FixtureTypeDefinition, FixtureType> fixtureTypeFactory;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         mockSprite = mock(Sprite.class);
         SPRITES.put(SPRITE_ID, mockSprite);
         mockLoopingAnimation = mock(GlobalLoopingAnimation.class);
         GLOBAL_LOOPING_ANIMATIONS.put(GLOBAL_LOOPING_ANIMATION_ID, mockLoopingAnimation);
         //noinspection unchecked
         mockOnStepFunction = (Function<Character, Boolean>) mock(Function.class);
-        when(mockOnStepFunction.apply(any())).thenReturn(true);
+        lenient().when(mockOnStepFunction.apply(any())).thenReturn(true);
         //noinspection unchecked
         mockCanStepFunction = (Function<Character, Boolean>) mock(Function.class);
-        when(mockCanStepFunction.apply(any())).thenReturn(true);
+        lenient().when(mockCanStepFunction.apply(any())).thenReturn(true);
         //noinspection unchecked
         mockHeightMovementPenaltyMitigationFunction =
                 (Function<Object[], Integer>) mock(Function.class);
-        when(mockHeightMovementPenaltyMitigationFunction.apply(any()))
+        lenient().when(mockHeightMovementPenaltyMitigationFunction.apply(any()))
                 .thenReturn(HEIGHT_MOVEMENT_PENALTY_MITIGATION);
         FUNCTIONS.put(ON_STEP_FUNCTION_ID, mockOnStepFunction);
         FUNCTIONS.put(CAN_STEP_FUNCTION_ID, mockCanStepFunction);
@@ -116,7 +118,7 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
-    void testConstructorWithInvalidArgs() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new FixtureTypeFactory(null, FUNCTIONS::get, SPRITES::get,
                         GLOBAL_LOOPING_ANIMATIONS::get));
@@ -132,7 +134,7 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithSprite() {
+    public void testMakeWithSprite() {
         var definitionWithSprite =
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
@@ -141,7 +143,7 @@ class FixtureTypeFactoryTests {
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET);
 
-        var output = fixtureTypeFactory.make(definitionWithSprite);
+        var output = fixtureTypeFactory.apply(definitionWithSprite);
         output.onStep(mockCharacter1);
         output.canStep(mockCharacter2);
         var additionalMovementCost = output.additionalMovementCost();
@@ -149,13 +151,12 @@ class FixtureTypeFactoryTests {
                 output.heightMovementPenaltyMitigation(mockTile, mockCharacter1, DIRECTION);
 
         assertNotNull(definitionWithSprite);
-        assertEquals(FixtureType.class.getCanonicalName(), output.getInterfaceName());
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
         assertSame(mockSprite, output.imageAsset());
         assertEquals(IS_CONTAINER, output.isContainer());
         assertEquals(listOf(COLOR_SHIFT), output.defaultColorShifts());
-        assertEquals(Vertex.of(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
+        assertEquals(vertexOf(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
                 output.defaultTileOffset());
         assertEquals(ADDITIONAL_MOVEMENT_COST, additionalMovementCost);
         for (var direction : Direction.values()) {
@@ -175,7 +176,7 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithLoopingAnimation() {
+    public void testMakeWithLoopingAnimation() {
         FixtureTypeDefinition definitionWithLoopingAnimation =
                 new FixtureTypeDefinition(ID, NAME, GLOBAL_LOOPING_ANIMATION_ID,
                         ImageAsset.ImageAssetType.GLOBAL_LOOPING_ANIMATION, IS_CONTAINER,
@@ -184,7 +185,7 @@ class FixtureTypeFactoryTests {
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET);
 
-        var output = fixtureTypeFactory.make(definitionWithLoopingAnimation);
+        var output = fixtureTypeFactory.apply(definitionWithLoopingAnimation);
         output.onStep(mockCharacter1);
         output.canStep(mockCharacter2);
         var additionalMovementCost = output.additionalMovementCost();
@@ -192,13 +193,12 @@ class FixtureTypeFactoryTests {
                 output.heightMovementPenaltyMitigation(mockTile, mockCharacter1, DIRECTION);
 
         assertNotNull(definitionWithLoopingAnimation);
-        assertEquals(FixtureType.class.getCanonicalName(), output.getInterfaceName());
         assertEquals(ID, output.id());
         assertEquals(NAME, output.getName());
         assertSame(mockLoopingAnimation, output.imageAsset());
         assertEquals(IS_CONTAINER, output.isContainer());
         assertEquals(listOf(COLOR_SHIFT), output.defaultColorShifts());
-        assertEquals(Vertex.of(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
+        assertEquals(vertexOf(DEFAULT_X_TILE_WIDTH_OFFSET, DEFAULT_Y_TILE_HEIGHT_OFFSET),
                 output.defaultTileOffset());
         assertEquals(ADDITIONAL_MOVEMENT_COST, additionalMovementCost);
         for (var direction : Direction.values()) {
@@ -218,129 +218,129 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
-    void testMakeWithInvalidArgs() {
+    public void testMakeWithInvalidArgs() {
         var invalidFunctionId = randomString();
 
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(null, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition("", NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, null, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, "", SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, null, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, "", ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, "invalidId", ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, "invalidId",
                         ImageAsset.ImageAssetType.GLOBAL_LOOPING_ANIMATION, IS_CONTAINER,
                         ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, null, IS_CONTAINER,
                         ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.ANIMATION,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, null, CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, "", CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, "invalidId", CAN_STEP_FUNCTION_ID, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, null, ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, "", ADDITIONAL_MOVEMENT_COST,
                         ESCALATIONS, HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, invalidFunctionId,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS,
                         HEIGHT_MOVEMENT_PENALTY_MITIGATION_FUNCTION_ID,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS, null,
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS, "",
                         new String[]{COLOR_SHIFT_WRITTEN_VALUE}, DEFAULT_X_TILE_WIDTH_OFFSET,
                         DEFAULT_Y_TILE_HEIGHT_OFFSET)));
-        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> fixtureTypeFactory.apply(
                 new FixtureTypeDefinition(ID, NAME, SPRITE_ID, ImageAsset.ImageAssetType.SPRITE,
                         IS_CONTAINER, ON_STEP_FUNCTION_ID, CAN_STEP_FUNCTION_ID,
                         ADDITIONAL_MOVEMENT_COST, ESCALATIONS, invalidFunctionId,
@@ -349,9 +349,9 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
-    void testSetName() {
+    public void testSetName() {
         var newName = randomString();
-        var output = fixtureTypeFactory.make(definition);
+        var output = fixtureTypeFactory.apply(definition);
 
         output.setName(newName);
 
@@ -359,32 +359,25 @@ class FixtureTypeFactoryTests {
     }
 
     @Test
-    void testSetNameWithInvalidArgs() {
-        var output = fixtureTypeFactory.make(definition);
+    public void testSetNameWithInvalidArgs() {
+        var output = fixtureTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
     }
 
     @Test
-    void testStepFunctionsWithInvalidArgs() {
-        var output = fixtureTypeFactory.make(definition);
+    public void testStepFunctionsWithInvalidArgs() {
+        var output = fixtureTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.onStep(null));
         assertThrows(IllegalArgumentException.class, () -> output.canStep(null));
     }
 
     @Test
-    void testEscalationWithInvalidArgs() {
-        var output = fixtureTypeFactory.make(definition);
+    public void testEscalationWithInvalidArgs() {
+        var output = fixtureTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.escalation(null));
-    }
-
-    @Test
-    void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                FixtureTypeDefinition.class.getCanonicalName() + "," +
-                FixtureType.class.getCanonicalName() + ">", fixtureTypeFactory.getInterfaceName());
     }
 }

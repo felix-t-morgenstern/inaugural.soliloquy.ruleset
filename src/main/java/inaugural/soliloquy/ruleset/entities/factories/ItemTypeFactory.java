@@ -1,8 +1,7 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.Factory;
-import soliloquy.specs.common.infrastructure.VariableCache;
+import soliloquy.specs.common.infrastructure.ImmutableMap;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
@@ -15,12 +14,16 @@ import soliloquy.specs.ruleset.entities.abilities.PassiveAbility;
 import soliloquy.specs.ruleset.entities.abilities.ReactiveAbility;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import static inaugural.soliloquy.tools.collections.Collections.immutable;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
+import static soliloquy.specs.common.valueobjects.Vertex.vertexOf;
 
-public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
-    private final TypeHandler<VariableCache> VARIABLE_CACHE_HANDLER;
+public class ItemTypeFactory implements Function<ItemTypeDefinition, ItemType> {
+    /** @noinspection rawtypes */
+    private final TypeHandler<Map> MAP_HANDLER;
     private final Function<String, EquipmentType> GET_EQUIPMENT_TYPE;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Function<String, Function<Character, String>> GET_DESCRIPTION_FUNCTION;
@@ -28,15 +31,16 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
     private final Function<String, ReactiveAbility> GET_REACTIVE_ABILITY;
     private final Function<String, PassiveAbility> GET_PASSIVE_ABILITY;
 
+    /** @noinspection rawtypes */
     public ItemTypeFactory(
-            TypeHandler<VariableCache> variableCacheHandler,
+            TypeHandler<Map> mapHandler,
             Function<String, EquipmentType> getEquipmentType,
             Function<String, ImageAssetSet> getImageAssetSet,
             Function<String, Function<Character, String>> getDescriptionFunction,
             Function<String, ActiveAbility> getActiveAbility,
             Function<String, ReactiveAbility> getReactiveAbility,
             Function<String, PassiveAbility> getPassiveAbility) {
-        VARIABLE_CACHE_HANDLER = Check.ifNull(variableCacheHandler, "variableCacheHandler");
+        MAP_HANDLER = Check.ifNull(mapHandler, "mapHandler");
         GET_EQUIPMENT_TYPE = Check.ifNull(getEquipmentType, "getEquipmentType");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
         GET_DESCRIPTION_FUNCTION = Check.ifNull(getDescriptionFunction, "getDescriptionFunction");
@@ -46,7 +50,7 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
     }
 
     @Override
-    public ItemType make(ItemTypeDefinition definition) throws IllegalArgumentException {
+    public ItemType apply(ItemTypeDefinition definition) throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
         Check.ifNullOrEmpty(definition.name, "definition.name");
@@ -54,12 +58,12 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
 
         if (definition.isStackable && definition.defaultNumberInStack == null) {
             throw new IllegalArgumentException(
-                    "ItemFactory.make: If isStackable is true, defaultNumberInStack must be " +
+                    "Itemfactory.apply: If isStackable is true, defaultNumberInStack must be " +
                             "defined");
         }
         if (!definition.isStackable && definition.defaultNumberInStack != null) {
             throw new IllegalArgumentException(
-                    "ItemFactory.make: If isStackable is false, defaultNumberInStack cannot be " +
+                    "Itemfactory.apply: If isStackable is false, defaultNumberInStack cannot be " +
                             "defined");
         }
         if (definition.isStackable) {
@@ -68,11 +72,11 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
 
         if (definition.hasCharges && definition.defaultCharges == null) {
             throw new IllegalArgumentException(
-                    "ItemFactory.make: If hasCharges is true, defaultCharges must be defined");
+                    "Itemfactory.apply: If hasCharges is true, defaultCharges must be defined");
         }
         if (!definition.hasCharges && definition.defaultCharges != null) {
             throw new IllegalArgumentException(
-                    "ItemFactory.make: If hasCharges is false, defaultCharges cannot be defined");
+                    "Itemfactory.apply: If hasCharges is false, defaultCharges cannot be defined");
         }
         if (definition.hasCharges) {
             Check.ifNonNegative(definition.defaultCharges, "definition.defaultCharges");
@@ -80,30 +84,30 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
 
         if (definition.isStackable && definition.hasCharges) {
             throw new IllegalArgumentException(
-                    "ItemFactory.make: Both isStackable and hasCharges cannot both be true");
+                    "Itemfactory.apply: Both isStackable and hasCharges cannot both be true");
         }
 
         var equipmentType = GET_EQUIPMENT_TYPE.apply(Check
                 .ifNullOrEmpty(definition.equipmentTypeId, "definition.equipmentTypeId"));
         if (equipmentType == null) {
             throw new IllegalArgumentException(
-                    "ItemTypeFactory.make: definition.equipmentTypeId (" +
+                    "ItemTypefactory.apply: definition.equipmentTypeId (" +
                             definition.equipmentTypeId +
                             ") does not correspond to a valid EquipmentType");
         }
 
-        Function<Character, String> descriptionFunction =
-                GET_DESCRIPTION_FUNCTION.apply(Check.ifNullOrEmpty(definition.descriptionFunctionId,
+        var descriptionFunction = GET_DESCRIPTION_FUNCTION.apply(
+                Check.ifNullOrEmpty(definition.descriptionFunctionId,
                         "definition.descriptionFunctionId"));
         if (descriptionFunction == null) {
             throw new IllegalArgumentException(
-                    "ItemTypeFactory.make: definition.descriptionFunctionId (" +
+                    "ItemTypefactory.apply: definition.descriptionFunctionId (" +
                             definition.descriptionFunctionId +
                             ") does not correspond to a valid Function");
         }
 
-        var traits = VARIABLE_CACHE_HANDLER
-                .read(Check.ifNullOrEmpty(definition.traits, "definition.traits"));
+        var traits = immutable(MAP_HANDLER.<Map<String, Object>>read(
+                Check.ifNullOrEmpty(definition.traits, "definition.traits")));
 
         var activeAbilities =
                 populateEntityList(definition.activeAbilityIds, GET_ACTIVE_ABILITY,
@@ -121,7 +125,7 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
                 .ifNullOrEmpty(definition.imageAssetSetId, "definition.imageAssetSetId"));
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "ItemTypeFactory.make: definition.imageAssetSetId (" +
+                    "ItemTypefactory.apply: definition.imageAssetSetId (" +
                             definition.imageAssetSetId +
                             ") does not correspond to a valid ImageAssetSet");
         }
@@ -141,7 +145,7 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
             }
 
             @Override
-            public VariableCache traits() {
+            public ImmutableMap<String, Object> traits() {
                 return traits;
             }
 
@@ -219,13 +223,8 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
             }
 
             @Override
-            public String getInterfaceName() {
-                return ItemType.class.getCanonicalName();
-            }
-
-            @Override
             public Vertex defaultTileOffset() {
-                return Vertex.of(definition.defaultXTileWidthOffset,
+                return vertexOf(definition.defaultXTileWidthOffset,
                         definition.defaultYTileHeightOffset);
             }
         };
@@ -248,12 +247,5 @@ public class ItemTypeFactory implements Factory<ItemTypeDefinition, ItemType> {
         }
 
         return entityList;
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                ItemTypeDefinition.class.getCanonicalName() + "," +
-                ItemType.class.getCanonicalName() + ">";
     }
 }

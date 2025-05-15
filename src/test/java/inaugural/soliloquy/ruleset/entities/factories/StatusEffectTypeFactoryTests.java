@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.entities.Action;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.graphics.assets.ImageAsset;
@@ -23,9 +22,9 @@ import java.util.function.Function;
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.*;
 import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 @ExtendWith(MockitoExtension.class)
 public class StatusEffectTypeFactoryTests {
@@ -59,14 +58,14 @@ public class StatusEffectTypeFactoryTests {
     @Mock private RoundEndEffectsOnCharacter mockRoundEndEffect;
     @Mock private EffectsOnCharacter mockTurnStartEffect;
     @Mock private EffectsOnCharacter mockTurnEndEffect;
-    @Mock private Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>
+    @Mock private Function<EffectsOnCharacterDefinition, EffectsOnCharacter>
             mockEffectsOnCharacterFactory;
-    @Mock private Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
+    @Mock private Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>
             mockRoundEndEffectsOnCharacterFactory;
 
     private StatusEffectTypeDefinition definition;
 
-    private Factory<StatusEffectTypeDefinition, StatusEffectType> statusEffectTypeFactory;
+    private Function<StatusEffectTypeDefinition, StatusEffectType> statusEffectTypeFactory;
 
     @BeforeEach
     public void setUp() {
@@ -79,35 +78,14 @@ public class StatusEffectTypeFactoryTests {
         mockGetStaticStatType = generateMockLookupFunction(
                 pairOf(RESISTANCE_STAT_TYPE_ID, mockResistanceStatType));
 
-        //noinspection unchecked
-        mockAlterAction = (Action<Object[]>) mock(Action.class);
-
-        //noinspection unchecked,rawtypes
-        mockGetAction = (Function<String, Action>) mock(Function.class);
         lenient().when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
 
-        mockTurnStartEffectDefinition = mock(EffectsOnCharacterDefinition.class);
-        mockTurnEndEffectDefinition = mock(EffectsOnCharacterDefinition.class);
-
-        mockTurnStartEffect = mock(EffectsOnCharacter.class);
-        mockTurnEndEffect = mock(EffectsOnCharacter.class);
-
-        //noinspection unchecked
-        mockEffectsOnCharacterFactory =
-                (Factory<EffectsOnCharacterDefinition, EffectsOnCharacter>) mock(Factory.class);
-        lenient().when(mockEffectsOnCharacterFactory.make(mockTurnStartEffectDefinition))
+        lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
-        lenient().when(mockEffectsOnCharacterFactory.make(mockTurnEndEffectDefinition))
+        lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnEndEffectDefinition))
                 .thenReturn(mockTurnEndEffect);
 
-        mockRoundEndEffectDefinition = mock(RoundEndEffectsOnCharacterDefinition.class);
-        mockRoundEndEffect = mock(RoundEndEffectsOnCharacter.class);
-
-        //noinspection unchecked
-        mockRoundEndEffectsOnCharacterFactory =
-                (Factory<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter>) mock(
-                        Factory.class);
-        lenient().when(mockRoundEndEffectsOnCharacterFactory.make(mockRoundEndEffectDefinition))
+        lenient().when(mockRoundEndEffectsOnCharacterFactory.apply(mockRoundEndEffectDefinition))
                 .thenReturn(mockRoundEndEffect);
 
         definition =
@@ -151,7 +129,7 @@ public class StatusEffectTypeFactoryTests {
     public void testMake() {
         var value = randomInt();
 
-        var output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.apply(definition);
         output.nameAtValue(value);
         output.getIcon(ICON_TYPE_1, mockCharacter);
         output.getIcon(ICON_TYPE_2, mockCharacter);
@@ -169,13 +147,12 @@ public class StatusEffectTypeFactoryTests {
         verify(mockIconTypeFunction1).apply(mockCharacter);
         verify(mockIconTypeFunction2).apply(mockCharacter);
         verify(mockAlterAction).run(eq(arrayOf(mockCharacter, value)));
-        assertEquals(StatusEffectType.class.getCanonicalName(), output.getInterfaceName());
         assertSame(mockRoundEndEffect, output.onRoundEnd());
-        verify(mockRoundEndEffectsOnCharacterFactory).make(mockRoundEndEffectDefinition);
+        verify(mockRoundEndEffectsOnCharacterFactory).apply(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
-        verify(mockEffectsOnCharacterFactory).make(mockTurnStartEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).apply(mockTurnStartEffectDefinition);
         assertSame(mockTurnEndEffect, output.onTurnEnd());
-        verify(mockEffectsOnCharacterFactory).make(mockTurnEndEffectDefinition);
+        verify(mockEffectsOnCharacterFactory).apply(mockTurnEndEffectDefinition);
         verify(mockGetStaticStatType).apply(RESISTANCE_STAT_TYPE_ID);
         assertSame(mockResistanceStatType, output.resistanceStatisticType());
     }
@@ -188,139 +165,139 @@ public class StatusEffectTypeFactoryTests {
         when(mockGetAction.apply(invalidActionId)).thenReturn(null);
         var invalidStatId = randomString();
 
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(null));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(null));
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(null, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition("", NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, null, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, "", STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, null,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, "",
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, invalidFunctionId,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         null, ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf((StatusEffectTypeDefinition.IconForCharacterFunction) null),
                         ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(null,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction("",
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 null)), ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 "")), ALTER_ACTION_ID, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 invalidFunctionId)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), null, mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), "", mockRoundEndEffectDefinition,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), invalidActionId,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID, null,
                         mockTurnStartEffectDefinition, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, null, mockTurnEndEffectDefinition,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition, null,
                         RESISTANCE_STAT_TYPE_ID)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, null)));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition, "")));
-        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.make(
+        assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(
                 new StatusEffectTypeDefinition(ID, NAME, STOPS_AT_ZERO, NAME_AT_VALUE_FUNCTION_ID,
                         arrayOf(new StatusEffectTypeDefinition.IconForCharacterFunction(ICON_TYPE_1,
                                 ICON_TYPE_FUNCTION_1_ID)), ALTER_ACTION_ID,
@@ -330,14 +307,14 @@ public class StatusEffectTypeFactoryTests {
 
     @Test
     public void testAlterWithInvalidArgs() {
-        var output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.alterValue(null, randomInt()));
     }
 
     @Test
     public void testSetName() {
-        var output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.apply(definition);
         var newName = randomString();
 
         output.setName(newName);
@@ -347,7 +324,7 @@ public class StatusEffectTypeFactoryTests {
 
     @Test
     public void testSetNameWithInvalidArgs() {
-        var output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.setName(null));
         assertThrows(IllegalArgumentException.class, () -> output.setName(""));
@@ -355,20 +332,12 @@ public class StatusEffectTypeFactoryTests {
 
     @Test
     public void testGetIconWithInvalidArgs() {
-        var output = statusEffectTypeFactory.make(definition);
+        var output = statusEffectTypeFactory.apply(definition);
 
         assertThrows(IllegalArgumentException.class, () -> output.getIcon(null, mockCharacter));
         assertThrows(IllegalArgumentException.class, () -> output.getIcon("", mockCharacter));
         assertThrows(IllegalArgumentException.class,
                 () -> output.getIcon("NOT_A_VALID_ICON_TYPE", mockCharacter));
         assertThrows(IllegalArgumentException.class, () -> output.getIcon(ICON_TYPE_1, null));
-    }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(Factory.class.getCanonicalName() + "<" +
-                        StatusEffectTypeDefinition.class.getCanonicalName() + "," +
-                        StatusEffectType.class.getCanonicalName() + ">",
-                statusEffectTypeFactory.getInterfaceName());
     }
 }

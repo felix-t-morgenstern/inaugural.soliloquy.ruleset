@@ -2,10 +2,11 @@ package inaugural.soliloquy.ruleset.gameconcepts;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import soliloquy.specs.common.infrastructure.VariableCache;
+import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.CharacterStatusEffects;
@@ -20,17 +21,19 @@ import soliloquy.specs.ruleset.gameconcepts.RoundEndHandling;
 import soliloquy.specs.ruleset.gameconcepts.StatisticMagnitudeEffectCalculation;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.*;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
-class RoundEndHandlingTests {
+@ExtendWith(MockitoExtension.class)
+public class RoundEndHandlingTests {
     private final int CHARACTER_1_STATUS_EFFECT_MAGNITUDE = randomInt();
     private final int CHARACTER_1_VARIABLE_STAT_1_MAGNITUDE = randomInt();
     private final int CHARACTER_1_STATIC_STAT_MAGNITUDE = randomInt();
@@ -57,7 +60,7 @@ class RoundEndHandlingTests {
     @Mock private Character mockCharacter1;
     @Mock private Character mockCharacter2;
     @Mock private Character mockCharacter3;
-    @Mock private VariableCache mockRoundData;
+    @Mock private Map<String, Object> mockRoundData;
     @Mock private ActiveCharactersProvider mockActiveCharactersProvider;
 
     @Mock private VariableStatisticType mockTargetVariableStatType;
@@ -82,106 +85,74 @@ class RoundEndHandlingTests {
     private RoundEndHandling roundEndHandling;
 
     @BeforeEach
-    void setUp() {
-        mockGameZone = mock(GameZone.class);
-        //noinspection unchecked
-        mockGetCurrentGameZone = (Supplier<GameZone>) mock(Supplier.class);
-        when(mockGetCurrentGameZone.get()).thenReturn(mockGameZone);
+    public void setUp() {
+        lenient().when(mockGetCurrentGameZone.get()).thenReturn(mockGameZone);
 
-        mockCharacter1StatusEffects = mock(CharacterStatusEffects.class);
-        mockCharacter2StatusEffects = mock(CharacterStatusEffects.class);
-        mockCharacter3StatusEffects = mock(CharacterStatusEffects.class);
+        lenient().when(mockCharacter1.statusEffects()).thenReturn(mockCharacter1StatusEffects);
+        lenient().when(mockCharacter2.statusEffects()).thenReturn(mockCharacter2StatusEffects);
+        lenient().when(mockCharacter3.statusEffects()).thenReturn(mockCharacter3StatusEffects);
 
-        mockCharacter1 = mock(Character.class);
-        when(mockCharacter1.statusEffects()).thenReturn(mockCharacter1StatusEffects);
-        mockCharacter2 = mock(Character.class);
-        when(mockCharacter2.statusEffects()).thenReturn(mockCharacter2StatusEffects);
-        mockCharacter3 = mock(Character.class);
-        when(mockCharacter3.statusEffects()).thenReturn(mockCharacter3StatusEffects);
-
-        mockRoundData = mock(VariableCache.class);
-
-        mockActiveCharactersProvider = mock(ActiveCharactersProvider.class);
-        when(mockActiveCharactersProvider.generateInTurnOrder(any())).thenReturn(
+        lenient().when(mockActiveCharactersProvider.generateInTurnOrder(any())).thenReturn(
                 listOf(pairOf(mockCharacter1, mockRoundData), pairOf(mockCharacter2, mockRoundData),
                         pairOf(mockCharacter3, mockRoundData)));
 
-        mockTargetVariableStatType = mock(VariableStatisticType.class);
-
-        //noinspection unchecked
-        mockStatusEffectRoundEndEffectMagnitude =
-                (StatisticChangeMagnitude<Integer>) mock(StatisticChangeMagnitude.class);
-        when(mockStatusEffectRoundEndEffectMagnitude.effectedStatisticType())
+        lenient().when(mockStatusEffectRoundEndEffectMagnitude.effectedStatisticType())
                 .thenReturn(mockTargetVariableStatType);
-        //noinspection unchecked
-        mockVariableStat1RoundEndEffectMagnitude =
-                (StatisticChangeMagnitude<Integer>) mock(StatisticChangeMagnitude.class);
-        when(mockVariableStat1RoundEndEffectMagnitude.effectedStatisticType())
+        lenient().when(mockVariableStat1RoundEndEffectMagnitude.effectedStatisticType())
                 .thenReturn(mockTargetVariableStatType);
-        //noinspection unchecked
-        mockStaticStatRoundEndEffectMagnitude =
-                (StatisticChangeMagnitude<Integer>) mock(StatisticChangeMagnitude.class);
-        when(mockStaticStatRoundEndEffectMagnitude.effectedStatisticType())
+        lenient().when(mockStaticStatRoundEndEffectMagnitude.effectedStatisticType())
                 .thenReturn(mockTargetVariableStatType);
 
-        mockStatusEffectRoundEndEffects = mock(RoundEndEffectsOnCharacter.class);
-        when(mockStatusEffectRoundEndEffects.priority())
+        lenient().when(mockStatusEffectRoundEndEffects.priority())
                 .thenReturn(STATUS_EFFECT_ROUND_END_EFFECT_PRIORITY);
-        when(mockStatusEffectRoundEndEffects.magnitudes()).thenReturn(
+        lenient().when(mockStatusEffectRoundEndEffects.magnitudes()).thenReturn(
                 listOf(mockStatusEffectRoundEndEffectMagnitude));
 
-        mockVariableStat1RoundEndEffects = mock(RoundEndEffectsOnCharacter.class);
-        when(mockVariableStat1RoundEndEffects.priority())
+        lenient().when(mockVariableStat1RoundEndEffects.priority())
                 .thenReturn(VARIABLE_STAT_1_ROUND_END_EFFECT_PRIORITY);
-        when(mockVariableStat1RoundEndEffects.magnitudes()).thenReturn(
+        lenient().when(mockVariableStat1RoundEndEffects.magnitudes()).thenReturn(
                 listOf(mockVariableStat1RoundEndEffectMagnitude));
 
-        mockStaticStatRoundEndEffects = mock(RoundEndEffectsOnCharacter.class);
-        when(mockStaticStatRoundEndEffects.priority())
+        lenient().when(mockStaticStatRoundEndEffects.priority())
                 .thenReturn(STATIC_STAT_ROUND_END_EFFECT_PRIORITY);
-        when(mockStaticStatRoundEndEffects.magnitudes()).thenReturn(
+        lenient().when(mockStaticStatRoundEndEffects.magnitudes()).thenReturn(
                 listOf(mockStaticStatRoundEndEffectMagnitude));
 
-        mockStatusEffectType = mock(StatusEffectType.class);
-        when(mockStatusEffectType.onRoundEnd()).thenReturn(mockStatusEffectRoundEndEffects);
+        lenient().when(mockStatusEffectType.onRoundEnd()).thenReturn(mockStatusEffectRoundEndEffects);
         statusEffectTypes = listOf(mockStatusEffectType);
 
-        mockVariableStatType1 = mock(VariableStatisticType.class);
-        when(mockVariableStatType1.onRoundEnd()).thenReturn(mockVariableStat1RoundEndEffects);
-        mockVariableStatType2 = mock(VariableStatisticType.class);
-        when(mockVariableStatType2.onRoundEnd()).thenReturn(null);
+        lenient().when(mockVariableStatType1.onRoundEnd()).thenReturn(mockVariableStat1RoundEndEffects);
+        lenient().when(mockVariableStatType2.onRoundEnd()).thenReturn(null);
         variableStatTypes = listOf(mockVariableStatType1, mockVariableStatType2);
 
-        mockStaticStatType = mock(StaticStatisticType.class);
-        when(mockStaticStatType.onRoundEnd()).thenReturn(mockStaticStatRoundEndEffects);
+        lenient().when(mockStaticStatType.onRoundEnd()).thenReturn(mockStaticStatRoundEndEffects);
         staticStatTypes = listOf(mockStaticStatType);
 
-        mockMagnitudeCalculation = mock(StatisticMagnitudeEffectCalculation.class);
-        when(mockMagnitudeCalculation.getEffect(mockStatusEffectType,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockStatusEffectType,
                 mockStatusEffectRoundEndEffectMagnitude, mockCharacter1))
                 .thenReturn(CHARACTER_1_STATUS_EFFECT_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockStatusEffectType,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockStatusEffectType,
                 mockStatusEffectRoundEndEffectMagnitude, mockCharacter2))
                 .thenReturn(CHARACTER_2_STATUS_EFFECT_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockStatusEffectType,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockStatusEffectType,
                 mockStatusEffectRoundEndEffectMagnitude, mockCharacter3))
                 .thenReturn(CHARACTER_3_STATUS_EFFECT_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockVariableStatType1,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockVariableStatType1,
                 mockVariableStat1RoundEndEffectMagnitude, mockCharacter1))
                 .thenReturn(CHARACTER_1_VARIABLE_STAT_1_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockVariableStatType1,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockVariableStatType1,
                 mockVariableStat1RoundEndEffectMagnitude, mockCharacter2))
                 .thenReturn(CHARACTER_2_VARIABLE_STAT_1_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockVariableStatType1,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockVariableStatType1,
                 mockVariableStat1RoundEndEffectMagnitude, mockCharacter3))
                 .thenReturn(CHARACTER_3_VARIABLE_STAT_1_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockStaticStatType,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockStaticStatType,
                 mockStaticStatRoundEndEffectMagnitude, mockCharacter1))
                 .thenReturn(CHARACTER_1_STATIC_STAT_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockStaticStatType,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockStaticStatType,
                 mockStaticStatRoundEndEffectMagnitude, mockCharacter2))
                 .thenReturn(CHARACTER_2_STATIC_STAT_MAGNITUDE);
-        when(mockMagnitudeCalculation.getEffect(mockStaticStatType,
+        lenient().when(mockMagnitudeCalculation.getEffect(mockStaticStatType,
                 mockStaticStatRoundEndEffectMagnitude, mockCharacter3))
                 .thenReturn(CHARACTER_3_STATIC_STAT_MAGNITUDE);
 
@@ -192,7 +163,7 @@ class RoundEndHandlingTests {
     }
 
     @Test
-    void testConstructorWithInvalidArgs() {
+    public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndHandlingImpl(null, mockActiveCharactersProvider,
                         statusEffectTypes, variableStatTypes, staticStatTypes,
@@ -230,7 +201,7 @@ class RoundEndHandlingTests {
     }
 
     @Test
-    void testRunRoundEnd() {
+    public void testRunRoundEnd() {
         var isAdvancingRounds = randomBoolean();
 
         roundEndHandling.runRoundEnd(isAdvancingRounds);
@@ -292,14 +263,14 @@ class RoundEndHandlingTests {
                 (List<Pair<int[], Character>>) staticStatRoundEndEffectsCaptor.getValue();
         assertEquals(3, staticStatAccompanyAllEffects.size());
         assertArrayEquals(new int[]{CHARACTER_1_STATIC_STAT_MAGNITUDE},
-                staticStatAccompanyAllEffects.get(0).item1());
-        assertSame(mockCharacter1, staticStatAccompanyAllEffects.get(0).item2());
+                staticStatAccompanyAllEffects.get(0).FIRST);
+        assertSame(mockCharacter1, staticStatAccompanyAllEffects.get(0).SECOND);
         assertArrayEquals(new int[]{CHARACTER_2_STATIC_STAT_MAGNITUDE},
-                staticStatAccompanyAllEffects.get(1).item1());
-        assertSame(mockCharacter2, staticStatAccompanyAllEffects.get(1).item2());
+                staticStatAccompanyAllEffects.get(1).FIRST);
+        assertSame(mockCharacter2, staticStatAccompanyAllEffects.get(1).SECOND);
         assertArrayEquals(new int[]{CHARACTER_3_STATIC_STAT_MAGNITUDE},
-                staticStatAccompanyAllEffects.get(2).item1());
-        assertSame(mockCharacter3, staticStatAccompanyAllEffects.get(2).item2());
+                staticStatAccompanyAllEffects.get(2).FIRST);
+        assertSame(mockCharacter3, staticStatAccompanyAllEffects.get(2).SECOND);
 
         inOrder.verify(mockMagnitudeCalculation)
                 .getEffect(mockVariableStatType1, mockVariableStat1RoundEndEffectMagnitude,
@@ -348,14 +319,14 @@ class RoundEndHandlingTests {
                 (List<Pair<int[], Character>>) variableStat1RoundEndEffectsCaptor.getValue();
         assertEquals(3, variableStat1AccompanyAllEffects.size());
         assertArrayEquals(new int[]{CHARACTER_1_VARIABLE_STAT_1_MAGNITUDE},
-                variableStat1AccompanyAllEffects.get(0).item1());
-        assertSame(mockCharacter1, variableStat1AccompanyAllEffects.get(0).item2());
+                variableStat1AccompanyAllEffects.get(0).FIRST);
+        assertSame(mockCharacter1, variableStat1AccompanyAllEffects.get(0).SECOND);
         assertArrayEquals(new int[]{CHARACTER_2_VARIABLE_STAT_1_MAGNITUDE},
-                variableStat1AccompanyAllEffects.get(1).item1());
-        assertSame(mockCharacter2, variableStat1AccompanyAllEffects.get(1).item2());
+                variableStat1AccompanyAllEffects.get(1).FIRST);
+        assertSame(mockCharacter2, variableStat1AccompanyAllEffects.get(1).SECOND);
         assertArrayEquals(new int[]{CHARACTER_3_VARIABLE_STAT_1_MAGNITUDE},
-                variableStat1AccompanyAllEffects.get(2).item1());
-        assertSame(mockCharacter3, variableStat1AccompanyAllEffects.get(2).item2());
+                variableStat1AccompanyAllEffects.get(2).FIRST);
+        assertSame(mockCharacter3, variableStat1AccompanyAllEffects.get(2).SECOND);
 
         inOrder.verify(mockMagnitudeCalculation)
                 .getEffect(mockStatusEffectType, mockStatusEffectRoundEndEffectMagnitude,
@@ -404,13 +375,13 @@ class RoundEndHandlingTests {
                 (List<Pair<int[], Character>>) statusEffectRoundEndEffectsCaptor.getValue();
         assertEquals(3, statusEffectAccompanyAllEffects.size());
         assertArrayEquals(new int[]{CHARACTER_1_STATUS_EFFECT_MAGNITUDE},
-                statusEffectAccompanyAllEffects.get(0).item1());
-        assertSame(mockCharacter1, statusEffectAccompanyAllEffects.get(0).item2());
+                statusEffectAccompanyAllEffects.get(0).FIRST);
+        assertSame(mockCharacter1, statusEffectAccompanyAllEffects.get(0).SECOND);
         assertArrayEquals(new int[]{CHARACTER_2_STATUS_EFFECT_MAGNITUDE},
-                statusEffectAccompanyAllEffects.get(1).item1());
-        assertSame(mockCharacter2, statusEffectAccompanyAllEffects.get(1).item2());
+                statusEffectAccompanyAllEffects.get(1).FIRST);
+        assertSame(mockCharacter2, statusEffectAccompanyAllEffects.get(1).SECOND);
         assertArrayEquals(new int[]{CHARACTER_3_STATUS_EFFECT_MAGNITUDE},
-                statusEffectAccompanyAllEffects.get(2).item1());
-        assertSame(mockCharacter3, statusEffectAccompanyAllEffects.get(2).item2());
+                statusEffectAccompanyAllEffects.get(2).FIRST);
+        assertSame(mockCharacter3, statusEffectAccompanyAllEffects.get(2).SECOND);
     }
 }

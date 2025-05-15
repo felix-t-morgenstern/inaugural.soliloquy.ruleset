@@ -3,7 +3,6 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.ruleset.definitions.GroundTypeDefinition;
 import inaugural.soliloquy.tools.Check;
 import inaugural.soliloquy.tools.collections.Collections;
-import soliloquy.specs.common.factories.Factory;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.shared.Direction;
 import soliloquy.specs.gamestate.entities.Character;
@@ -20,7 +19,7 @@ import java.util.function.Function;
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
-public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundType> {
+public class GroundTypeFactory implements Function<GroundTypeDefinition, GroundType> {
     private final TypeHandler<ColorShift> COLOR_SHIFT_HANDLER;
     @SuppressWarnings("rawtypes")
     private final Function<String, Function> GET_FUNCTION;
@@ -37,7 +36,7 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
     }
 
     @Override
-    public GroundType make(GroundTypeDefinition definition)
+    public GroundType apply(GroundTypeDefinition definition)
             throws IllegalArgumentException {
         Check.ifNull(definition, "definition");
         Check.ifNullOrEmpty(definition.id, "definition.id");
@@ -130,21 +129,9 @@ public class GroundTypeFactory implements Factory<GroundTypeDefinition, GroundTy
             }
 
             @Override
-            public String getInterfaceName() {
-                return GroundType.class.getCanonicalName();
-            }
-
-            @Override
             public List<ColorShift> defaultColorShifts() {
                 return defaultColorShifts;
             }
         };
-    }
-
-    @Override
-    public String getInterfaceName() {
-        return Factory.class.getCanonicalName() + "<" +
-                GroundTypeDefinition.class.getCanonicalName() + "," +
-                GroundType.class.getCanonicalName() + ">";
     }
 }

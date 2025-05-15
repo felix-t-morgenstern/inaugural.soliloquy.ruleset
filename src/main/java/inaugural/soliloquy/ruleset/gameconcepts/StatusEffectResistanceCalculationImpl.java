@@ -44,9 +44,4 @@ public class StatusEffectResistanceCalculationImpl implements StatusEffectResist
 
         return effectiveChange;
     }
-
-    @Override
-    public String getInterfaceName() {
-        return StatusEffectResistanceCalculation.class.getCanonicalName();
-    }
 }

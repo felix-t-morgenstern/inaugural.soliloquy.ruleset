@@ -85,10 +85,4 @@ public class DamageResistanceCalculationImplTests {
                 () -> damageResistanceCalculation.calculateEffectiveChange(
                         mockCharacter, 0, mockElement));
     }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(DamageResistanceCalculation.class.getCanonicalName(),
-                damageResistanceCalculation.getInterfaceName());
-    }
 }

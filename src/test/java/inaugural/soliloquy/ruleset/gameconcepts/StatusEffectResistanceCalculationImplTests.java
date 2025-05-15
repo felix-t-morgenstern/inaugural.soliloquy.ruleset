@@ -146,10 +146,4 @@ public class StatusEffectResistanceCalculationImplTests {
                 () -> statusEffectResistanceCalculation.calculateEffectiveChange(mockCharacter,
                         mockStatusEffectType, randomInt(), randomBoolean(), null));
     }
-
-    @Test
-    public void testGetInterfaceName() {
-        assertEquals(StatusEffectResistanceCalculation.class.getCanonicalName(),
-                statusEffectResistanceCalculation.getInterfaceName());
-    }
 }

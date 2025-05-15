@@ -1,7 +1,6 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange;
@@ -18,17 +17,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.Tools.orderByPriority;
+import static inaugural.soliloquy.tools.collections.Collections.immutable;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 public class TurnHandlingImpl implements TurnHandling {
     private final StatisticMagnitudeEffectCalculation EFFECT_CALCULATION;
-    private final Consumer<Pair<Character, VariableCache>> PASS_CONTROL_TO_PLAYER;
+    private final Consumer<Pair<Character, Map<String, Object>>> PASS_CONTROL_TO_PLAYER;
     private final List<VariableStatisticType> VARIABLE_STAT_TYPES;
     private final List<StaticStatisticType> STATIC_STAT_TYPES;
 
     public TurnHandlingImpl(StatisticMagnitudeEffectCalculation effectCalculation,
-                            Consumer<Pair<Character, VariableCache>> passControlToPlayer,
+                            Consumer<Pair<Character, Map<String, Object>>> passControlToPlayer,
                             List<VariableStatisticType> variableStatTypes,
                             List<StaticStatisticType> staticStatTypes) {
         EFFECT_CALCULATION = Check.ifNull(effectCalculation, "effectCalculation");
@@ -38,7 +38,7 @@ public class TurnHandlingImpl implements TurnHandling {
     }
 
     @Override
-    public void runTurn(Character character, VariableCache turnData, boolean advancingRounds)
+    public void runTurn(Character character, Map<String, Object> turnData, boolean advancingRounds)
             throws IllegalArgumentException {
         runTurnPhase(character, EffectsCharacterOnRoundOrTurnChange::onTurnStart, advancingRounds);
 
@@ -47,7 +47,7 @@ public class TurnHandlingImpl implements TurnHandling {
                 PASS_CONTROL_TO_PLAYER.accept(pairOf(character, turnData));
             }
             else {
-                character.getAIType().act(character, turnData);
+                character.getAIType().act(character, immutable(turnData));
             }
         }
 
