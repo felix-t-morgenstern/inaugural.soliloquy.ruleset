@@ -1,8 +1,6 @@
 package inaugural.soliloquy.ruleset.gameconcepts;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.factories.VariableCacheFactory;
-import soliloquy.specs.common.infrastructure.VariableCache;
 import soliloquy.specs.common.valueobjects.Pair;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.GameZone;
@@ -20,7 +18,7 @@ import static inaugural.soliloquy.ruleset.constants.Constants.BONUS_AP_TIER_1_RA
 import static inaugural.soliloquy.ruleset.constants.Constants.BONUS_AP_TIER_1_RANGE_MINIMUM;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
-import static inaugural.soliloquy.tools.valueobjects.Pair.pairOf;
+import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 
 public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
     private final StatisticType ROUND_PRIORITY_STAT;
@@ -31,12 +29,10 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
     private final String ROUND_DATA_AP;
     private final StatisticCalculation STATISTIC_CALCULATION;
     private final Supplier<Float> GET_RANDOM_FLOAT;
-    private final VariableCacheFactory CHARACTER_ROUND_DATA_FACTORY;
 
     public ActiveCharactersProviderImpl(Function<String, StatisticType> getStatType,
                                         StatisticCalculation statisticCalculation,
                                         Supplier<Float> getRandomFloat,
-                                        VariableCacheFactory characterRoundDataFactory,
                                         String roundPriorityStat,
                                         String bonusApStat,
                                         String characterDataIsInactive,
@@ -55,34 +51,34 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
         ROUND_DATA_AP = Check.ifNullOrEmpty(roundDataAp, "roundDataAp");
         STATISTIC_CALCULATION = Check.ifNull(statisticCalculation, "statisticCalculation");
         GET_RANDOM_FLOAT = Check.ifNull(getRandomFloat, "getRandomFloat");
-        CHARACTER_ROUND_DATA_FACTORY =
-                Check.ifNull(characterRoundDataFactory, "characterRoundDataFactory");
     }
 
     @Override
-    public List<Pair<Character, VariableCache>> generateInTurnOrder(GameZone gameZone)
+    public List<Pair<Character, Map<String, Object>>> generateInTurnOrder(GameZone gameZone)
             throws IllegalArgumentException {
         Check.ifNull(gameZone, "gameZone");
 
-        Map<Integer, List<Pair<Character, VariableCache>>> activeCharactersByImpulse = mapOf();
+        Map<Integer, List<Pair<Character, Map<String, Object>>>> activeCharactersByImpulse =
+                mapOf();
         List<Integer> impulses = listOf();
 
         gameZone.charactersRepresentation().values().forEach(character -> {
-            var isInactive = character.data().getVariable(CHARACTER_DATA_IS_INACTIVE);
+            var isInactive = character.data().get(CHARACTER_DATA_IS_INACTIVE);
             if (isInactive != null && (Boolean) isInactive) {
                 return;
             }
 
             var roundPriorityStatValue =
                     STATISTIC_CALCULATION.calculate(character, ROUND_PRIORITY_STAT);
-            var baseAp = (int) character.data().getVariable(CHARACTER_DATA_BASE_AP);
+            var baseAp = (int) character.data().get(CHARACTER_DATA_BASE_AP);
             var bonusApStatValue = STATISTIC_CALCULATION.calculate(character, AP_BONUS_STAT);
             var bonusApFromAlacrity = getBonusApFromAlacrity(bonusApStatValue);
             var roundAp = baseAp + bonusApFromAlacrity;
 
-            var characterRoundData = CHARACTER_ROUND_DATA_FACTORY.make();
-            characterRoundData.setVariable(ROUND_DATA_COMBAT_PRIORITY, roundPriorityStatValue);
-            characterRoundData.setVariable(ROUND_DATA_AP, roundAp);
+            var characterRoundData = mapOf(
+                    pairOf(ROUND_DATA_COMBAT_PRIORITY, (Object)roundPriorityStatValue),
+                    pairOf(ROUND_DATA_AP, roundAp)
+            );
 
             var characterWithRoundData = pairOf(character, characterRoundData);
 
@@ -96,7 +92,7 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
             }
         });
 
-        List<Pair<Character, VariableCache>> activeCharacters = listOf();
+        List<Pair<Character, Map<String, Object>>> activeCharacters = listOf();
 
         impulses.sort(Collections.reverseOrder());
 
@@ -113,10 +109,10 @@ public class ActiveCharactersProviderImpl implements ActiveCharactersProvider {
         return activeCharacters;
     }
 
-    private void resolveImpulseTies(List<Pair<Character, VariableCache>> activeCharacters,
-                                    List<Pair<Character, VariableCache>> tiedCharacters) {
+    private void resolveImpulseTies(List<Pair<Character, Map<String, Object>>> activeCharacters,
+                                    List<Pair<Character, Map<String, Object>>> tiedCharacters) {
         List<Float> tieBreakers = listOf();
-        Map<Float, Pair<Character, VariableCache>> charactersByTieBreakers = mapOf();
+        Map<Float, Pair<Character, Map<String, Object>>> charactersByTieBreakers = mapOf();
 
         tiedCharacters.forEach(character -> {
             var tieBreaker = GET_RANDOM_FLOAT.get();
