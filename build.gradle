@@ -30,7 +30,7 @@ dependencies {
     implementation 'com.google.inject:guice:5.1.0'
     implementation "disorg.soliloquy:soliloquy.specs:0.0.539"
     implementation "disorg.soliloquy:inaugural.soliloquy.tools:0.0.149"
-    implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.20"
+    implementation "disorg.soliloquy:inaugural.soliloquy.common:0.0.21"
     // https://mvnrepository.com/artifact/org.javatuples/javatuples
     implementation("org.javatuples:javatuples:1.2")
 
