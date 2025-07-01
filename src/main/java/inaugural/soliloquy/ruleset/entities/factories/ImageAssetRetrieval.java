@@ -1,9 +1,9 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
-import soliloquy.specs.graphics.assets.ImageAsset;
-import soliloquy.specs.graphics.assets.Sprite;
+import soliloquy.specs.io.graphics.assets.GlobalLoopingAnimation;
+import soliloquy.specs.io.graphics.assets.ImageAsset;
+import soliloquy.specs.io.graphics.assets.Sprite;
 
 import java.util.function.Function;
 

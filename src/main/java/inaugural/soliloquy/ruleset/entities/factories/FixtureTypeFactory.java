@@ -8,10 +8,10 @@ import soliloquy.specs.common.shared.Direction;
 import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.gamestate.entities.Tile;
-import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
-import soliloquy.specs.graphics.assets.ImageAsset;
-import soliloquy.specs.graphics.assets.Sprite;
-import soliloquy.specs.graphics.renderables.colorshifting.ColorShift;
+import soliloquy.specs.io.graphics.assets.GlobalLoopingAnimation;
+import soliloquy.specs.io.graphics.assets.ImageAsset;
+import soliloquy.specs.io.graphics.assets.Sprite;
+import soliloquy.specs.io.graphics.renderables.colorshifting.ColorShift;
 import soliloquy.specs.ruleset.entities.FixtureType;
 
 import java.util.List;

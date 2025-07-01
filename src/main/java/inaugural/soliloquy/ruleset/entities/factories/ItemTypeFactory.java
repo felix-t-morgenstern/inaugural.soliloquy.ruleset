@@ -5,7 +5,7 @@ import soliloquy.specs.common.infrastructure.ImmutableMap;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Vertex;
 import soliloquy.specs.gamestate.entities.Character;
-import soliloquy.specs.graphics.assets.ImageAssetSet;
+import soliloquy.specs.io.graphics.assets.ImageAssetSet;
 import inaugural.soliloquy.ruleset.definitions.ItemTypeDefinition;
 import soliloquy.specs.ruleset.entities.EquipmentType;
 import soliloquy.specs.ruleset.entities.ItemType;

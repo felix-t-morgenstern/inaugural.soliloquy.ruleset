@@ -3,9 +3,9 @@ package inaugural.soliloquy.ruleset.entities.factories;
 import inaugural.soliloquy.tools.Check;
 import soliloquy.specs.gamestate.entities.WallSegmentOrientation;
 import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
-import soliloquy.specs.graphics.assets.GlobalLoopingAnimation;
-import soliloquy.specs.graphics.assets.ImageAsset;
-import soliloquy.specs.graphics.assets.Sprite;
+import soliloquy.specs.io.graphics.assets.GlobalLoopingAnimation;
+import soliloquy.specs.io.graphics.assets.ImageAsset;
+import soliloquy.specs.io.graphics.assets.Sprite;
 import inaugural.soliloquy.ruleset.definitions.WallSegmentTypeDefinition;
 import soliloquy.specs.ruleset.entities.WallSegmentType;
 

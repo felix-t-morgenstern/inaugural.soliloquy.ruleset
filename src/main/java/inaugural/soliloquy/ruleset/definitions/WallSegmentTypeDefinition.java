@@ -1,12 +1,14 @@
 package inaugural.soliloquy.ruleset.definitions;
 
-import soliloquy.specs.graphics.assets.ImageAsset;
+import soliloquy.specs.io.graphics.assets.ImageAsset;
+
+import static soliloquy.specs.io.graphics.assets.ImageAsset.ImageAssetType;
 
 public class WallSegmentTypeDefinition {
     public String id;
     public String name;
     public int orientation;
-    public ImageAsset.ImageAssetType imageAssetType;
+    public ImageAssetType imageAssetType;
     public String imageAssetId;
     public boolean blocksMovement;
     public boolean blocksSight;

@@ -1,13 +1,15 @@
 package inaugural.soliloquy.ruleset.definitions;
 
 import soliloquy.specs.common.shared.Direction;
-import soliloquy.specs.graphics.assets.ImageAsset;
+import soliloquy.specs.io.graphics.assets.ImageAsset;
+
+import static soliloquy.specs.io.graphics.assets.ImageAsset.ImageAssetType;
 
 public class FixtureTypeDefinition {
     public String id;
     public String name;
     public String imageAssetSetId;
-    public ImageAsset.ImageAssetType imageAssetType;
+    public ImageAssetType imageAssetType;
     public boolean isContainer;
     public String onStepFunctionId;
     public String canStepFunctionId;

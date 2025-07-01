@@ -1,7 +1,7 @@
 package inaugural.soliloquy.ruleset.entities.factories;
 
 import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.graphics.assets.ImageAssetSet;
+import soliloquy.specs.io.graphics.assets.ImageAssetSet;
 import inaugural.soliloquy.ruleset.definitions.ElementDefinition;
 import soliloquy.specs.ruleset.entities.Element;
 import soliloquy.specs.ruleset.entities.character.StaticStatisticType;
