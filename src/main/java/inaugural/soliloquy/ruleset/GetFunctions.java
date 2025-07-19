@@ -10,7 +10,7 @@ public class GetFunctions {
     public static <TInput> Action<TInput> getNullableAction(Function<String, Action> getAction,
                                                             String actionId,
                                                             String paramName) {
-        if (actionId != null && !"".equals(actionId)) {
+        if (actionId != null && !actionId.isEmpty()) {
             //noinspection unchecked
             var action = (Action<TInput>) getAction.apply(actionId);
             if (action == null) {
