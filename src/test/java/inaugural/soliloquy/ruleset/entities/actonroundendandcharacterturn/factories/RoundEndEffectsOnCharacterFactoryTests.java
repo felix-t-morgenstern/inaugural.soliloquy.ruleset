@@ -5,6 +5,7 @@ import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinitio
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.entities.Action;
@@ -19,6 +20,9 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
+import static inaugural.soliloquy.tools.testing.Assertions.once;
+import static inaugural.soliloquy.tools.testing.Mock.LookupAndEntitiesWithId;
+import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunctionWithId;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -28,9 +32,22 @@ import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 public class RoundEndEffectsOnCharacterFactoryTests {
     private final int PRIORITY = randomInt();
     private final String VARIABLE_STAT_TYPE_ID = randomString();
+
     private final String ACCOMPANY_EFFECT_ACTION_ID = randomString();
     private final String OTHER_EFFECTS_ACTION_ID = randomString();
     private final String ACCOMPANY_ALL_EFFECTS_ACTION_ID = randomString();
+    @SuppressWarnings("rawtypes") private final LookupAndEntitiesWithId<Action>
+            MOCK_ACTIONS_AND_LOOKUP =
+            generateMockLookupFunctionWithId(Action.class, ACCOMPANY_EFFECT_ACTION_ID,
+                    OTHER_EFFECTS_ACTION_ID, ACCOMPANY_ALL_EFFECTS_ACTION_ID);
+    @SuppressWarnings("rawtypes") private final Action MOCK_ACCOMPANY_EFFECT_ACTION =
+            MOCK_ACTIONS_AND_LOOKUP.entities.getFirst();
+    @SuppressWarnings("rawtypes") private final Action MOCK_OTHER_EFFECTS_ACTION =
+            MOCK_ACTIONS_AND_LOOKUP.entities.get(1);
+    @SuppressWarnings("rawtypes") private final Action MOCK_ACCOMPANY_ALL_EFFECTS_ACTION =
+            MOCK_ACTIONS_AND_LOOKUP.entities.get(2);
+    @SuppressWarnings("rawtypes") private final Function<String, Action> MOCK_GET_ACTION =
+            MOCK_ACTIONS_AND_LOOKUP.lookup;
 
     @Mock private StatisticChangeMagnitudeDefinition mockMagnitudeDefinition;
     @SuppressWarnings("rawtypes")
@@ -39,11 +56,6 @@ public class RoundEndEffectsOnCharacterFactoryTests {
     @Mock private Function<StatisticChangeMagnitudeDefinition, StatisticChangeMagnitude>
             mockMagnitudeFactory;
 
-    @Mock private Action<Object[]> mockAccompanyEffectAction;
-    @Mock private Action<Object[]> mockOtherEffectsAction;
-    @Mock private Action<Object[]> mockAccompanyAllEffectsAction;
-    @SuppressWarnings("rawtypes")
-    @Mock private Function<String, Action> mockGetAction;
 
     @Mock private Character mockCharacter;
 
@@ -55,13 +67,6 @@ public class RoundEndEffectsOnCharacterFactoryTests {
     public void setUp() {
         lenient().when(mockMagnitudeFactory.apply(any())).thenReturn(mockMagnitude);
 
-        lenient().when(mockGetAction.apply(ACCOMPANY_EFFECT_ACTION_ID))
-                .thenReturn(mockAccompanyEffectAction);
-        lenient().when(mockGetAction.apply(OTHER_EFFECTS_ACTION_ID))
-                .thenReturn(mockOtherEffectsAction);
-        lenient().when(mockGetAction.apply(ACCOMPANY_ALL_EFFECTS_ACTION_ID)).thenReturn(
-                mockAccompanyAllEffectsAction);
-
         definition = new RoundEndEffectsOnCharacterDefinition(PRIORITY,
                 new RoundEndEffectsOnCharacterDefinition.MagnitudeForStatisticDefinition[]{
                         new RoundEndEffectsOnCharacterDefinition.MagnitudeForStatisticDefinition(
@@ -70,7 +75,7 @@ public class RoundEndEffectsOnCharacterFactoryTests {
                 }, ACCOMPANY_EFFECT_ACTION_ID, OTHER_EFFECTS_ACTION_ID,
                 ACCOMPANY_ALL_EFFECTS_ACTION_ID);
 
-        factory = new RoundEndEffectsOnCharacterFactory(mockGetAction, mockMagnitudeFactory);
+        factory = new RoundEndEffectsOnCharacterFactory(MOCK_GET_ACTION, mockMagnitudeFactory);
     }
 
     @Test
@@ -78,12 +83,22 @@ public class RoundEndEffectsOnCharacterFactoryTests {
         assertThrows(IllegalArgumentException.class,
                 () -> new RoundEndEffectsOnCharacterFactory(null, mockMagnitudeFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new RoundEndEffectsOnCharacterFactory(mockGetAction, null));
+                () -> new RoundEndEffectsOnCharacterFactory(MOCK_GET_ACTION, null));
     }
 
     @Test
     public void testMake() {
         var inputMagnitudes = new int[]{randomInt()};
+
+        var accompanyEffectCaptor = ArgumentCaptor.forClass(Object[].class);
+        //noinspection unchecked
+        doNothing().when(MOCK_ACCOMPANY_EFFECT_ACTION).run(any(), accompanyEffectCaptor.capture());
+        var otherEffectsCaptor = ArgumentCaptor.forClass(Object[].class);
+        //noinspection unchecked
+        doNothing().when(MOCK_OTHER_EFFECTS_ACTION).run(any(), otherEffectsCaptor.capture());
+        var allEffectCaptor = ArgumentCaptor.forClass(Object[].class);
+        //noinspection unchecked
+        doNothing().when(MOCK_ACCOMPANY_ALL_EFFECTS_ACTION).run(any(), allEffectCaptor.capture());
 
         var output = factory.apply(definition);
         output.accompanyEffect(inputMagnitudes, mockCharacter, true);
@@ -94,12 +109,20 @@ public class RoundEndEffectsOnCharacterFactoryTests {
         var magnitudes = output.magnitudes();
         assertNotNull(magnitudes);
         assertNotSame(output.magnitudes(), magnitudes);
-        verify(mockGetAction).apply(ACCOMPANY_EFFECT_ACTION_ID);
-        verify(mockGetAction).apply(OTHER_EFFECTS_ACTION_ID);
-        verify(mockAccompanyEffectAction).run(eq(arrayOf(inputMagnitudes, mockCharacter, true)));
-        verify(mockOtherEffectsAction).run(eq(arrayOf(inputMagnitudes, mockCharacter, false)));
-        verify(mockAccompanyAllEffectsAction).run(
-                eq(arrayOf(listOf(pairOf(inputMagnitudes, mockCharacter)), true)));
+        verify(MOCK_GET_ACTION).apply(ACCOMPANY_EFFECT_ACTION_ID);
+        verify(MOCK_GET_ACTION).apply(OTHER_EFFECTS_ACTION_ID);
+        //noinspection unchecked
+        verify(MOCK_ACCOMPANY_EFFECT_ACTION, once()).run(accompanyEffectCaptor.capture());
+        assertArrayEquals(arrayOf(inputMagnitudes, mockCharacter, true),
+                accompanyEffectCaptor.getValue());
+        //noinspection unchecked
+        verify(MOCK_OTHER_EFFECTS_ACTION, once()).run(otherEffectsCaptor.capture());
+        assertArrayEquals(arrayOf(inputMagnitudes, mockCharacter, false),
+                otherEffectsCaptor.getValue());
+        //noinspection unchecked
+        verify(MOCK_ACCOMPANY_ALL_EFFECTS_ACTION, once()).run(allEffectCaptor.capture());
+        assertArrayEquals(arrayOf(listOf(pairOf(inputMagnitudes, mockCharacter)), true),
+                allEffectCaptor.getValue());
     }
 
     @Test
@@ -122,11 +145,14 @@ public class RoundEndEffectsOnCharacterFactoryTests {
         var magnitudes = output.magnitudes();
         assertNotNull(magnitudes);
         assertNotSame(output.magnitudes(), magnitudes);
-        verify(mockGetAction, never()).apply(anyString());
-        verify(mockGetAction, never()).apply(anyString());
-        verify(mockAccompanyEffectAction, never()).run(any());
-        verify(mockOtherEffectsAction, never()).run(any());
-        verify(mockAccompanyAllEffectsAction, never()).run(any());
+        verify(MOCK_GET_ACTION, never()).apply(anyString());
+        verify(MOCK_GET_ACTION, never()).apply(anyString());
+        //noinspection unchecked
+        verify(MOCK_ACCOMPANY_EFFECT_ACTION, never()).run(any());
+        //noinspection unchecked
+        verify(MOCK_OTHER_EFFECTS_ACTION, never()).run(any());
+        //noinspection unchecked
+        verify(MOCK_ACCOMPANY_ALL_EFFECTS_ACTION, never()).run(any());
     }
 
     @Test
@@ -166,7 +192,7 @@ public class RoundEndEffectsOnCharacterFactoryTests {
     @Test
     public void testMakeWithInvalidArgs() {
         var invalidActionId = randomString();
-        when(mockGetAction.apply(invalidActionId)).thenReturn(null);
+        when(MOCK_GET_ACTION.apply(invalidActionId)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> factory.apply(null));
         assertThrows(IllegalArgumentException.class, () -> factory.apply(

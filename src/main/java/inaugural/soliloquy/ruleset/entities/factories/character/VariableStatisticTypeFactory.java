@@ -1,7 +1,10 @@
 package inaugural.soliloquy.ruleset.entities.factories.character;
 
+import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinition;
+import inaugural.soliloquy.ruleset.definitions.VariableStatisticTypeDefinition;
 import inaugural.soliloquy.tools.Check;
+import inaugural.soliloquy.tools.collections.Collections;
 import soliloquy.specs.common.entities.Action;
 import soliloquy.specs.common.persistence.TypeHandler;
 import soliloquy.specs.common.valueobjects.Pair;
@@ -10,12 +13,9 @@ import soliloquy.specs.gamestate.entities.exceptions.EntityDeletedException;
 import soliloquy.specs.io.graphics.assets.ImageAsset;
 import soliloquy.specs.io.graphics.assets.ImageAssetSet;
 import soliloquy.specs.io.graphics.renderables.colorshifting.ColorShift;
-import soliloquy.specs.io.graphics.renderables.providers.ProviderAtTime;
-import inaugural.soliloquy.ruleset.definitions.VariableStatisticTypeDefinition;
-import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
-import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
+import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
 
 import java.util.List;
 import java.util.function.Function;
@@ -29,7 +29,7 @@ import static soliloquy.specs.common.valueobjects.Pair.pairOf;
 /** @noinspection rawtypes */
 public class VariableStatisticTypeFactory implements
         Function<VariableStatisticTypeDefinition, VariableStatisticType> {
-    private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
+    private final TypeHandler<ColorShift> SHIFT_HANDLER;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Function<String, Function> GET_FUNCTION;
     private final Function<String, Action> GET_ACTION;
@@ -39,14 +39,13 @@ public class VariableStatisticTypeFactory implements
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     public VariableStatisticTypeFactory(
-            TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
+            TypeHandler<ColorShift> shiftHandler,
             Function<String, ImageAssetSet> getImageAssetSet,
             Function<String, Function> getFunction,
             Function<String, Action> getAction,
             Function<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
             Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
-        COLOR_SHIFT_PROVIDER_HANDLER =
-                Check.ifNull(colorShiftProviderHandler, "colorShiftProviderHandler");
+        SHIFT_HANDLER = Check.ifNull(shiftHandler, "shiftHandler");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
         GET_FUNCTION = Check.ifNull(getFunction, "getFunction");
         GET_ACTION = Check.ifNull(getAction, "getAction");
@@ -70,7 +69,7 @@ public class VariableStatisticTypeFactory implements
         var imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "VariableStatisticTypefactory.apply: definition.imageAssetSetId does " +
+                    "VariableStatisticTypeFactory.apply: definition.imageAssetSetId does " +
                             "not correspond to a valid ImageAssetSet");
         }
 
@@ -79,12 +78,12 @@ public class VariableStatisticTypeFactory implements
                         definition.iconForCharacterFunctionId,
                         "definition.iconForCharacterFunctionId");
 
-        Action<Object[]> alterAction = getNonNullableAction(GET_ACTION, definition.alterActionId,
+        final var alterAction = getNonNullableAction(GET_ACTION, definition.alterActionId,
                 "definition.alterActionId");
 
-        List<ProviderAtTime<ColorShift>> colorShiftProviders = listOf();
+        var colorShifts = Collections.<ColorShift>listOf();
         for (var colorShiftProvider : definition.defaultColorShifts) {
-            colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
+            colorShifts.add(SHIFT_HANDLER.read(colorShiftProvider));
         }
 
         var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnRoundEnd);
@@ -96,7 +95,7 @@ public class VariableStatisticTypeFactory implements
             public void alter(Character character, int amount)
                     throws IllegalArgumentException, EntityDeletedException {
                 Check.ifNull(character, "character");
-                alterAction.run(arrayOf(character, amount, this));
+                alterAction.run(character, amount, this);
             }
 
             private String name = definition.name;
@@ -139,8 +138,8 @@ public class VariableStatisticTypeFactory implements
             }
 
             @Override
-            public List<ProviderAtTime<ColorShift>> colorShiftProviders() {
-                return colorShiftProviders;
+            public List<ColorShift> colorShifts() {
+                return colorShifts;
             }
 
             @Override

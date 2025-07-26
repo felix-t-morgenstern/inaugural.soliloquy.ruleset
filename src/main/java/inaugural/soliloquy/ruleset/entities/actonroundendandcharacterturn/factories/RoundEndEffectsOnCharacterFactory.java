@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNullableAction;
-import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 @SuppressWarnings("rawtypes")
@@ -45,15 +44,13 @@ public class RoundEndEffectsOnCharacterFactory
                     "magnitudeDefinition within definition.magnitudeForStatisticDefinitions");
         }
 
-        final Action<Object[]> accompanyEffectAction =
+        final var accompanyEffectAction =
                 getNullableAction(GET_ACTION, definition.accompanyEffectFunctionId,
                         "definition.accompanyEffectFunctionId");
-
-        final Action<Object[]> otherEffectsAction =
+        final var otherEffectsAction =
                 getNullableAction(GET_ACTION, definition.otherEffectsFunctionId,
                         "definition.otherEffectsFunctionId");
-
-        final Action<Object[]> accompanyAllEffectsAction =
+        final var accompanyAllEffectsAction =
                 getNullableAction(GET_ACTION, definition.accompanyAllEffectsFunctionId,
                         "definition.accompanyAllEffectsFunctionId");
 
@@ -82,33 +79,41 @@ public class RoundEndEffectsOnCharacterFactory
             }
 
             @Override
-            public void accompanyEffect(int[] effects, Character character, boolean advancingRounds) throws IllegalArgumentException {
+            public void accompanyEffect(int[] effects, Character character, boolean advancingRounds)
+                    throws IllegalArgumentException {
                 Check.ifNull(effects, "effects");
                 if (effects.length == 0) {
-                    throw new IllegalArgumentException("RoundEndEffectsOnCharacter.accompanyEffect: effects cannot be empty");
+                    throw new IllegalArgumentException(
+                            "RoundEndEffectsOnCharacter.accompanyEffect: effects cannot be empty");
                 }
                 Check.ifNull(character, "character");
                 if (accompanyEffectAction == null) {
                     return;
                 }
-                accompanyEffectAction.run(arrayOf(effects, character, advancingRounds));
+                //noinspection unchecked
+                accompanyEffectAction.run(effects, character, advancingRounds);
             }
 
             @Override
-            public void otherEffects(int[] effects, Character character, boolean advancingRounds) throws IllegalArgumentException {
+            public void otherEffects(int[] effects, Character character, boolean advancingRounds)
+                    throws IllegalArgumentException {
                 Check.ifNull(effects, "effects");
                 if (effects.length == 0) {
-                    throw new IllegalArgumentException("RoundEndEffectsOnCharacter.otherEffects: effects cannot be empty");
+                    throw new IllegalArgumentException(
+                            "RoundEndEffectsOnCharacter.otherEffects: effects cannot be empty");
                 }
                 Check.ifNull(character, "character");
                 if (otherEffectsAction == null) {
                     return;
                 }
-                otherEffectsAction.run(arrayOf(effects, character, advancingRounds));
+                //noinspection unchecked
+                otherEffectsAction.run(effects, character, advancingRounds);
             }
 
             @Override
-            public void accompanyAllEffects(List<Pair<int[], Character>> list, boolean advancingRounds) throws IllegalArgumentException {
+            public void accompanyAllEffects(List<Pair<int[], Character>> list,
+                                            boolean advancingRounds)
+                    throws IllegalArgumentException {
                 Check.ifNull(list, "list");
                 for (var pair : list) {
                     Check.ifNull(pair, "pair within list");
@@ -118,7 +123,8 @@ public class RoundEndEffectsOnCharacterFactory
                 if (accompanyAllEffectsAction == null) {
                     return;
                 }
-                accompanyAllEffectsAction.run(arrayOf(list, advancingRounds));
+                //noinspection unchecked
+                accompanyAllEffectsAction.run(list, advancingRounds);
             }
         };
     }

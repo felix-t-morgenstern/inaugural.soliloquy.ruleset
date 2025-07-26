@@ -19,7 +19,7 @@ import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 public class StaticStatisticTypeFactory implements
         Function<StaticStatisticTypeDefinition, StaticStatisticType> {
-    private final TypeHandler<ProviderAtTime<ColorShift>> COLOR_SHIFT_PROVIDER_HANDLER;
+    private final TypeHandler<ColorShift> SHIFT_HANDLER;
     private final Function<String, ImageAssetSet> GET_IMAGE_ASSET_SET;
     private final Function<EffectsOnCharacterDefinition, EffectsOnCharacter>
             EFFECTS_ON_CHARACTER_FACTORY;
@@ -27,12 +27,11 @@ public class StaticStatisticTypeFactory implements
             ROUND_END_EFFECTS_ON_CHARACTER_FACTORY;
 
     public StaticStatisticTypeFactory(
-            TypeHandler<ProviderAtTime<ColorShift>> colorShiftProviderHandler,
+            TypeHandler<ColorShift> shiftHandler,
             Function<String, ImageAssetSet> getImageAssetSet,
             Function<EffectsOnCharacterDefinition, EffectsOnCharacter> effectsOnCharacterFactory,
             Function<RoundEndEffectsOnCharacterDefinition, RoundEndEffectsOnCharacter> roundEndEffectsOnCharacterFactory) {
-        COLOR_SHIFT_PROVIDER_HANDLER =
-                Check.ifNull(colorShiftProviderHandler, "colorShiftProviderHandler");
+        SHIFT_HANDLER = Check.ifNull(shiftHandler, "shiftHandler");
         GET_IMAGE_ASSET_SET = Check.ifNull(getImageAssetSet, "getImageAssetSet");
         EFFECTS_ON_CHARACTER_FACTORY =
                 Check.ifNull(effectsOnCharacterFactory, "effectsOnCharacterFactory");
@@ -54,13 +53,13 @@ public class StaticStatisticTypeFactory implements
         ImageAssetSet imageAssetSet = GET_IMAGE_ASSET_SET.apply(definition.imageAssetSetId);
         if (imageAssetSet == null) {
             throw new IllegalArgumentException(
-                    "StaticStatisticTypefactory.apply: definition.imageAssetSetId does " +
+                    "StaticStatisticTypeFactory.apply: definition.imageAssetSetId does " +
                             "not correspond to a valid ImageAssetSet");
         }
 
-        List<ProviderAtTime<ColorShift>> colorShiftProviders = listOf();
-        for (String colorShiftProvider : definition.defaultColorShifts) {
-            colorShiftProviders.add(COLOR_SHIFT_PROVIDER_HANDLER.read(colorShiftProvider));
+        List<ColorShift> colorShifts = listOf();
+        for (var colorShift : definition.defaultColorShifts) {
+            colorShifts.add(SHIFT_HANDLER.read(colorShift));
         }
 
         RoundEndEffectsOnCharacter onRoundEnd =
@@ -100,8 +99,8 @@ public class StaticStatisticTypeFactory implements
             }
 
             @Override
-            public List<ProviderAtTime<ColorShift>> colorShiftProviders() {
-                return colorShiftProviders;
+            public List<ColorShift> colorShifts() {
+                return colorShifts;
             }
 
             @Override

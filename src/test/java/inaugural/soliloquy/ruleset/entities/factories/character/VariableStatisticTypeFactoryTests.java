@@ -6,6 +6,7 @@ import inaugural.soliloquy.ruleset.definitions.RoundEndEffectsOnCharacterDefinit
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.entities.Action;
@@ -15,7 +16,6 @@ import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.io.graphics.assets.ImageAsset;
 import soliloquy.specs.io.graphics.assets.ImageAssetSet;
 import soliloquy.specs.io.graphics.renderables.colorshifting.ColorShift;
-import soliloquy.specs.io.graphics.renderables.providers.ProviderAtTime;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.RoundEndEffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.character.VariableStatisticType;
@@ -26,6 +26,9 @@ import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 import static inaugural.soliloquy.tools.random.Random.randomInt;
 import static inaugural.soliloquy.tools.random.Random.randomString;
+import static inaugural.soliloquy.tools.testing.Assertions.once;
+import static inaugural.soliloquy.tools.testing.Mock.LookupAndEntitiesWithId;
+import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunctionWithId;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,21 +44,23 @@ public class VariableStatisticTypeFactoryTests {
     private final String IMAGE_ASSET_SET_ID = randomString();
     private final String WRITTEN_COLOR_SHIFT_PROVIDER = randomString();
     private final String ICON_FOR_CHARACTER_FUNCTION_ID = randomString();
-    private final String ALTER_ACTION_ID = randomString();
+
+    private final String ALTER_ACTION_ID = "alterActionId";//randomString();
+    @SuppressWarnings("rawtypes") private final LookupAndEntitiesWithId<Action> MOCK_ACTION_AND_LOOKUP = generateMockLookupFunctionWithId(Action.class, ALTER_ACTION_ID);
+    @SuppressWarnings("rawtypes") private final Action MOCK_ALTER_ACTION = MOCK_ACTION_AND_LOOKUP.entities.getFirst();
+    @SuppressWarnings("rawtypes")
+    private final Function<String, Action> MOCK_GET_ACTION = MOCK_ACTION_AND_LOOKUP.lookup;
 
     @Mock private ImageAssetSet mockImageAssetSet;
     @Mock private Function<String, ImageAssetSet> mockGetImageAssetSet;
-    @Mock private ProviderAtTime<ColorShift> mockColorShiftProvider;
-    @Mock private TypeHandler<ProviderAtTime<ColorShift>> mockColorShiftProviderHandler;
+    @Mock private ColorShift mockShift;
+    @Mock private TypeHandler<ColorShift> mockShiftHandler;
     @Mock private Pair<ImageAsset, Integer> mockIconForCharacter;
     @Mock private Function<Pair<String, Character>, Pair<ImageAsset, Integer>>
             mockIconForCharacterFunction;
     /** @noinspection rawtypes */
     @Mock private Function<String, Function> mockGetFunction;
 
-    @Mock private Action<Object[]> mockAlterAction;
-    @SuppressWarnings("rawtypes")
-    @Mock private Function<String, Action> mockGetAction;
 
     @Mock private RoundEndEffectsOnCharacterDefinition mockRoundEndEffectDefinition;
     @Mock private EffectsOnCharacterDefinition mockTurnStartEffectDefinition;
@@ -77,21 +82,17 @@ public class VariableStatisticTypeFactoryTests {
     public void setUp() {
         lenient().when(mockGetImageAssetSet.apply(anyString())).thenReturn(mockImageAssetSet);
 
-        lenient().when(mockColorShiftProviderHandler.read(anyString())).thenReturn(mockColorShiftProvider);
+        lenient().when(mockShiftHandler.read(anyString())).thenReturn(mockShift);
 
         lenient().when(mockIconForCharacterFunction.apply(any())).thenReturn(mockIconForCharacter);
 
         lenient().when(mockGetFunction.apply(anyString()))
                 .thenReturn(mockIconForCharacterFunction);
 
-        lenient().when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
         lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
         lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnEndEffectDefinition))
                 .thenReturn(mockTurnEndEffect);
-
-        mockRoundEndEffectDefinition = mock(RoundEndEffectsOnCharacterDefinition.class);
-        mockRoundEndEffect = mock(RoundEndEffectsOnCharacter.class);
 
         lenient().when(mockRoundEndEffectsOnCharacterFactory.apply(mockRoundEndEffectDefinition))
                 .thenReturn(mockRoundEndEffect);
@@ -103,8 +104,8 @@ public class VariableStatisticTypeFactoryTests {
                         mockRoundEndEffectDefinition, mockTurnStartEffectDefinition,
                         mockTurnEndEffectDefinition);
 
-        factory = new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
-                mockGetImageAssetSet, mockGetFunction, mockGetAction,
+        factory = new VariableStatisticTypeFactory(mockShiftHandler,
+                mockGetImageAssetSet, mockGetFunction, MOCK_GET_ACTION,
                 mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory);
     }
 
@@ -112,28 +113,32 @@ public class VariableStatisticTypeFactoryTests {
     public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
                 () -> new VariableStatisticTypeFactory(null, mockGetImageAssetSet,
-                        mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
+                        mockGetFunction, MOCK_GET_ACTION, mockEffectsOnCharacterFactory,
                         mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler, null,
-                        mockGetFunction, mockGetAction, mockEffectsOnCharacterFactory,
+                () -> new VariableStatisticTypeFactory(mockShiftHandler, null,
+                        mockGetFunction, MOCK_GET_ACTION, mockEffectsOnCharacterFactory,
                         mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
-                        mockGetImageAssetSet, null, mockGetAction, mockEffectsOnCharacterFactory,
+                () -> new VariableStatisticTypeFactory(mockShiftHandler,
+                        mockGetImageAssetSet, null, MOCK_GET_ACTION, mockEffectsOnCharacterFactory,
                         mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
+                () -> new VariableStatisticTypeFactory(mockShiftHandler,
                         mockGetImageAssetSet, mockGetFunction, null,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory));
         assertThrows(IllegalArgumentException.class,
-                () -> new VariableStatisticTypeFactory(mockColorShiftProviderHandler,
-                        mockGetImageAssetSet, mockGetFunction, mockGetAction, null,
+                () -> new VariableStatisticTypeFactory(mockShiftHandler,
+                        mockGetImageAssetSet, mockGetFunction, MOCK_GET_ACTION, null,
                         mockRoundEndEffectsOnCharacterFactory));
     }
 
     @Test
     public void testMake() {
+        var alterCaptor = ArgumentCaptor.forClass(Object[].class);
+        //noinspection unchecked
+        doNothing().when(MOCK_ALTER_ACTION).run(any(), alterCaptor.capture());
+
         var mockCharacter = mock(Character.class);
         var amount = randomInt();
 
@@ -146,12 +151,14 @@ public class VariableStatisticTypeFactoryTests {
         assertEquals(PLURAL_NAME, output.getPluralName());
         assertEquals(DESCRIPTION, output.getDescription());
         assertSame(mockImageAssetSet, output.imageAssetSet());
-        assertEquals(listOf(mockColorShiftProvider), output.colorShiftProviders());
+        assertEquals(listOf(mockShift), output.colorShifts());
         verify(mockGetImageAssetSet).apply(IMAGE_ASSET_SET_ID);
-        verify(mockColorShiftProviderHandler).read(WRITTEN_COLOR_SHIFT_PROVIDER);
+        verify(mockShiftHandler).read(WRITTEN_COLOR_SHIFT_PROVIDER);
         verify(mockGetFunction).apply(ICON_FOR_CHARACTER_FUNCTION_ID);
-        verify(mockGetAction).apply(ALTER_ACTION_ID);
-        verify(mockAlterAction).run(eq(arrayOf(mockCharacter, amount, output)));
+        verify(MOCK_GET_ACTION).apply(ALTER_ACTION_ID);
+        //noinspection unchecked
+        verify(MOCK_ALTER_ACTION, once()).run(alterCaptor.capture());
+        assertArrayEquals(arrayOf(mockCharacter, amount, output), alterCaptor.getValue());
         assertSame(mockRoundEndEffect, output.onRoundEnd());
         verify(mockRoundEndEffectsOnCharacterFactory).apply(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
@@ -167,7 +174,7 @@ public class VariableStatisticTypeFactoryTests {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
         var invalidActionId = randomString();
-        when(mockGetAction.apply(invalidActionId)).thenReturn(null);
+        when(MOCK_GET_ACTION.apply(invalidActionId)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> factory.apply(null));
         assertThrows(IllegalArgumentException.class, () -> factory

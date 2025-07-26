@@ -1,11 +1,11 @@
 package inaugural.soliloquy.ruleset.entities.actonroundendandcharacterturn.factories;
 
-import inaugural.soliloquy.tools.Check;
-import soliloquy.specs.common.entities.Action;
-import soliloquy.specs.gamestate.entities.Character;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition;
 import inaugural.soliloquy.ruleset.definitions.EffectsOnCharacterDefinition.MagnitudeForStatisticDefinition;
 import inaugural.soliloquy.ruleset.definitions.StatisticChangeMagnitudeDefinition;
+import inaugural.soliloquy.tools.Check;
+import soliloquy.specs.common.entities.Action;
+import soliloquy.specs.gamestate.entities.Character;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.EffectsCharacterOnRoundOrTurnChange.EffectsOnCharacter;
 import soliloquy.specs.ruleset.entities.actonroundendandcharacterturn.StatisticChangeMagnitude;
 
@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNullableAction;
-import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.listOf;
 
 @SuppressWarnings("rawtypes")
@@ -44,11 +43,11 @@ public class EffectsOnCharacterFactory
                     "magnitudeDefinition within definition.magnitudeForStatisticDefinitions");
         }
 
-        final Action<Object[]> accompanyEffectAction =
+        final Action accompanyEffectAction =
                 getNullableAction(GET_ACTION, definition.accompanyEffectFunctionId,
                         "definition.accompanyEffectFunctionId");
 
-        final Action<Object[]> otherEffectsAction =
+        final Action otherEffectsAction =
                 getNullableAction(GET_ACTION, definition.otherEffectsFunctionId,
                         "definition.otherEffectsFunctionId");
 
@@ -86,7 +85,8 @@ public class EffectsOnCharacterFactory
                 if (accompanyEffectAction == null) {
                     return;
                 }
-                accompanyEffectAction.run(arrayOf(effects, character, advancingRounds));
+                //noinspection unchecked
+                accompanyEffectAction.run(effects, character, advancingRounds);
             }
 
             @Override
@@ -101,7 +101,8 @@ public class EffectsOnCharacterFactory
                 if (otherEffectsAction == null) {
                     return;
                 }
-                otherEffectsAction.run(arrayOf(effects, character, advancingRounds));
+                //noinspection unchecked
+                otherEffectsAction.run(effects, character, advancingRounds);
             }
         };
     }

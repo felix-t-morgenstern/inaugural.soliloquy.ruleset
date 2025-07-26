@@ -6,6 +6,7 @@ import inaugural.soliloquy.ruleset.definitions.StatusEffectTypeDefinition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import soliloquy.specs.common.entities.Action;
@@ -21,7 +22,8 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.random.Random.*;
-import static inaugural.soliloquy.tools.testing.Mock.generateMockLookupFunction;
+import static inaugural.soliloquy.tools.testing.Assertions.once;
+import static inaugural.soliloquy.tools.testing.Mock.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static soliloquy.specs.common.valueobjects.Pair.pairOf;
@@ -36,8 +38,13 @@ public class StatusEffectTypeFactoryTests {
     private final String ICON_TYPE_2 = randomString();
     private final String ICON_TYPE_FUNCTION_1_ID = randomString();
     private final String ICON_TYPE_FUNCTION_2_ID = randomString();
-    private final String ALTER_ACTION_ID = randomString();
     private final String RESISTANCE_STAT_TYPE_ID = randomString();
+
+    private final String ALTER_ACTION_ID = randomString();
+    @SuppressWarnings("rawtypes") private final LookupAndEntitiesWithId<Action> MOCK_ACTION_AND_LOOKUP = generateMockLookupFunctionWithId(Action.class, ALTER_ACTION_ID);
+    @SuppressWarnings("rawtypes") private final Action MOCK_ALTER_ACTION = MOCK_ACTION_AND_LOOKUP.entities.getFirst();
+    @SuppressWarnings("rawtypes")
+    private final Function<String, Action> MOCK_GET_ACTION = MOCK_ACTION_AND_LOOKUP.lookup;
 
     @Mock private Character mockCharacter;
     @Mock private StaticStatisticType mockResistanceStatType;
@@ -46,11 +53,8 @@ public class StatusEffectTypeFactoryTests {
     @Mock private Function<Character, Pair<ImageAsset, Integer>> mockIconTypeFunction2;
     private Function<String, StaticStatisticType> mockGetStaticStatType;
     @SuppressWarnings("rawtypes")
-    @Mock private Function<String, Function> mockGetFunction;
+    private Function<String, Function> mockGetFunction;
 
-    @Mock private Action<Object[]> mockAlterAction;
-    @SuppressWarnings("rawtypes")
-    @Mock private Function<String, Action> mockGetAction;
 
     @Mock private RoundEndEffectsOnCharacterDefinition mockRoundEndEffectDefinition;
     @Mock private EffectsOnCharacterDefinition mockTurnStartEffectDefinition;
@@ -78,7 +82,7 @@ public class StatusEffectTypeFactoryTests {
         mockGetStaticStatType = generateMockLookupFunction(
                 pairOf(RESISTANCE_STAT_TYPE_ID, mockResistanceStatType));
 
-        lenient().when(mockGetAction.apply(anyString())).thenReturn(mockAlterAction);
+        lenient().when(MOCK_GET_ACTION.apply(anyString())).thenReturn(MOCK_ALTER_ACTION);
 
         lenient().when(mockEffectsOnCharacterFactory.apply(mockTurnStartEffectDefinition))
                 .thenReturn(mockTurnStartEffect);
@@ -98,7 +102,7 @@ public class StatusEffectTypeFactoryTests {
                         mockTurnEndEffectDefinition, RESISTANCE_STAT_TYPE_ID);
 
         statusEffectTypeFactory =
-                new StatusEffectTypeFactory(mockGetFunction, mockGetAction,
+                new StatusEffectTypeFactory(mockGetFunction, MOCK_GET_ACTION,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory,
                         mockGetStaticStatType);
     }
@@ -106,7 +110,7 @@ public class StatusEffectTypeFactoryTests {
     @Test
     public void testConstructorWithInvalidArgs() {
         assertThrows(IllegalArgumentException.class,
-                () -> new StatusEffectTypeFactory(null, mockGetAction,
+                () -> new StatusEffectTypeFactory(null, MOCK_GET_ACTION,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory,
                         mockGetStaticStatType));
         assertThrows(IllegalArgumentException.class,
@@ -114,19 +118,23 @@ public class StatusEffectTypeFactoryTests {
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory,
                         mockGetStaticStatType));
         assertThrows(IllegalArgumentException.class,
-                () -> new StatusEffectTypeFactory(mockGetFunction, mockGetAction, null,
+                () -> new StatusEffectTypeFactory(mockGetFunction, MOCK_GET_ACTION, null,
                         mockRoundEndEffectsOnCharacterFactory, mockGetStaticStatType));
         assertThrows(IllegalArgumentException.class,
-                () -> new StatusEffectTypeFactory(mockGetFunction, mockGetAction,
+                () -> new StatusEffectTypeFactory(mockGetFunction, MOCK_GET_ACTION,
                         mockEffectsOnCharacterFactory, null, mockGetStaticStatType));
         assertThrows(IllegalArgumentException.class,
-                () -> new StatusEffectTypeFactory(mockGetFunction, mockGetAction,
+                () -> new StatusEffectTypeFactory(mockGetFunction, MOCK_GET_ACTION,
                         mockEffectsOnCharacterFactory, mockRoundEndEffectsOnCharacterFactory,
                         null));
     }
 
     @Test
     public void testMake() {
+        var alterActionCaptor = ArgumentCaptor.forClass(Object[].class);
+        //noinspection unchecked
+        doNothing().when(MOCK_ALTER_ACTION).run(any(), alterActionCaptor.capture());
+
         var value = randomInt();
 
         var output = statusEffectTypeFactory.apply(definition);
@@ -142,11 +150,13 @@ public class StatusEffectTypeFactoryTests {
         verify(mockGetFunction).apply(NAME_AT_VALUE_FUNCTION_ID);
         verify(mockGetFunction).apply(ICON_TYPE_FUNCTION_1_ID);
         verify(mockGetFunction).apply(ICON_TYPE_FUNCTION_2_ID);
-        verify(mockGetAction).apply(ALTER_ACTION_ID);
+        verify(MOCK_GET_ACTION).apply(ALTER_ACTION_ID);
         verify(mockNameAtValueFunction).apply(value);
         verify(mockIconTypeFunction1).apply(mockCharacter);
         verify(mockIconTypeFunction2).apply(mockCharacter);
-        verify(mockAlterAction).run(eq(arrayOf(mockCharacter, value)));
+        //noinspection unchecked
+        verify(MOCK_ALTER_ACTION, once()).run(alterActionCaptor.capture());
+        assertArrayEquals(arrayOf(mockCharacter, value), alterActionCaptor.getValue());
         assertSame(mockRoundEndEffect, output.onRoundEnd());
         verify(mockRoundEndEffectsOnCharacterFactory).apply(mockRoundEndEffectDefinition);
         assertSame(mockTurnStartEffect, output.onTurnStart());
@@ -162,7 +172,7 @@ public class StatusEffectTypeFactoryTests {
         var invalidFunctionId = randomString();
         when(mockGetFunction.apply(invalidFunctionId)).thenReturn(null);
         var invalidActionId = randomString();
-        when(mockGetAction.apply(invalidActionId)).thenReturn(null);
+        when(MOCK_GET_ACTION.apply(invalidActionId)).thenReturn(null);
         var invalidStatId = randomString();
 
         assertThrows(IllegalArgumentException.class, () -> statusEffectTypeFactory.apply(null));

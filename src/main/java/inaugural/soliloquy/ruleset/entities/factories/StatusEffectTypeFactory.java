@@ -19,7 +19,6 @@ import java.util.function.Function;
 
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableAction;
 import static inaugural.soliloquy.ruleset.GetFunctions.getNonNullableFunction;
-import static inaugural.soliloquy.tools.collections.Collections.arrayOf;
 import static inaugural.soliloquy.tools.collections.Collections.mapOf;
 
 public class StatusEffectTypeFactory implements
@@ -80,9 +79,8 @@ public class StatusEffectTypeFactory implements
             iconTypeFunctions.put(iconForCharacterFunction.iconType, iconTypeFunction);
         }
 
-        Action<Object[]> alterAction =
-                getNonNullableAction(GET_ACTION, definition.alterValueActionId,
-                        "definition.alterValueActionId");
+        var alterAction = getNonNullableAction(GET_ACTION, definition.alterValueActionId,
+                "definition.alterValueActionId");
 
         var onRoundEnd = ROUND_END_EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnRoundEnd);
         var onTurnStart = EFFECTS_ON_CHARACTER_FACTORY.apply(definition.effectsOnTurnStart);
@@ -119,7 +117,7 @@ public class StatusEffectTypeFactory implements
             public void alterValue(Character character, int amount)
                     throws IllegalArgumentException, EntityDeletedException {
                 Check.ifNull(character, "character");
-                alterAction.run(arrayOf(character, amount));
+                alterAction.run(character, amount);
             }
 
             @Override
